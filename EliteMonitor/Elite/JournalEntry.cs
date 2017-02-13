@@ -17,6 +17,7 @@ namespace EliteMonitor.Elite
         public string Json { get; set; }
         public string Notes { get; set; }
         public bool isKnown { get; set; } = true;
+        public long ID { get; set; }
 
         [JsonConstructor]
         public JournalEntry() { }

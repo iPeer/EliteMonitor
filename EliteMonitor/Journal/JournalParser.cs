@@ -64,18 +64,17 @@ namespace EliteMonitor.Journal
             { "timestamp":"2017-02-03T04:33:23Z", "event":"MarketSell", "Type":"superconductors", "Count":728, "SellPrice":7265, "TotalSale":5288920, "AvgPricePaid":6883 }
             */
             mainForm.cacheController.addJournalEntryToCache(json);
-            commander = activeCommander;
+            commander = activeCommander ?? viewedCommander; // Under normal operating procedures, activeCommander will NEVER be null. It can be null during testing due to "hot inserting" of events (because we don't parse the full log properly), so if it's null, we default the the currently viewed commander.
             JObject j = JObject.Parse(json);
             string @event = (string)j["event"];
             DateTime tsData = (DateTime)j["timestamp"];
             string timestamp = tsData.ToString("G");
 
+
+            // NOTES: Missions that rank up a player in a major power have RankFed or RamkEmp in the names. This is (currently) the ONLY way to detect a Fed/Empire rank-up
+
             try
             {
-                if (mainForm.eventFilterDropdown.Items.IndexOf(@event) < 0 && !@event.Equals("Fileheader"))
-                {
-                    mainForm.eventFilterDropdown.InvokeIfRequired(() => mainForm.eventFilterDropdown.Items.Add(@event));
-                }
 
                 switch (@event)
                 {
@@ -105,7 +104,7 @@ namespace EliteMonitor.Journal
                             this.logger.Log("No real name for ship: {0}", LogLevel.ERR, commanderShip == string.Empty || commanderShip == null ? "{!!empty string!!}" : commanderShip);
                             this.logger.Log("{0}", LogLevel.ERR, j.ToString());
                         }
-                        int commanderCredits = (int)j["Credits"];
+                        long commanderCredits = (long)j["Credits"];
                         string commanderName = (string)j["Commander"];
                         string commanderString = $"{commanderName} | {commanderShip}" + (isGroup ? $" / {pGroup}" : "");
                         Commander _commander = registerCommander(commanderName);
@@ -122,8 +121,6 @@ namespace EliteMonitor.Journal
                         int imp = (int)j["Empire"];
 
                         commander.setRanks(c, t, e, q, fed, imp);
-
-                        //mainForm.addEvent(j.ToString(), timestamp, @event, $"Combat: {combatRank}, Trading: {tradeRank}, Exploration: {explorerRank}, CQC: {cqcRank} | Federation: {federationRank}, Empire: {empireRank}");
 
                         return new JournalEntry(timestamp, @event, $"Combat: {commander.combatRankName}, Trading: {commander.tradeRankName}, Exploration: {commander.explorationRankName}, CQC: {commander.cqcRankName} | Federation: {commander.federationRankName}, Empire: {commander.imperialRankName}", j);
                     case "Progress":
@@ -142,11 +139,11 @@ namespace EliteMonitor.Journal
                         bool b = @event.Equals("MarketBuy");
                         string product = (string)j["Type"];
                         int count = (int)j["Count"];
-                        int price = 0;
+                        long price = 0;
                         if (b)
-                            price = (int)j["TotalCost"];
+                            price = (long)j["TotalCost"];
                         else
-                            price = (int)j["TotalSale"];
+                            price = (long)j["TotalSale"];
                         string prefix = b ? "Bought" : "Sold";
                         if (b)
                             commander.deductCredits(price);
@@ -183,19 +180,19 @@ namespace EliteMonitor.Journal
                         return new JournalEntry(timestamp, @event, $"Undocked from {(string)j["StationName"]} ({(string)j["StationType"]})", j);
                     case "RefuelPartial": // Legacy
                     case "RefuelAll":
-                        int cost = (int)j["Cost"];
+                        long cost = (long)j["Cost"];
                         float amount = (float)j["Amount"];
                         commander.deductCredits(cost);
                         return new JournalEntry(timestamp, @event, $"Refuelled {String.Format("{0:f2}", amount)} tonnes for {String.Format("{0:n0}", cost)} credits", j);
                     case "BuyAmmo":
-                        cost = (int)j["Cost"];
+                        cost = (long)j["Cost"];
                         commander.deductCredits(cost);
                         return new JournalEntry(timestamp, @event, $"Refilled ammunition for {String.Format("{0:n0}", cost)} credits", j);
                     case "FSDJump":
                         return new JournalEntry(timestamp, @event, $"Jumped to {(string)j["StarSystem"]} ({String.Format("{0:f2}", (float)j["JumpDist"])}Ly)", j);
                     case "RepairPartial": // Legacy
                     case "RepairAll":
-                        cost = (int)j["Cost"];
+                        cost = (long)j["Cost"];
                         commander.deductCredits(cost);
                         return new JournalEntry(timestamp, @event, $"Repaired ship for {String.Format("{0:n0}", cost)} credits", j);
                     case "SupercruiseExit":
@@ -229,7 +226,7 @@ namespace EliteMonitor.Journal
                     case "MissionCompleted":
                         //Console.WriteLine(j.ToString());
                         bool donate = j["Reward"] == null;
-                        int credits = donate ? (int)j["Donation"] : (int)j["Reward"];
+                        long credits = donate ? (long)j["Donation"] : (long)j["Reward"];
                         if (donate)
                             commander.deductCredits(credits);
                         else
@@ -336,8 +333,14 @@ namespace EliteMonitor.Journal
                 }
                 /*if (!commander.Journal.Contains(s))
                     commander.Journal.Add(je.Json);*/
-                if (!checkDuplicates || (checkDuplicates && !commander.JournalEntries.Contains(je))) // Holy performance killer
+                /*if (!checkDuplicates || (checkDuplicates && !commander.JournalEntries.Contains(je))) // Holy performance killer
+                {
+                    if (!commander.EventsList.Contains(je.Event))
+                        commander.EventsList.Add(je.Event);
+                    je.ID = commander.nextId++;
                     commander.JournalEntries.Add(je);
+                }*/
+                commander.addJournalEntry(je, checkDuplicates);
             }
         }
 
@@ -363,13 +366,23 @@ namespace EliteMonitor.Journal
             List<JournalEntry> _entries = c.JournalEntries;
             List<ListViewItem> entries = new List<ListViewItem>();
             int x = 0;
+            int lastPercent = 0;
             foreach (JournalEntry j in _entries)
             {
-                if (Properties.Settings.Default.showJournalUpdateStatus && (x++ == 1 || x % 100 == 0 || x == _entries.Count))
-                    mainForm.appStatus.Text = $"Processing Journal entry {String.Format("{0:n0}", x)} of {String.Format("{0:n0}", _entries.Count)}";
+                double percent = ((double)x++ / (double)_entries.Count) * 100.00;
+                //Console.WriteLine(percent + " / " + lastPercent);
+                if (percent > lastPercent)
+                {
+                    lastPercent = (int)percent;
+                    mainForm.appStatus.Text = String.Format("Loading commander data for '{0}' ({1:n0}%)", c.Name, percent);
+                }
+
+                /*if (Properties.Settings.Default.showJournalUpdateStatus && (x++ == 1 || x % 100 == 0 || x == _entries.Count))
+                    mainForm.appStatus.Text = $"Processing Journal entry {String.Format("{0:n0}", x)} of {String.Format("{0:n0}", _entries.Count)}";*/
                 ListViewItem lvi = getListViewEntryForEntry(j);
                 entries.Add(lvi);
             }
+            mainForm.appStatus.Text = String.Format("Finalising commander data for '{0}'", c.Name);
             entries.Reverse();
             mainForm.comboCommanderList.InvokeIfRequired(() => mainForm.comboCommanderList.SelectedIndex = mainForm.comboCommanderList.Items.IndexOf(c.Name));
             mainForm.eventList.InvokeIfRequired(() =>
@@ -402,7 +415,7 @@ namespace EliteMonitor.Journal
             mainForm.setAppStatusText("Ready.");
         }
 
-        private ListViewItem getListViewEntryForEntry(JournalEntry j)
+        public ListViewItem getListViewEntryForEntry(JournalEntry j)
         {
             ListViewItem lvi = new ListViewItem(new string[] { j.Timestamp, j.Event, j.Data, j.Notes });
             lvi.ToolTipText = j.Json;
@@ -432,7 +445,7 @@ namespace EliteMonitor.Journal
             path = Environment.ExpandEnvironmentVariables(path);
 
             fileSystemWatcher = new FileSystemWatcher(path);
-            fileSystemWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.Size;
+            fileSystemWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite/* | NotifyFilters.Size*/;
             fileSystemWatcher.Changed += fileChanged;
             fileSystemWatcher.Filter = "Journal*.log";
             fileSystemWatcher.EnableRaisingEvents = true;
@@ -454,6 +467,7 @@ namespace EliteMonitor.Journal
         {
 
             // TODO: Update (properly) for multi-commander(?)
+            // { "timestamp":"2017-02-13T16:55:19Z", "event":"TestEvent", "Data":"TEST_EVENT" }
 
             this.logger.Log($"Reading file {file} ({fileName}) from offset {offset}");
             using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -470,13 +484,13 @@ namespace EliteMonitor.Journal
                         mainForm.cacheController._journalLengthCache[fileName] = fs.Position;
                         Commander c;
                         JournalEntry j = parseEvent(s, out c);
-                        c.Journal.Add(s);
-                        c.JournalEntries.Add(j);
-                        if (viewedCommander == c)
+                        c.addJournalEntry(j);
+                        Console.WriteLine(c.Name);
+                        /*if (viewedCommander == c)
                         {
                             ListViewItem lvi = getListViewEntryForEntry(j);
-                            mainForm.eventList.Items.Insert(0, lvi);
-                        }
+                            mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.Items.Insert(0, lvi));
+                        }*/
                     }
                 }
             }

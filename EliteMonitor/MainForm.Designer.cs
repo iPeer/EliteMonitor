@@ -31,6 +31,8 @@
             this.components = new System.ComponentModel.Container();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.appStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.eliteRunningStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.appVersionStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -76,8 +78,6 @@
             this.eventFilterDropdown = new System.Windows.Forms.ComboBox();
             this.pickCommanderLabel = new System.Windows.Forms.Label();
             this.comboCommanderList = new System.Windows.Forms.ComboBox();
-            this.appVersionStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.eliteRunningStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
@@ -104,10 +104,23 @@
             // appStatus
             // 
             this.appStatus.Name = "appStatus";
-            this.appStatus.Size = new System.Drawing.Size(667, 17);
+            this.appStatus.Size = new System.Drawing.Size(698, 17);
             this.appStatus.Spring = true;
             this.appStatus.Text = "Starting up...";
             this.appStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // eliteRunningStatus
+            // 
+            this.eliteRunningStatus.Name = "eliteRunningStatus";
+            this.eliteRunningStatus.Size = new System.Drawing.Size(169, 17);
+            this.eliteRunningStatus.Text = "Elite: Dangerous is not running";
+            // 
+            // appVersionStatusLabel
+            // 
+            this.appVersionStatusLabel.Enabled = false;
+            this.appVersionStatusLabel.Name = "appVersionStatusLabel";
+            this.appVersionStatusLabel.Size = new System.Drawing.Size(84, 17);
+            this.appVersionStatusLabel.Text = "{APPVERSION}";
             // 
             // menuStrip1
             // 
@@ -136,7 +149,7 @@
             this.applicationSettingsToolStripMenuItem,
             this.cachingToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
             this.settingsToolStripMenuItem.Text = "&Settings";
             // 
             // applicationSettingsToolStripMenuItem
@@ -179,7 +192,7 @@
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -194,7 +207,7 @@
             // launchEliteToolStripMenuItem
             // 
             this.launchEliteToolStripMenuItem.Name = "launchEliteToolStripMenuItem";
-            this.launchEliteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.launchEliteToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.launchEliteToolStripMenuItem.Text = "Launch Elite";
             // 
             // eDMCToolStripMenuItem
@@ -546,7 +559,6 @@
             this.eventFilterDropdown.Location = new System.Drawing.Point(100, 250);
             this.eventFilterDropdown.Name = "eventFilterDropdown";
             this.eventFilterDropdown.Size = new System.Drawing.Size(169, 21);
-            this.eventFilterDropdown.Sorted = true;
             this.eventFilterDropdown.TabIndex = 5;
             this.eventFilterDropdown.ValueMember = "None";
             this.eventFilterDropdown.SelectionChangeCommitted += new System.EventHandler(this.eventFilterDropdown_SelectionChangeCommitted);
@@ -572,19 +584,6 @@
             this.comboCommanderList.TabIndex = 7;
             this.comboCommanderList.ValueMember = "None";
             this.comboCommanderList.SelectionChangeCommitted += new System.EventHandler(this.comboCommanderList_SelectionChangeCommitted);
-            // 
-            // appVersionStatusLabel
-            // 
-            this.appVersionStatusLabel.Enabled = false;
-            this.appVersionStatusLabel.Name = "appVersionStatusLabel";
-            this.appVersionStatusLabel.Size = new System.Drawing.Size(84, 17);
-            this.appVersionStatusLabel.Text = "{APPVERSION}";
-            // 
-            // eliteRunningStatus
-            // 
-            this.eliteRunningStatus.Name = "eliteRunningStatus";
-            this.eliteRunningStatus.Size = new System.Drawing.Size(169, 17);
-            this.eliteRunningStatus.Text = "Elite: Dangerous is not running";
             // 
             // MainForm
             // 

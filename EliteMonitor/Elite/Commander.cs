@@ -1,4 +1,5 @@
 ﻿using EliteMonitor.Extensions;
+using EliteMonitor.Utilities;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -15,9 +16,13 @@ namespace EliteMonitor.Elite
 
         //[JsonIgnore]
         public List<JournalEntry> JournalEntries { get; set; } = new List<JournalEntry>();
+        public List<string> EventsList { get; set; } = new List<string>();
         [JsonIgnore]
+        [Obsolete("No longer needed", true)]
         public List<string> Journal { get; set; } = new List<string>();
         public Dictionary<string, int> Materials { get; set; } = new Dictionary<string, int>();
+        public int cacheVersion = Utils.getBuildNumber();
+        public long nextId = 0;
         [JsonIgnore]
         public bool isActive
         {
@@ -28,7 +33,7 @@ namespace EliteMonitor.Elite
         }
         public bool isViewed { get; set; } = false;
         public string Name { get; set; }
-        public int Credits { get; set; }
+        public long Credits { get; set; }
         public string Ship { get; set; }
         [JsonIgnore] // We don't need to save this because it's kind of irrelevant
         public string PrivateGroup { get; set; } = "";
@@ -106,7 +111,7 @@ namespace EliteMonitor.Elite
             this.Name = name;
         }
 
-        public Commander setBasicInfo(string ship, int credits, string privateGroup)
+        public Commander setBasicInfo(string ship, long credits, string privateGroup)
         {
             this.Ship = ship;
             this.Credits = credits;
@@ -138,6 +143,7 @@ namespace EliteMonitor.Elite
 
         public void saveData()
         {
+            this.OnSave();
             string commanderSavePath = Path.Combine(MainForm.Instance.cacheController.cachePath, $"journal_{this.Name}.emc");
             using (StreamWriter sw = new StreamWriter(commanderSavePath, false, Encoding.UTF8))
             {
@@ -145,13 +151,13 @@ namespace EliteMonitor.Elite
             }
         }
 
-        public Commander deductCredits(int credits)
+        public Commander deductCredits(long credits)
         {
             this.Credits -= credits;
             return this;
         }
 
-        public Commander addCredits(int credits)
+        public Commander addCredits(long credits)
         {
             this.Credits += credits;
             return this;
@@ -177,6 +183,7 @@ namespace EliteMonitor.Elite
             return this;
         }
 
+        [Obsolete]
         public Commander addEvent(string @event)
         {
             if (!this.Journal.Contains(@event))
@@ -286,6 +293,62 @@ namespace EliteMonitor.Elite
             m.cqcRankProgress.InvokeIfRequired(() => m.cqcRankProgress.Value = this.cqcProgress);
             m.fedRankProgress.InvokeIfRequired(() => m.fedRankProgress.Value = this.federationProgress);
             m.empireRankProgress.InvokeIfRequired(() => m.empireRankProgress.Value = this.imperialProgress);
+
+            // Event Type list
+
+            updateEventListDropdown();
+
+        }
+
+        public void updateEventListDropdown()
+        {
+            MainForm m = MainForm.Instance;
+            List<string> tmp = new List<string>(this.EventsList);
+            tmp.Sort();
+            tmp.Insert(0, "NONE");
+            m.eventFilterDropdown.InvokeIfRequired(() =>
+            {
+                m.eventFilterDropdown.Items.Clear();
+                m.eventFilterDropdown.Items.AddRange(tmp.ToArray());
+                m.eventFilterDropdown.SelectedIndex = 0;
+            });
+        }
+
+        public Commander addJournalEntry(JournalEntry je, bool checkDuplicates = false)
+        {
+            if (!checkDuplicates || (checkDuplicates && !this.JournalEntries.Contains(je)))
+            {
+                if (!this.EventsList.Contains(je.Event))
+                {
+                    this.EventsList.Add(je.Event);
+                    if (this.isViewed)
+                        this.updateEventListDropdown();
+                }
+                je.ID = this.nextId++;
+                this.JournalEntries.Add(je);
+                if (this.isViewed)
+                {
+                    this.updateDialogDisplays();
+                    MainForm m = MainForm.Instance;
+                    m.eventList.InvokeIfRequired(() => m.eventList.Items.Insert(0, m.journalParser.getListViewEntryForEntry(je)));
+                }
+            }
+
+            return this;
+        }
+        /// <summary>
+        /// Do things before saving commander data here
+        /// </summary>
+        public void OnSave()
+        {
+            this.cacheVersion = Utils.getBuildNumber();
+        }
+
+        /// <summary>
+        /// Do things after loading commander data here
+        /// </summary>
+        public void OnLoad()
+        {
 
         }
     }

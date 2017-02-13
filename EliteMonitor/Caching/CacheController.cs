@@ -150,7 +150,8 @@ namespace EliteMonitor.Caching
             using (StreamReader sr = new StreamReader(filePath, Encoding.UTF8))
             {
                 Commander c = JsonConvert.DeserializeObject<Commander>(sr.ReadToEnd());
-                logger.Log("Loaded Commander data for commander '{0}' - Entries: {1:n0}", LogLevel.DEBUG, c.Name, c.Journal.Count);
+                logger.Log("Loaded Commander data for commander '{0}' - Entries: {1:n0}", LogLevel.DEBUG, c.Name, c.JournalEntries.Count);
+                c.OnLoad();
                 return c;
             }
         }
@@ -176,7 +177,7 @@ namespace EliteMonitor.Caching
                     return false;
                 }
                 Commander c = loadCommanderFromFile(commanderPath);
-                this.logger.Log("Checking for unknown event and updating them where necessary...");
+                this.logger.Log("Checking for unknown events and updating them where necessary...");
                 int updated = 0;
                 List<JournalEntry> needsUpdating = c.JournalEntries.FindAll(j => !j.isKnown);
                 foreach (JournalEntry je in needsUpdating)

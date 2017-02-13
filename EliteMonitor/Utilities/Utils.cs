@@ -23,6 +23,12 @@ namespace EliteMonitor.Utilities
             return FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion;
         }
 
+        public static int getBuildNumber()
+        {
+            Version v = new Version(getApplicationVersion());
+            return v.Revision;
+        }
+
         public static string getApplicationEXEFolderPath()
         {
             return AppDomain.CurrentDomain.BaseDirectory;
