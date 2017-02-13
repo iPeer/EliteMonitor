@@ -1,0 +1,29 @@
+﻿<#@ template language="C#" hostSpecific="True"#>
+<#@ output extension="cs" #>
+<#@ import namespace="System.IO" #>
+<#
+    int revisionNumber;
+    try
+    {
+        using(var f = File.OpenText(Host.ResolvePath("AssemblyFileData.cs")))
+        {
+            string s = f.ReadLine().Replace("//","");
+            revisionNumber = int.Parse(s) + 1; 
+        }
+    }catch
+    {     
+        revisionNumber = 0; 
+    }
+
+	string buildTimeString = String.Format(@"{0:yyyy-MM-dd\THH:mm:ss\Z}", DateTime.UtcNow);
+
+#>
+//<#=revisionNumber#>
+// 
+// This code is automatically generated at build time. Any edits made to this file should be instead applied to its template (AssemblyFileData.tt)
+// 
+
+using System.Reflection;
+using EliteMonitor.Utilities;
+[assembly: AssemblyFileVersion("1.0.0.<#= revisionNumber #>")]
+[assembly: AssemblyBuildTime("<#= buildTimeString #>")]
