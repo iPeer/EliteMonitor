@@ -39,6 +39,7 @@ namespace EliteMonitor
         private int minVal = 0;
 
         private Image hud = Properties.Resources.elitehud;
+        private Image currentHUD;
 
         public HUDEditor()
         {
@@ -235,7 +236,6 @@ namespace EliteMonitor
         private void applyMatrixToHud(float[][] matrix)
         {
 
-            // TODO FIXME: There is a pretty bad memory leak here.
 
             StringBuilder sb = new StringBuilder();
             int f1 = 0;
@@ -258,14 +258,11 @@ namespace EliteMonitor
             ImageAttributes at = new ImageAttributes();
             ColorMatrix cm = new ColorMatrix(matrix);
             at.SetColorMatrix(cm, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-            Bitmap newBitmap = new Bitmap(this.hud);
-            using (Graphics g = Graphics.FromImage(newBitmap))
             {
                 g.DrawImage(this.hud, new Rectangle(0, 0, hud.Width, hud.Height), 0, 0, hud.Width, hud.Height, GraphicsUnit.Pixel, at);
                 g.DrawString("PLACEHOLDER IMAGE", new Font(this.Font.FontFamily, this.Font.Size, FontStyle.Bold), Brushes.Red, new Rectangle(0, 0, hud.Width, hud.Height));
                 g.Flush();
             }
-            this.pictureBox1.Image = newBitmap;
 
         }
 
