@@ -244,5 +244,11 @@ namespace EliteMonitor
         {
             this.Close();
         }
+
+        private void hUDEditorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+                HUDEditor hud = new HUDEditor();
+                hud.Show(this);
+        }
     }
 }

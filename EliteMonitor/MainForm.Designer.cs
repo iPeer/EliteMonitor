@@ -44,15 +44,16 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eliteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.launchEliteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hUDEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eDMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.launchEDMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.commanderBox = new System.Windows.Forms.GroupBox();
             this.empireRankProgress = new System.Windows.Forms.ProgressBar();
             this.empireRankName = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.empireRankImage = new System.Windows.Forms.PictureBox();
             this.fedRankProgress = new System.Windows.Forms.ProgressBar();
             this.fedRankName = new System.Windows.Forms.Label();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.federationRankImage = new System.Windows.Forms.PictureBox();
             this.cqcRankProgress = new System.Windows.Forms.ProgressBar();
             this.cqcRankName = new System.Windows.Forms.Label();
             this.cqcRankImage = new System.Windows.Forms.PictureBox();
@@ -81,8 +82,8 @@
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.empireRankImage)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.federationRankImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cqcRankImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.exploreRankImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tradeRankImage)).BeginInit();
@@ -199,7 +200,8 @@
             // eliteToolStripMenuItem
             // 
             this.eliteToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.launchEliteToolStripMenuItem});
+            this.launchEliteToolStripMenuItem,
+            this.hUDEditorToolStripMenuItem});
             this.eliteToolStripMenuItem.Name = "eliteToolStripMenuItem";
             this.eliteToolStripMenuItem.Size = new System.Drawing.Size(41, 20);
             this.eliteToolStripMenuItem.Text = "Elite";
@@ -209,6 +211,13 @@
             this.launchEliteToolStripMenuItem.Name = "launchEliteToolStripMenuItem";
             this.launchEliteToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.launchEliteToolStripMenuItem.Text = "Launch Elite";
+            // 
+            // hUDEditorToolStripMenuItem
+            // 
+            this.hUDEditorToolStripMenuItem.Name = "hUDEditorToolStripMenuItem";
+            this.hUDEditorToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.hUDEditorToolStripMenuItem.Text = "HUD Editor";
+            this.hUDEditorToolStripMenuItem.Click += new System.EventHandler(this.hUDEditorToolStripMenuItem_Click);
             // 
             // eDMCToolStripMenuItem
             // 
@@ -231,10 +240,10 @@
             this.commanderBox.BackColor = System.Drawing.SystemColors.Control;
             this.commanderBox.Controls.Add(this.empireRankProgress);
             this.commanderBox.Controls.Add(this.empireRankName);
-            this.commanderBox.Controls.Add(this.pictureBox1);
+            this.commanderBox.Controls.Add(this.empireRankImage);
             this.commanderBox.Controls.Add(this.fedRankProgress);
             this.commanderBox.Controls.Add(this.fedRankName);
-            this.commanderBox.Controls.Add(this.pictureBox2);
+            this.commanderBox.Controls.Add(this.federationRankImage);
             this.commanderBox.Controls.Add(this.cqcRankProgress);
             this.commanderBox.Controls.Add(this.cqcRankName);
             this.commanderBox.Controls.Add(this.cqcRankImage);
@@ -279,19 +288,19 @@
             this.empireRankName.Text = "None";
             this.empireRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
-            // pictureBox1
+            // empireRankImage
             // 
-            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox1.Image = global::EliteMonitor.Properties.Resources.empire;
-            this.pictureBox1.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.pictureBox1.Location = new System.Drawing.Point(656, 47);
-            this.pictureBox1.MaximumSize = new System.Drawing.Size(137, 120);
-            this.pictureBox1.MinimumSize = new System.Drawing.Size(137, 120);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(137, 120);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox1.TabIndex = 18;
-            this.pictureBox1.TabStop = false;
+            this.empireRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.empireRankImage.Image = global::EliteMonitor.Properties.Resources.empire;
+            this.empireRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.empireRankImage.Location = new System.Drawing.Point(656, 47);
+            this.empireRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.empireRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.empireRankImage.Name = "empireRankImage";
+            this.empireRankImage.Size = new System.Drawing.Size(137, 120);
+            this.empireRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.empireRankImage.TabIndex = 18;
+            this.empireRankImage.TabStop = false;
             // 
             // fedRankProgress
             // 
@@ -316,20 +325,20 @@
             this.fedRankName.Text = "None";
             this.fedRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
-            // pictureBox2
+            // federationRankImage
             // 
-            this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox2.BackColor = System.Drawing.SystemColors.Control;
-            this.pictureBox2.Image = global::EliteMonitor.Properties.Resources.federation;
-            this.pictureBox2.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.pictureBox2.Location = new System.Drawing.Point(513, 47);
-            this.pictureBox2.MaximumSize = new System.Drawing.Size(137, 120);
-            this.pictureBox2.MinimumSize = new System.Drawing.Size(137, 120);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(137, 120);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox2.TabIndex = 15;
-            this.pictureBox2.TabStop = false;
+            this.federationRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.federationRankImage.BackColor = System.Drawing.SystemColors.Control;
+            this.federationRankImage.Image = global::EliteMonitor.Properties.Resources.federation;
+            this.federationRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.federationRankImage.Location = new System.Drawing.Point(513, 47);
+            this.federationRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.federationRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.federationRankImage.Name = "federationRankImage";
+            this.federationRankImage.Size = new System.Drawing.Size(137, 120);
+            this.federationRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.federationRankImage.TabIndex = 15;
+            this.federationRankImage.TabStop = false;
             // 
             // cqcRankProgress
             // 
@@ -612,8 +621,8 @@
             this.menuStrip1.PerformLayout();
             this.commanderBox.ResumeLayout(false);
             this.commanderBox.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.empireRankImage)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.federationRankImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.cqcRankImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.exploreRankImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tradeRankImage)).EndInit();
@@ -657,10 +666,10 @@
         private System.Windows.Forms.ColumnHeader AdditionalData;
         public System.Windows.Forms.ProgressBar empireRankProgress;
         public System.Windows.Forms.Label empireRankName;
-        public System.Windows.Forms.PictureBox pictureBox1;
+        public System.Windows.Forms.PictureBox empireRankImage;
         public System.Windows.Forms.ProgressBar fedRankProgress;
         public System.Windows.Forms.Label fedRankName;
-        public System.Windows.Forms.PictureBox pictureBox2;
+        public System.Windows.Forms.PictureBox federationRankImage;
         public System.Windows.Forms.ToolStripStatusLabel appStatus;
         private System.Windows.Forms.ToolTip toolTip;
         public System.Windows.Forms.ListView eventList;
@@ -674,6 +683,7 @@
         public System.Windows.Forms.ComboBox comboCommanderList;
         private System.Windows.Forms.ToolStripStatusLabel appVersionStatusLabel;
         private System.Windows.Forms.ToolStripStatusLabel eliteRunningStatus;
+        private System.Windows.Forms.ToolStripMenuItem hUDEditorToolStripMenuItem;
     }
 }
 

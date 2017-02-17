@@ -73,6 +73,16 @@ namespace EliteMonitor.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap elitehud {
+            get {
+                object obj = ResourceManager.GetObject("elitehud", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap empire {
             get {
                 object obj = ResourceManager.GetObject("empire", resourceCulture);

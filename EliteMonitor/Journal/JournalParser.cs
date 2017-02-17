@@ -175,9 +175,16 @@ namespace EliteMonitor.Journal
                     case "DockingGranted":
                         return new JournalEntry(timestamp, @event, $"Docking granted on pad {(string)j["LandingPad"]} at {(string)j["StationName"]}", j);
                     case "Docked":
-                        return new JournalEntry(timestamp, @event, $"Docked at {(string)j["StationName"]} ({(string)j["StationType"]}) in {(string)j["StarSystem"]}", j);
+                        string stationName = (string)j["StationName"];
+                        string stationType = (string)j["StationType"];
+                        string starSystem = (string)j["StarSystem"];
+                        string eventText = String.Format("Docked at {0}{1} in {2}", stationName, stationType == null || stationType.Equals(string.Empty) ? "" : $" ({stationType})", starSystem);
+                        return new JournalEntry(timestamp, @event, eventText, j);
                     case "Undocked":
-                        return new JournalEntry(timestamp, @event, $"Undocked from {(string)j["StationName"]} ({(string)j["StationType"]})", j);
+                        stationName = (string)j["StationName"];
+                        stationType = (string)j["StationType"];
+                        eventText = String.Format("Undocked from {0}{1}", stationName, stationType == null || stationType.Equals(string.Empty) ? "" : $" ({stationType})");
+                        return new JournalEntry(timestamp, @event, eventText, j);
                     case "RefuelPartial": // Legacy
                     case "RefuelAll":
                         long cost = (long)j["Cost"];
@@ -283,11 +290,12 @@ namespace EliteMonitor.Journal
             FileInfo[] fileInfo = di.GetFiles().OrderBy(f => f.CreationTime).ToArray();
             mainForm.cacheController._journalLengthCache.Clear();
             List<string> allJournalEntries = new List<string>();
+            int x = 0;
             foreach (FileInfo _file in fileInfo)
             {
                 string file = _file.FullName;
                 mainForm.cacheController._journalLengthCache.Add(_file.Name, _file.Length);
-                mainForm.appStatus.Text = $"Parsing Journal file: {file}...";
+                mainForm.appStatus.Text = $"Parsing Journal file ({x++}/{fileInfo.Length}): {file}...";
                 using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))

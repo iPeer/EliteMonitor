@@ -67,6 +67,12 @@
     <Compile Include="Extensions\ControlExtensions.cs" />
     <Compile Include="Extensions\ListViewExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="HUDEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HUDEditor.Designer.cs">
+      <DependentUpon>HUDEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Journal\JournalParser.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -79,6 +85,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\Utils.cs" />
+    <EmbeddedResource Include="HUDEditor.resx">
+      <DependentUpon>HUDEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -111,6 +120,7 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AssemblyFileData.cs</LastGenOutput>
     </Content>
+    <None Include="Resources\elitehud.jpg" />
     <None Include="Resources\federation.png" />
     <None Include="Resources\empire.png" />
     <None Include="Resources\alliance.png" />

@@ -28,10 +28,10 @@ namespace EliteMonitor
             {
                 string crashLogDirectory = Path.Combine(Utils.getApplicationEXEFolderPath(), "crashes");
                 Directory.CreateDirectory(crashLogDirectory);
-                string crashFile = Path.Combine(crashLogDirectory, string.Format("{0}.log", new DateTime().ToString("YYYYMMdd-HHmmss")));
+                string crashFile = Path.Combine(crashLogDirectory, string.Format("{0}.log", DateTime.Now.ToString("yyyyMMdd-HHmmss")));
                 using (StreamWriter sw = new StreamWriter(crashFile))
                 {
-                    sw.WriteLine(String.Format("Application crashed at {0}", new DateTime().ToLongTimeString()));
+                    sw.WriteLine(String.Format("Application crashed at {0}", DateTime.Now.ToString("HH:mm:ss")));
                     sw.WriteLine(String.Format("Application version: {0}, built: {1}", Utils.getApplicationVersion(), Utils.getAssemblyBuildTime()));
                     sw.WriteLine(e.Message);
                     sw.WriteLine(e.StackTrace);
