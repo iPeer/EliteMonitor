@@ -474,9 +474,6 @@ namespace EliteMonitor.Journal
         private void readFileFromByteOffset(string file, string fileName, long offset = 0)
         {
 
-            // TODO: Update (properly) for multi-commander(?)
-            // { "timestamp":"2017-02-13T16:55:19Z", "event":"TestEvent", "Data":"TEST_EVENT" }
-
             this.logger.Log($"Reading file {file} ({fileName}) from offset {offset}");
             using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {

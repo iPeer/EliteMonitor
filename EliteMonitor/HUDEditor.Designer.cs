@@ -59,6 +59,8 @@
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton3 = new System.Windows.Forms.RadioButton();
+            this.matrixTextBox = new System.Windows.Forms.RichTextBox();
+            this.label8 = new System.Windows.Forms.Label();
             this.debugLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarRR)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarRG)).BeginInit();
@@ -338,10 +340,11 @@
             // 
             this.panel1.AutoScroll = true;
             this.panel1.AutoSize = true;
+            this.panel1.Controls.Add(this.debugLabel);
             this.panel1.Controls.Add(this.pictureBox1);
             this.panel1.Location = new System.Drawing.Point(12, 12);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1280, 720);
+            this.panel1.Size = new System.Drawing.Size(1283, 720);
             this.panel1.TabIndex = 27;
             // 
             // label7
@@ -364,7 +367,7 @@
             this.radioButton1.TabStop = true;
             this.radioButton1.Text = "0-100";
             this.radioButton1.UseVisualStyleBackColor = true;
-            this.radioButton1.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
+            this.radioButton1.Click += new System.EventHandler(this.radioButton1_Click);
             // 
             // radioButton2
             // 
@@ -375,7 +378,7 @@
             this.radioButton2.TabIndex = 30;
             this.radioButton2.Text = "-100-100";
             this.radioButton2.UseVisualStyleBackColor = true;
-            this.radioButton2.CheckedChanged += new System.EventHandler(this.radioButton2_CheckedChanged);
+            this.radioButton2.Click += new System.EventHandler(this.radioButton2_Click);
             // 
             // radioButton3
             // 
@@ -386,22 +389,45 @@
             this.radioButton3.TabIndex = 31;
             this.radioButton3.Text = "-200-200";
             this.radioButton3.UseVisualStyleBackColor = true;
-            this.radioButton3.CheckedChanged += new System.EventHandler(this.radioButton3_CheckedChanged);
+            this.radioButton3.Click += new System.EventHandler(this.radioButton3_Click);
+            // 
+            // matrixTextBox
+            // 
+            this.matrixTextBox.Location = new System.Drawing.Point(727, 776);
+            this.matrixTextBox.Name = "matrixTextBox";
+            this.matrixTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
+            this.matrixTextBox.Size = new System.Drawing.Size(263, 51);
+            this.matrixTextBox.TabIndex = 33;
+            this.matrixTextBox.Text = "<MatrixRed> 1, 0, 0 </MatrixRed>\n<MatrixGreen> 0, 1, 0 </MatrixGreen>\n<MatrixBlue" +
+    "> 0, 0, 1 </MatrixBlue>";
+            this.matrixTextBox.TextChanged += new System.EventHandler(this.matrixTextBox_TextChanged);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.Location = new System.Drawing.Point(725, 760);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(151, 13);
+            this.label8.TabIndex = 34;
+            this.label8.Text = "Import via existing matrix:";
             // 
             // debugLabel
             // 
-            this.debugLabel.AutoSize = true;
-            this.debugLabel.Location = new System.Drawing.Point(734, 748);
+            this.debugLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.debugLabel.Location = new System.Drawing.Point(1140, 0);
             this.debugLabel.Name = "debugLabel";
-            this.debugLabel.Size = new System.Drawing.Size(0, 13);
-            this.debugLabel.TabIndex = 32;
+            this.debugLabel.Size = new System.Drawing.Size(140, 64);
+            this.debugLabel.TabIndex = 1;
+            this.debugLabel.Text = "{debug data}";
             // 
             // HUDEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1303, 851);
-            this.Controls.Add(this.debugLabel);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.matrixTextBox);
             this.Controls.Add(this.radioButton3);
             this.Controls.Add(this.radioButton2);
             this.Controls.Add(this.radioButton1);
@@ -489,6 +515,8 @@
         private System.Windows.Forms.RadioButton radioButton1;
         private System.Windows.Forms.RadioButton radioButton2;
         private System.Windows.Forms.RadioButton radioButton3;
+        private System.Windows.Forms.RichTextBox matrixTextBox;
         private System.Windows.Forms.Label debugLabel;
+        private System.Windows.Forms.Label label8;
     }
 }

@@ -59,7 +59,6 @@ namespace EliteMonitor.Caching
 
         internal void verifyFileLengths()
         {
-            // TODO: Finish
             this.logger.Log("Verifying Journal file lengths...");
             string journalPath = EliteUtils.JOURNAL_PATH;
             journalPath = Environment.ExpandEnvironmentVariables(journalPath);
@@ -159,7 +158,6 @@ namespace EliteMonitor.Caching
         public bool loadCaches()
         {
 
-            // TODO update caching for new save methods
             this.logger.Log("Loading commander cache list...");
             this.commanderCaches.Clear();
             using (StreamReader sr = new StreamReader(this.commandersPath, Encoding.UTF8))

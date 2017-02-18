@@ -22,7 +22,8 @@ namespace EliteMonitor
 
     public partial class HUDEditor : Form
     {
-
+        private bool dontProcessMatrixText = false;
+        private bool updateInProgress = false;
         private float[][] hudMatrix =
         {   
             //          RR, GR, BR
@@ -31,12 +32,14 @@ namespace EliteMonitor
             new float[] { 0, 1, 0, 0, 0 }, // G
             //          BR, BG, BB
             new float[] { 0, 0, 1, 0, 0 }, // B
-            new float[] { 0,  0,  0,  1F, 0}, // ??
-            new float[] { 0, 0, 0, 0, 1F } // ??
+            new float[] { 0, 0, 0, 1, 0 }, // ??
+            new float[] { 0, 0, 0, 0, 1 } // ??
         };
 
         private int maxVal = 100;
         private int minVal = 0;
+
+        private Ranges currentRange = Ranges.M0P100;
 
         private Image hud = Properties.Resources.elitehud;
         private Image currentHUD;
@@ -44,40 +47,80 @@ namespace EliteMonitor
         public HUDEditor()
         {
             InitializeComponent();
+#if RELEASE
+            this.debugLabel.Visible = false;
+#endif
             /*this.pictureBox1.Image = applyMatrixToHud(hudMatrix);*/
             applyMatrixToHud(hudMatrix);
             updateSlidersAndTextBoxes();
+            updateMatrixTextBox();
 
         }
 
-        private void switchRange(Ranges range)
+        private void switchRange(Ranges range, bool updateSliders = true) // Holy cow.
         {
             if (range == Ranges.M0P100)
             {
+                if (this.trackBarRR.Value < 0)
+                    this.trackBarRR.Value = 0;
+                if (this.trackBarRR.Value > 100)
+                    this.trackBarRR.Value = 100;
                 this.trackBarRR.Minimum = 0;
                 this.trackBarRR.Maximum = 100;
 
+                if (this.trackBarRG.Value < 0)
+                    this.trackBarRG.Value = 0;
+                if (this.trackBarRG.Value > 100)
+                    this.trackBarRG.Value = 100;
                 this.trackBarRG.Minimum = 0;
                 this.trackBarRG.Maximum = 100;
 
+                if (this.trackBarRB.Value < 0)
+                    this.trackBarRB.Value = 0;
+                if (this.trackBarRB.Value > 100)
+                    this.trackBarRB.Value = 100;
                 this.trackBarRB.Minimum = 0;
                 this.trackBarRB.Maximum = 100;
 
+                if (this.trackBarGR.Value < 0)
+                    this.trackBarGR.Value = 0;
+                if (this.trackBarGR.Value > 100)
+                    this.trackBarGR.Value = 100;
                 this.trackBarGR.Minimum = 0;
                 this.trackBarGR.Maximum = 100;
 
+                if (this.trackBarGG.Value < 0)
+                    this.trackBarGG.Value = 0;
+                if (this.trackBarGG.Value > 100)
+                    this.trackBarGG.Value = 100;
                 this.trackBarGG.Minimum = 0;
                 this.trackBarGG.Maximum = 100;
 
+                if (this.trackBarGB.Value < 0)
+                    this.trackBarGB.Value = 0;
+                if (this.trackBarGB.Value > 100)
+                    this.trackBarGB.Value = 100;
                 this.trackBarGB.Minimum = 0;
                 this.trackBarGB.Maximum = 100;
 
+                if (this.trackBarBR.Value < 0)
+                    this.trackBarBR.Value = 0;
+                if (this.trackBarBR.Value > 100)
+                    this.trackBarBR.Value = 100;
                 this.trackBarBR.Minimum = 0;
                 this.trackBarBR.Maximum = 100;
 
+                if (this.trackBarBG.Value < 0)
+                    this.trackBarBG.Value = 0;
+                if (this.trackBarBG.Value > 100)
+                    this.trackBarBG.Value = 100;
                 this.trackBarBG.Minimum = 0;
                 this.trackBarBG.Maximum = 100;
 
+                if (this.trackBarBB.Value < 0)
+                    this.trackBarBB.Value = 0;
+                if (this.trackBarBB.Value > 100)
+                    this.trackBarBB.Value = 100;
                 this.trackBarBB.Minimum = 0;
                 this.trackBarBB.Maximum = 100;
 
@@ -86,30 +129,66 @@ namespace EliteMonitor
             }
             else if (range == Ranges.M100P100)
             {
+                if (this.trackBarRR.Value < -100)
+                    this.trackBarRR.Value = -100;
+                if (this.trackBarRR.Value > 100)
+                    this.trackBarRR.Value = 100;
                 this.trackBarRR.Minimum = -100;
                 this.trackBarRR.Maximum = 100;
 
+                if (this.trackBarRG.Value < -100)
+                    this.trackBarRG.Value = -100;
+                if (this.trackBarRG.Value > 100)
+                    this.trackBarRG.Value = 100;
                 this.trackBarRG.Minimum = -100;
                 this.trackBarRG.Maximum = 100;
 
+                if (this.trackBarRB.Value < -100)
+                    this.trackBarRB.Value = -100;
+                if (this.trackBarRB.Value > 100)
+                    this.trackBarRB.Value = 100;
                 this.trackBarRB.Minimum = -100;
                 this.trackBarRB.Maximum = 100;
 
+                if (this.trackBarGR.Value < -100)
+                    this.trackBarGR.Value = -100;
+                if (this.trackBarGR.Value > 100)
+                    this.trackBarGR.Value = 100;
                 this.trackBarGR.Minimum = -100;
                 this.trackBarGR.Maximum = 100;
 
+                if (this.trackBarGG.Value < -100)
+                    this.trackBarGG.Value = -100;
+                if (this.trackBarGG.Value > 100)
+                    this.trackBarGG.Value = 100;
                 this.trackBarGG.Minimum = -100;
                 this.trackBarGG.Maximum = 100;
 
+                if (this.trackBarGB.Value < -100)
+                    this.trackBarGB.Value = -100;
+                if (this.trackBarGB.Value > 100)
+                    this.trackBarGB.Value = 100;
                 this.trackBarGB.Minimum = -100;
                 this.trackBarGB.Maximum = 100;
 
+                if (this.trackBarBR.Value < -100)
+                    this.trackBarBR.Value = -100;
+                if (this.trackBarBR.Value > 100)
+                    this.trackBarBR.Value = 100;
                 this.trackBarBR.Minimum = -100;
                 this.trackBarBR.Maximum = 100;
 
+                if (this.trackBarBG.Value < -100)
+                    this.trackBarBG.Value = -100;
+                if (this.trackBarBG.Value > 100)
+                    this.trackBarBG.Value = 100;
                 this.trackBarBG.Minimum = -100;
                 this.trackBarBG.Maximum = 100;
 
+                if (this.trackBarBB.Value < -100)
+                    this.trackBarBB.Value = -100;
+                if (this.trackBarBB.Value > 100)
+                    this.trackBarBB.Value = 100;
                 this.trackBarBB.Minimum = -100;
                 this.trackBarBB.Maximum = 100;
 
@@ -118,37 +197,79 @@ namespace EliteMonitor
             }
             else if (range == Ranges.M200P200)
             {
+                if (this.trackBarRR.Value < -200)
+                    this.trackBarRR.Value = -200;
+                if (this.trackBarRR.Value > 200)
+                    this.trackBarRR.Value = 200;
                 this.trackBarRR.Minimum = -200;
                 this.trackBarRR.Maximum = 200;
 
+                if (this.trackBarRG.Value < -200)
+                    this.trackBarRG.Value = -200;
+                if (this.trackBarRG.Value > 200)
+                    this.trackBarRG.Value = 200;
                 this.trackBarRG.Minimum = -200;
                 this.trackBarRG.Maximum = 200;
 
+                if (this.trackBarRB.Value < -200)
+                    this.trackBarRB.Value = -200;
+                if (this.trackBarRB.Value > 200)
+                    this.trackBarRB.Value = 200;
                 this.trackBarRB.Minimum = -200;
                 this.trackBarRB.Maximum = 200;
 
+                if (this.trackBarGR.Value < -200)
+                    this.trackBarGR.Value = -200;
+                if (this.trackBarGR.Value > 200)
+                    this.trackBarGR.Value = 200;
                 this.trackBarGR.Minimum = -200;
                 this.trackBarGR.Maximum = 200;
 
+                if (this.trackBarGG.Value < -200)
+                    this.trackBarGG.Value = -200;
+                if (this.trackBarGG.Value > 200)
+                    this.trackBarGG.Value = 200;
                 this.trackBarGG.Minimum = -200;
                 this.trackBarGG.Maximum = 200;
 
+                if (this.trackBarGB.Value < -200)
+                    this.trackBarGB.Value = -200;
+                if (this.trackBarGB.Value > 200)
+                    this.trackBarGB.Value = 200;
                 this.trackBarGB.Minimum = -200;
                 this.trackBarGB.Maximum = 200;
 
+                if (this.trackBarBR.Value < -200)
+                    this.trackBarBR.Value = -200;
+                if (this.trackBarBR.Value > 200)
+                    this.trackBarBR.Value = 200;
                 this.trackBarBR.Minimum = -200;
                 this.trackBarBR.Maximum = 200;
 
+                if (this.trackBarBG.Value < -200)
+                    this.trackBarBG.Value = -200;
+                if (this.trackBarBG.Value > 200)
+                    this.trackBarBG.Value = 200;
                 this.trackBarBG.Minimum = -200;
                 this.trackBarBG.Maximum = 200;
 
+                if (this.trackBarBB.Value < -200)
+                    this.trackBarBB.Value = -200;
+                if (this.trackBarBB.Value > 200)
+                    this.trackBarBB.Value = 200;
                 this.trackBarBB.Minimum = -200;
                 this.trackBarBB.Maximum = 200;
+
                 this.maxVal = 200;
                 this.minVal = -200;
             }
 
-            updateSlidersAndTextBoxes();
+            this.currentRange = range;
+            if (updateSliders)
+                updateSlidersAndTextBoxes();
+            updateRangeCheckboxes();
+
+            //updateMatrixTextBox();
         }
 
         private void updateSlidersAndTextBoxes()
@@ -235,8 +356,10 @@ namespace EliteMonitor
 
         private void applyMatrixToHud(float[][] matrix)
         {
-
-
+            if (this.updateInProgress)
+                return;
+            this.updateInProgress = true;
+#if DEBUG
             StringBuilder sb = new StringBuilder();
             int f1 = 0;
             foreach (float[] f2 in matrix)
@@ -254,15 +377,24 @@ namespace EliteMonitor
             }
 
             this.debugLabel.Text = sb.ToString();
+#endif
 
             ImageAttributes at = new ImageAttributes();
             ColorMatrix cm = new ColorMatrix(matrix);
             at.SetColorMatrix(cm, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+            if (this.currentHUD != null)
+                this.currentHUD.Dispose();
+            this.currentHUD = new Bitmap(this.hud);
+            using (Graphics g = Graphics.FromImage(this.currentHUD))
             {
                 g.DrawImage(this.hud, new Rectangle(0, 0, hud.Width, hud.Height), 0, 0, hud.Width, hud.Height, GraphicsUnit.Pixel, at);
+                // TODO: Make own image(s)
                 g.DrawString("PLACEHOLDER IMAGE", new Font(this.Font.FontFamily, this.Font.Size, FontStyle.Bold), Brushes.Red, new Rectangle(0, 0, hud.Width, hud.Height));
                 g.Flush();
             }
+            this.pictureBox1.Image = this.currentHUD;
+            //updateMatrixTextBox();
+            this.updateInProgress = false;
 
         }
 
@@ -343,19 +475,95 @@ namespace EliteMonitor
             applyMatrixToHud(this.hudMatrix);
         }
 
-        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        private void radioButton1_Click(object sender, EventArgs e)
         {
             switchRange(Ranges.M0P100);
         }
 
-        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        private void radioButton2_Click(object sender, EventArgs e)
         {
             switchRange(Ranges.M100P100);
         }
 
-        private void radioButton3_CheckedChanged(object sender, EventArgs e)
+        private void radioButton3_Click(object sender, EventArgs e)
         {
             switchRange(Ranges.M200P200);
+        }
+
+        private void updateMatrixTextBox()
+        {
+            /*string matrix = createXMLMatrixText();
+            this.matrixTextBox.Text = matrix;*/
+        }
+
+        private void updateRangeCheckboxes()
+        {
+            radioButton1.Checked = this.currentRange == Ranges.M0P100;
+            radioButton2.Checked = this.currentRange == Ranges.M100P100;
+            radioButton3.Checked = this.currentRange == Ranges.M200P200;
+        }
+
+        private string createXMLMatrixText()
+        {
+            string[] lines = new string[3]
+            {
+                /*
+                 * <MatrixRed> 1, 0, 0 </MatrixRed>
+                 * <MatrixGreen> 0, 1, 0 </MatrixGreen>
+                 * <MatrixBlue> 0, 0, 1 </MatrixBlue>
+                 */
+                string.Format("<MatrixRed> {0}, {1}, {2} </MatrixRed>", this.hudMatrix[0][0], this.hudMatrix[0][1], this.hudMatrix[0][2]),
+                string.Format("<MatrixGreen> {0}, {1}, {2} </MatrixGreen>", this.hudMatrix[1][0], this.hudMatrix[1][1], this.hudMatrix[1][2]),
+                string.Format("<MatrixBlue> {0}, {1}, {2} </MatrixBlue>", this.hudMatrix[2][0], this.hudMatrix[2][1], this.hudMatrix[2][2])
+            };
+
+            StringBuilder sb = new StringBuilder();
+            foreach (string l in lines)
+                sb.AppendLine(l);
+            return sb.ToString();
+
+        }
+
+        private void matrixTextBox_TextChanged(object sender, EventArgs e)
+        {
+            // TODO: Idiot proof
+
+            if (this.updateInProgress || this.dontProcessMatrixText)
+                return;
+            this.updateInProgress = true;
+            if (this.matrixTextBox.Lines.Length == 1)
+                this.matrixTextBox.Text = this.matrixTextBox.Text.Replace("</MatrixRed>", "</MatrixRed>\n").Replace("</MatrixGreen>", "</MatrixGreen>\n").Replace("</MatrixBlue>", "</MatrixBlue>\n");
+            try
+            {
+                int x = 0;
+                Ranges highestRange = Ranges.M0P100;
+                foreach (String s in this.matrixTextBox.Lines)
+                {
+                    int start = s.IndexOf('>') + 1;
+                    int end = s.LastIndexOf('<') - start;
+                    string pars = s.Substring(start, end);
+                    int y = 0;
+                    foreach (string m in pars.Split(','))
+                    {
+                        float f = Convert.ToSingle(m);
+                        if (f < 0 && highestRange < Ranges.M100P100)
+                            highestRange = Ranges.M100P100;
+                        else if ((f < -1 || f > 1) && highestRange < Ranges.M200P200)
+                            highestRange = Ranges.M200P200;
+                        this.hudMatrix[x][y++] = f;
+                    }
+                    x++;
+
+                }
+                switchRange(highestRange);
+                updateSlidersAndTextBoxes();
+                this.updateInProgress = false;
+                applyMatrixToHud();
+                this.dontProcessMatrixText = true;
+                this.matrixTextBox.Text = createXMLMatrixText().Trim();
+                this.dontProcessMatrixText = false;
+            }
+            catch (Exception _e) { Console.WriteLine(_e.Message + "\n" + _e.StackTrace); }
         }
     }
 }
