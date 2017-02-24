@@ -16,7 +16,9 @@ namespace EliteMonitor.Caching
 {
     public class CacheController
     {
-
+        /// <summary>
+        /// The path for the directory in which caches are saved.
+        /// </summary>
         public string cachePath { get; private set; }
         public string journalLengthCache { get; private set; }
         [Obsolete]
@@ -24,6 +26,11 @@ namespace EliteMonitor.Caching
         [Obsolete]
         public string materialCache { get; private set; }
         public string commandersPath { get; private set; }
+        public string dataPath { get; private set; }
+        public string bodyDataCache { get; private set; }
+        public string systemDataCache { get; private set; }
+        public string rawBodyDataCache { get; private set; }
+        public string rawSystemDataCache { get; private set; }
         public Logger logger;
         public Dictionary<string, long> _journalLengthCache = new Dictionary<string, long>();
 
@@ -39,11 +46,18 @@ namespace EliteMonitor.Caching
             this.logger = new Logging.Logger("CacheController");
             this.cachePath = Path.Combine(Utils.getApplicationEXEFolderPath(), "cache");
             this.journalLengthCache = Path.Combine(this.cachePath, "journal.emc");
+            this.dataPath = Path.Combine(Utils.getApplicationEXEFolderPath(), "data");
+            this.bodyDataCache = Path.Combine(this.dataPath, "bodies.sqlite");
+            this.systemDataCache = Path.Combine(this.dataPath, "systems.sqlite");
+            this.rawSystemDataCache = Path.Combine(this.dataPath, "raw_systems.csv");
+            this.rawBodyDataCache = Path.Combine(this.dataPath, "raw_bodies.jsonl");
             //this.journalEntryCache = Path.Combine(this.cachePath, "journal_entries.emc");
             //this.materialCache = Path.Combine(this.cachePath, "material.emc");
             this.commandersPath = Path.Combine(this.cachePath, "commanders.emc");
             if (!Directory.Exists(this.cachePath))
                 Directory.CreateDirectory(this.cachePath);
+            if (!Directory.Exists(this.dataPath))
+                Directory.CreateDirectory(this.dataPath);
         }
 
         public bool cacheExists()
@@ -81,12 +95,15 @@ namespace EliteMonitor.Caching
                 foreach(FileInfo f in failedFiles)
                 {
                     this.logger.Log("Verifying file '{0}'...", f.FullName);
-                    using (StreamReader sr = new StreamReader(f.FullName, Encoding.UTF8))
+                    using (FileStream fs = new FileStream(f.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) // Fix for IO error (file in use) when updating cache while the game is running
                     {
-                        string l = "";
-                        while ((l = sr.ReadLine()) != null)
+                        using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
                         {
-                            newEntries.Add(l);
+                            string l = "";
+                            while ((l = sr.ReadLine()) != null)
+                            {
+                                newEntries.Add(l);
+                            }
                         }
                     }
                     if (this._journalLengthCache.ContainsKey(f.Name))

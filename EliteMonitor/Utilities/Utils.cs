@@ -57,5 +57,17 @@ namespace EliteMonitor.Utilities
             credits += price;
             MainForm.Instance.creditsLabel.InvokeIfRequired(() => MainForm.Instance.creditsLabel.Text = getCreditsString(credits));
         }
+
+        internal static string formatTimeFromSeconds(double time)
+        {
+            TimeSpan ts = TimeSpan.FromSeconds(time);
+            string t = ts.ToString(@"hh\:mm\:ss");
+            while (t.StartsWith("00:"))
+            {
+                t = t.Substring(3);
+            }
+            
+            return t+(t.Length == 2 ? "s" : "");
+        }
     }
 }

@@ -26,24 +26,36 @@ namespace EliteMonitor.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool defaultProgressBars {
+        public bool autoSwitchActiveCommander {
             get {
-                return ((bool)(this["defaultProgressBars"]));
+                return ((bool)(this["autoSwitchActiveCommander"]));
             }
             set {
-                this["defaultProgressBars"] = value;
+                this["autoSwitchActiveCommander"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool showJournalUpdateStatus {
+        public bool autoSwitchMessagesDisplayed {
             get {
-                return ((bool)(this["showJournalUpdateStatus"]));
+                return ((bool)(this["autoSwitchMessagesDisplayed"]));
             }
             set {
-                this["showJournalUpdateStatus"] = value;
+                this["autoSwitchMessagesDisplayed"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("30000")]
+        public int tailFilePollInterval {
+            get {
+                return ((int)(this["tailFilePollInterval"]));
+            }
+            set {
+                this["tailFilePollInterval"] = value;
             }
         }
     }

@@ -27,11 +27,19 @@ namespace EliteMonitor.Journal
         public Dictionary<string, Commander> commanders = new Dictionary<string, Commander>();
         public Commander activeCommander, viewedCommander;
         public Logger logger;
+        private bool fullParseInProgress = false;
+        private string currentTailFile = "";
+        private bool hasChangedLogFile = false;
+        private bool tailerRunning = false;
 
         public JournalParser(MainForm m)
         {
             this.logger = new Logger("JournalParser");
             this.mainForm = m;
+        }
+
+        public void startTailer()
+        {
             tailJournal(EliteUtils.JOURNAL_PATH);
         }
 
@@ -109,7 +117,7 @@ namespace EliteMonitor.Journal
                         string commanderString = $"{commanderName} | {commanderShip}" + (isGroup ? $" / {pGroup}" : "");
                         Commander _commander = registerCommander(commanderName);
                         _commander.setBasicInfo(commanderShip, commanderCredits, isGroup ? pGroup : "");
-                        commander = activeCommander = viewedCommander = _commander;
+                        commander = activeCommander = _commander;
                         return new JournalEntry(timestamp, @event, $"Commander {commanderString} | Ship: {commanderShip}, Credit balance: {String.Format("{0:n0}", commanderCredits)}", j);
                     case "Rank":
 
@@ -278,6 +286,7 @@ namespace EliteMonitor.Journal
 
         public void parseAllJournals()
         {
+            this.fullParseInProgress = true;
             string journalPath = EliteUtils.JOURNAL_PATH;
             journalPath = Environment.ExpandEnvironmentVariables(journalPath);
             /*string[] files = Directory.GetFiles(journalPath);
@@ -303,7 +312,6 @@ namespace EliteMonitor.Journal
                         string line;
                         while ((line = sr.ReadLine()) != null)
                         {
-                            //parseEvent(line);
                             allJournalEntries.Add(line);
                         }
                         
@@ -314,6 +322,7 @@ namespace EliteMonitor.Journal
             mainForm.appStatus.Text = "Switching commander...";
             switchViewedCommander(activeCommander);
             mainForm.appStatus.Text = "Ready.";
+            this.fullParseInProgress = false;
         }
 
         public void createJournalEntries(List<string> entries, bool checkDuplicates = false)
@@ -321,16 +330,21 @@ namespace EliteMonitor.Journal
             mainForm.appStatus.Text = "Generating Journal entries...";
             int cEntry = 0;
             int lastPercent = 0;
+            DateTime timeStarted = DateTime.Now;
+            DateTime lastETAUpdate = DateTime.Now;
+            Commander commander = activeCommander;
             foreach (string s in entries)
             {
                 double percent = ((double)cEntry++ / (double)entries.Count) * 100.00;
                 //Console.WriteLine(percent + " / " + lastPercent);
-                if (percent > lastPercent)
+                if ((int)percent > lastPercent || DateTime.Now.Subtract(lastETAUpdate).TotalSeconds >= 1.00)
                 {
+                    TimeSpan ts = (DateTime.Now - timeStarted);
+                    double timeLeft = (ts.TotalSeconds / cEntry) * (entries.Count - cEntry);
+                    lastETAUpdate = DateTime.Now;
                     lastPercent = (int)percent;
-                    mainForm.appStatus.Text = String.Format("Generating Journal entries... ({0:n0}%)", percent);
+                    mainForm.appStatus.Text = String.Format("Generating Journal entries... ({0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft));
                 }
-                Commander commander;
                 JournalEntry je = parseEvent(s, out commander);
                 if (je.Event.Equals("Fileheader"))
                     continue;
@@ -339,16 +353,22 @@ namespace EliteMonitor.Journal
                     mainForm.comboCommanderList.InvokeIfRequired(() => mainForm.comboCommanderList.Items.Add(commander.Name));
                     commander.JournalEntries = new List<JournalEntry>(entries.Count);
                 }
-                /*if (!commander.Journal.Contains(s))
-                    commander.Journal.Add(je.Json);*/
-                /*if (!checkDuplicates || (checkDuplicates && !commander.JournalEntries.Contains(je))) // Holy performance killer
-                {
-                    if (!commander.EventsList.Contains(je.Event))
-                        commander.EventsList.Add(je.Event);
-                    je.ID = commander.nextId++;
-                    commander.JournalEntries.Add(je);
-                }*/
                 commander.addJournalEntry(je, checkDuplicates);
+            }
+            if (!fullParseInProgress && Properties.Settings.Default.autoSwitchActiveCommander && !viewedCommander.Name.Equals(activeCommander.Name))
+            {
+                switchViewedCommander(commander);
+                if (!Properties.Settings.Default.autoSwitchMessagesDisplayed)
+                {
+                    Thread _t = new Thread(() =>
+                    {
+                        bool keepUpdating = MessageBox.Show("The commander you were viewing doesn't match the commander you appear to be playing on, so the view has been switched to the one you're playing automatically.\n\nWould you like to auto-switch whenever there's a commander difference is detected?\n\nYou can change this at any time in the options dialog.", "Auto-switch Commander", MessageBoxButtons.YesNo) == DialogResult.Yes;
+                        Properties.Settings.Default.autoSwitchActiveCommander = keepUpdating;
+                        Properties.Settings.Default.autoSwitchMessagesDisplayed = true;
+                        Properties.Settings.Default.Save();
+                    });
+                    _t.Start();
+                }
             }
         }
 
@@ -375,14 +395,19 @@ namespace EliteMonitor.Journal
             List<ListViewItem> entries = new List<ListViewItem>();
             int x = 0;
             int lastPercent = 0;
+            DateTime timeStarted = DateTime.Now;
+            DateTime lastETAUpdate = DateTime.Now;
             foreach (JournalEntry j in _entries)
             {
                 double percent = ((double)x++ / (double)_entries.Count) * 100.00;
                 //Console.WriteLine(percent + " / " + lastPercent);
-                if (percent > lastPercent)
+                if ((int)percent > lastPercent || DateTime.Now.Subtract(lastETAUpdate).TotalSeconds >= 1.00)
                 {
+                    TimeSpan ts = (DateTime.Now - timeStarted);
+                    double timeLeft = (ts.TotalSeconds / x) * (entries.Count - x);
+                    lastETAUpdate = DateTime.Now;
                     lastPercent = (int)percent;
-                    mainForm.appStatus.Text = String.Format("Loading commander data for '{0}' ({1:n0}%)", c.Name, percent);
+                    mainForm.appStatus.Text = String.Format("Loading commander data for '{0}' ({1:n0}%) [ETA: {1}]", c.Name, percent, Utils.formatTimeFromSeconds(timeLeft));
                 }
 
                 /*if (Properties.Settings.Default.showJournalUpdateStatus && (x++ == 1 || x % 100 == 0 || x == _entries.Count))
@@ -437,27 +462,80 @@ namespace EliteMonitor.Journal
             return lvi;
         }
 
+        public void switchTailFile(FileInfo fi)
+        {
+            this.logger.Log("Requested change to Journal file {0} - file switch will occur at next poll", fi.FullName);
+            this.hasChangedLogFile = true;
+            this.currentTailFile = fi.FullName;
+        }
+
         public void tailJournal(string path)
         {
-            /*Thread t = new Thread(() =>
+            if (this.tailerRunning)
+                return;
+            this.tailerRunning = true;
+            DirectoryInfo di = new DirectoryInfo(EliteUtils.JOURNAL_PATH);
+            FileInfo last = di.GetFiles().OrderBy(f => f.CreationTime).ToArray().Last();
+
+            this.logger.Log("Most recent Journal file is {0}, setting up to tail that file...", last.Name);
+
+            this.currentTailFile = last.FullName;
+
+            Thread t = new Thread(() =>
             {
+                long lastSize = 0L;
+                mainForm.cacheController._journalLengthCache.TryGetValue(last.Name, out lastSize);
                 while (true)
                 {
-                    FileInfo fi = new FileInfo(@"C:\Users\iPeer\Saved Games\Frontier Developments\Elite Dangerous\Journal.170204163640.01.log");
-                    Console.WriteLine("--> " + fi.Length);
-                    Thread.Sleep(60000);
+                    last.Refresh();
+                    if (this.hasChangedLogFile || last.Length > lastSize)
+                    {
+                        readFile:
+                        readFileFromByteOffset(last.FullName, last.Name, lastSize);
+                        lastSize = last.Length;
+                        if (mainForm.cacheController._journalLengthCache.ContainsKey(last.Name))
+                            mainForm.cacheController._journalLengthCache[last.Name] = lastSize;
+                        else
+                            mainForm.cacheController._journalLengthCache.Add(last.Name, lastSize);
+                        if (this.hasChangedLogFile)
+                        {
+                            this.logger.Log("Journal file change is pending to change to Journal {0}", this.currentTailFile);
+                            last = new FileInfo(this.currentTailFile);
+                            lastSize = 0L;
+                            this.hasChangedLogFile = false;
+                            goto readFile;
+                        }
+                    }
+                    Console.WriteLine("--> " + last.Length);
+                    Thread.Sleep(Properties.Settings.Default.tailFilePollInterval);
                 }
             });
-            t.Start();*/
-            this.logger.Log($"Setting up tailer on logfile {path}...");
+            t.IsBackground = true; // do not block the application from terminating
+            t.Start();
+
+            this.logger.Log($"Setting up file watcher on directory {path}...");
             path = Environment.ExpandEnvironmentVariables(path);
 
             fileSystemWatcher = new FileSystemWatcher(path);
-            fileSystemWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite/* | NotifyFilters.Size*/;
-            fileSystemWatcher.Changed += fileChanged;
+            //fileSystemWatcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.CreationTime;
+            //fileSystemWatcher.Changed += fileChanged;
+            fileSystemWatcher.Created += fileCreated;
             fileSystemWatcher.Filter = "Journal*.log";
             fileSystemWatcher.EnableRaisingEvents = true;
-            mainForm.appStatus.Text = "Tailing started";
+            mainForm.appStatus.Text = "Tailing started...";
+        }
+
+        private void fileCreated(object sender, FileSystemEventArgs e)
+        {
+            this.logger.Log("New Journal file detected: {0}", e.Name);
+            switchTailFile(new FileInfo(e.FullPath));
+        }
+
+        internal void fileChanged(object source, FileSystemEventArgs e)
+        {
+            long byteOffset;
+            mainForm.cacheController._journalLengthCache.TryGetValue(e.Name, out byteOffset);
+            readFileFromByteOffset(e, byteOffset);
         }
 
         internal void readFileFromByteOffset(FileSystemEventArgs e, long offset = 0)
@@ -473,56 +551,29 @@ namespace EliteMonitor.Journal
 
         private void readFileFromByteOffset(string file, string fileName, long offset = 0)
         {
-
             this.logger.Log($"Reading file {file} ({fileName}) from offset {offset}");
             using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
-                long byteOffset;
-                mainForm.cacheController._journalLengthCache.TryGetValue(fileName, out byteOffset);
-                if (byteOffset > 0)
-                    fs.Seek(byteOffset, SeekOrigin.Begin);
+                if (offset == 0) // if an offset isn't supplied (or it's sent as zero), see if we already have one stored
+                    mainForm.cacheController._journalLengthCache.TryGetValue(fileName, out offset);
+                if (offset > 0)
+                    fs.Seek(offset, SeekOrigin.Begin);
                 using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
                 {
                     string s = "";
+                    List<string> entries = new List<string>();
                     while ((s = sr.ReadLine()) != null)
                     {
                         mainForm.cacheController._journalLengthCache[fileName] = fs.Position;
-                        Commander c;
+                        /*Commander c;
                         JournalEntry j = parseEvent(s, out c);
-                        c.addJournalEntry(j);
-                        Console.WriteLine(c.Name);
-                        /*if (viewedCommander == c)
-                        {
-                            ListViewItem lvi = getListViewEntryForEntry(j);
-                            mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.Items.Insert(0, lvi));
-                        }*/
+                        if (j.Event.Equals("FileHeader")) continue;
+                        c.addJournalEntry(j);*/
+                        entries.Add(s);
                     }
+                    createJournalEntries(entries, true);
                 }
             }
-        }
-
-        internal void fileChanged(object source, FileSystemEventArgs e)
-        {
-            long byteOffset;
-            mainForm.cacheController._journalLengthCache.TryGetValue(e.Name, out byteOffset);
-            readFileFromByteOffset(/*e.FullPath, e.Name, */e, byteOffset);
-
-            /*using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                long byteOffset;
-                _lastJournalBytes.TryGetValue(e.Name, out byteOffset);
-                if (byteOffset > 0)
-                    fs.Seek(byteOffset, SeekOrigin.Begin);
-                using (StreamReader sr = new StreamReader(fs))
-                {
-                    string s = "";
-                    while ((s = sr.ReadLine()) != null)
-                    {
-                        _lastJournalBytes[e.Name] = fs.Position;
-                        MainForm.Instance.journalParser.parseEvent(s);
-                    }
-                }
-            }*/
         }
     }
 }

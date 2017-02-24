@@ -55,13 +55,13 @@
             this.colourBR = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.debugLabel = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton3 = new System.Windows.Forms.RadioButton();
             this.matrixTextBox = new System.Windows.Forms.RichTextBox();
             this.label8 = new System.Windows.Forms.Label();
-            this.debugLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarRR)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarRG)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarRB)).BeginInit();
@@ -347,6 +347,15 @@
             this.panel1.Size = new System.Drawing.Size(1283, 720);
             this.panel1.TabIndex = 27;
             // 
+            // debugLabel
+            // 
+            this.debugLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.debugLabel.Location = new System.Drawing.Point(1140, 0);
+            this.debugLabel.Name = "debugLabel";
+            this.debugLabel.Size = new System.Drawing.Size(140, 64);
+            this.debugLabel.TabIndex = 1;
+            this.debugLabel.Text = "{debug data}";
+            // 
             // label7
             // 
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -411,15 +420,6 @@
             this.label8.Size = new System.Drawing.Size(151, 13);
             this.label8.TabIndex = 34;
             this.label8.Text = "Import via existing matrix:";
-            // 
-            // debugLabel
-            // 
-            this.debugLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.debugLabel.Location = new System.Drawing.Point(1140, 0);
-            this.debugLabel.Name = "debugLabel";
-            this.debugLabel.Size = new System.Drawing.Size(140, 64);
-            this.debugLabel.TabIndex = 1;
-            this.debugLabel.Text = "{debug data}";
             // 
             // HUDEditor
             // 

@@ -47,6 +47,9 @@
             this.hUDEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eDMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.launchEDMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dEBUGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testBodiesDatabaseReadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showDistanceFromSolToNetoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.commanderBox = new System.Windows.Forms.GroupBox();
             this.empireRankProgress = new System.Windows.Forms.ProgressBar();
             this.empireRankName = new System.Windows.Forms.Label();
@@ -79,6 +82,7 @@
             this.eventFilterDropdown = new System.Windows.Forms.ComboBox();
             this.pickCommanderLabel = new System.Windows.Forms.Label();
             this.comboCommanderList = new System.Windows.Forms.ComboBox();
+            this.resetSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
@@ -128,7 +132,8 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.eliteToolStripMenuItem,
-            this.eDMCToolStripMenuItem});
+            this.eDMCToolStripMenuItem,
+            this.dEBUGToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(966, 24);
@@ -148,9 +153,10 @@
             // 
             this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.applicationSettingsToolStripMenuItem,
-            this.cachingToolStripMenuItem});
+            this.cachingToolStripMenuItem,
+            this.resetSettingsToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.settingsToolStripMenuItem.Text = "&Settings";
             // 
             // applicationSettingsToolStripMenuItem
@@ -193,7 +199,7 @@
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -209,13 +215,13 @@
             // launchEliteToolStripMenuItem
             // 
             this.launchEliteToolStripMenuItem.Name = "launchEliteToolStripMenuItem";
-            this.launchEliteToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.launchEliteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.launchEliteToolStripMenuItem.Text = "Launch Elite";
             // 
             // hUDEditorToolStripMenuItem
             // 
             this.hUDEditorToolStripMenuItem.Name = "hUDEditorToolStripMenuItem";
-            this.hUDEditorToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.hUDEditorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.hUDEditorToolStripMenuItem.Text = "HUD Editor";
             this.hUDEditorToolStripMenuItem.Click += new System.EventHandler(this.hUDEditorToolStripMenuItem_Click);
             // 
@@ -232,6 +238,29 @@
             this.launchEDMCToolStripMenuItem.Name = "launchEDMCToolStripMenuItem";
             this.launchEDMCToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
             this.launchEDMCToolStripMenuItem.Text = "Launch EDMC";
+            // 
+            // dEBUGToolStripMenuItem
+            // 
+            this.dEBUGToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.testBodiesDatabaseReadToolStripMenuItem,
+            this.showDistanceFromSolToNetoToolStripMenuItem});
+            this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
+            this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
+            this.dEBUGToolStripMenuItem.Text = "DEBUG";
+            // 
+            // testBodiesDatabaseReadToolStripMenuItem
+            // 
+            this.testBodiesDatabaseReadToolStripMenuItem.Name = "testBodiesDatabaseReadToolStripMenuItem";
+            this.testBodiesDatabaseReadToolStripMenuItem.Size = new System.Drawing.Size(241, 22);
+            this.testBodiesDatabaseReadToolStripMenuItem.Text = "Test Bodies Database Read";
+            this.testBodiesDatabaseReadToolStripMenuItem.Click += new System.EventHandler(this.testBodiesDatabaseReadToolStripMenuItem_Click);
+            // 
+            // showDistanceFromSolToNetoToolStripMenuItem
+            // 
+            this.showDistanceFromSolToNetoToolStripMenuItem.Name = "showDistanceFromSolToNetoToolStripMenuItem";
+            this.showDistanceFromSolToNetoToolStripMenuItem.Size = new System.Drawing.Size(241, 22);
+            this.showDistanceFromSolToNetoToolStripMenuItem.Text = "Show distance from Sol to Neto";
+            this.showDistanceFromSolToNetoToolStripMenuItem.Click += new System.EventHandler(this.showDistanceFromSolToNetoToolStripMenuItem_Click);
             // 
             // commanderBox
             // 
@@ -594,6 +623,13 @@
             this.comboCommanderList.ValueMember = "None";
             this.comboCommanderList.SelectionChangeCommitted += new System.EventHandler(this.comboCommanderList_SelectionChangeCommitted);
             // 
+            // resetSettingsToolStripMenuItem
+            // 
+            this.resetSettingsToolStripMenuItem.Name = "resetSettingsToolStripMenuItem";
+            this.resetSettingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.resetSettingsToolStripMenuItem.Text = "Reset settings";
+            this.resetSettingsToolStripMenuItem.Click += new System.EventHandler(this.resetSettingsToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -684,6 +720,10 @@
         private System.Windows.Forms.ToolStripStatusLabel appVersionStatusLabel;
         private System.Windows.Forms.ToolStripStatusLabel eliteRunningStatus;
         private System.Windows.Forms.ToolStripMenuItem hUDEditorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dEBUGToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testBodiesDatabaseReadToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem showDistanceFromSolToNetoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resetSettingsToolStripMenuItem;
     }
 }
 
