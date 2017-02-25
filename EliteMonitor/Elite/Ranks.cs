@@ -18,13 +18,18 @@ namespace EliteMonitor.Elite
 
         public static Dictionary<string, string[]> rankNames = new Dictionary<string, string[]>()
         {
-            { "combat", new string[] { "Harmless", "Mostly Harmless", "Novice", "Competent", "Expert", "Master", "Dangerous", "Deadly", "Elite" } },
-            { "trade", new string[] { "Penniless", "Mostly Penniless", "Peddler", "Dealer", "Merchant", "Broker", "Entrepreneur", "Tycoon", "Elite" } },
-            { "explore", new string[] { "Aimless", "Mostly Aimless", "Scout", "Surveyor", "Trailblazer", "Pathfinder", "Ranger", "Pioneer", "Elite" } },
-            { "cqc" , new string[] { "Helpless", "Mostly Helpless", "Amateur", "Semi Professional", "Professional", "Champion", "Hero", "Legend", "Elite" } }
+            //                              1                   2                   3               4                       5                   6               7                   8               9
+            { "combat", new string[] {  "Harmless",     "Mostly Harmless",      "Novice",       "Competent",            "Expert",           "Master",       "Dangerous",        "Deadly",       "Elite" } },
+            { "trade", new string[] {   "Penniless",    "Mostly Penniless",     "Peddler",      "Dealer",               "Merchant",         "Broker",       "Entrepreneur",     "Tycoon",       "Elite" } },
+            { "explore", new string[] { "Aimless",      "Mostly Aimless",       "Scout",        "Surveyor",             "Trailblazer",      "Pathfinder",   "Ranger",           "Pioneer",      "Elite" } },
+            { "cqc" , new string[] {    "Helpless",     "Mostly Helpless",      "Amateur",      "Semi Professional",    "Professional",     "Champion",     "Hero",             "Legend",       "Elite" } },
+            { "federation", new string[] { "None", "Recruit", "Cadet", "Midshipman", "Petty Officer", "Chief Petty Officer", "Warrant Officer", "Ensign", "Lieutenant", "Lieutenant Commander", "Post Commander", "Post Captain", "Rear Admiral", "Vice Admiral", "Admiral" } },
+            { "empire", new string[] { "None", "Outsider", "Serf", "Master", "Squire", "Knight", "Lord", "Baron", "Viscount", "Count", "Earl", "Marquis", "Duke", "Prince", "King" } }
 
-        };
+    };
 
+
+        // TODO: Make this fix more legit (these were moved into the rankNames dictionary)
         public static string[] federation = new string[] { "None", "Recruit", "Cadet", "Midshipman", "Petty Officer", "Chief Petty Officer", "Warrant Officer", "Ensign", "Lieutenant", "Lieutenant Commander", "Post Commander", "Post Captain", "Rear Admiral", "Vice Admiral", "Admiral" };
         public static string[] empire = new string[] { "None", "Outsider", "Serf", "Master", "Squire", "Knight", "Lord", "Baron", "Viscount", "Count", "Earl", "Marquis", "Duke", "Prince", "King" };
 

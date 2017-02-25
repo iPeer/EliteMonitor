@@ -278,6 +278,7 @@ namespace EliteMonitor.Journal
             catch (Exception e)
             {
                 this.logger.Log("Exception while parsing event '{1}': {0}", LogLevel.ERR, e.Message, @event);
+                this.logger.Log("Event JSON: {0}", j.ToString());
                 this.logger.Log("{0}", LogLevel.ERR, e.StackTrace);
                 throw new Exception(e.Message, e);
             }
