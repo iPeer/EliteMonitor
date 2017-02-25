@@ -304,7 +304,7 @@ namespace EliteMonitor.Journal
             {
                 string file = _file.FullName;
                 mainForm.cacheController._journalLengthCache.Add(_file.Name, _file.Length);
-                mainForm.appStatus.Text = $"Parsing Journal file ({x++}/{fileInfo.Length}): {file}...";
+                mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = $"Parsing Journal file ({x++}/{fileInfo.Length}): {file}...");
                 using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
@@ -319,15 +319,15 @@ namespace EliteMonitor.Journal
                 }
             }
             createJournalEntries(allJournalEntries);
-            mainForm.appStatus.Text = "Switching commander...";
+            mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Switching commander...");
             switchViewedCommander(activeCommander);
-            mainForm.appStatus.Text = "Ready.";
+            mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Ready.");
             this.fullParseInProgress = false;
         }
 
         public void createJournalEntries(List<string> entries, bool checkDuplicates = false)
         {
-            mainForm.appStatus.Text = "Generating Journal entries...";
+            mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Generating Journal entries...");
             int cEntry = 0;
             int lastPercent = 0;
             DateTime timeStarted = DateTime.Now;
@@ -343,7 +343,7 @@ namespace EliteMonitor.Journal
                     double timeLeft = (ts.TotalSeconds / cEntry) * (entries.Count - cEntry);
                     lastETAUpdate = DateTime.Now;
                     lastPercent = (int)percent;
-                    mainForm.appStatus.Text = String.Format("Generating Journal entries... ({0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft));
+                    mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = String.Format("Generating Journal entries... ({0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft)));
                 }
                 JournalEntry je = parseEvent(s, out commander);
                 if (je.Event.Equals("Fileheader"))
@@ -407,7 +407,7 @@ namespace EliteMonitor.Journal
                     double timeLeft = (ts.TotalSeconds / x) * (entries.Count - x);
                     lastETAUpdate = DateTime.Now;
                     lastPercent = (int)percent;
-                    mainForm.appStatus.Text = String.Format("Loading commander data for '{0}' ({1:n0}%) [ETA: {1}]", c.Name, percent, Utils.formatTimeFromSeconds(timeLeft));
+                    mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = String.Format("Loading commander data for '{0}' ({1:n0}%) [ETA: {2}]", c.Name, percent, Utils.formatTimeFromSeconds(timeLeft)));
                 }
 
                 /*if (Properties.Settings.Default.showJournalUpdateStatus && (x++ == 1 || x % 100 == 0 || x == _entries.Count))
@@ -415,7 +415,7 @@ namespace EliteMonitor.Journal
                 ListViewItem lvi = getListViewEntryForEntry(j);
                 entries.Add(lvi);
             }
-            mainForm.appStatus.Text = String.Format("Finalising commander data for '{0}'", c.Name);
+            mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = String.Format("Finalising commander data for '{0}'", c.Name));
             entries.Reverse();
             mainForm.comboCommanderList.InvokeIfRequired(() => mainForm.comboCommanderList.SelectedIndex = mainForm.comboCommanderList.Items.IndexOf(c.Name));
             mainForm.eventList.InvokeIfRequired(() =>
@@ -522,7 +522,7 @@ namespace EliteMonitor.Journal
             fileSystemWatcher.Created += fileCreated;
             fileSystemWatcher.Filter = "Journal*.log";
             fileSystemWatcher.EnableRaisingEvents = true;
-            mainForm.appStatus.Text = "Tailing started...";
+            mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Tailing started...");
         }
 
         private void fileCreated(object sender, FileSystemEventArgs e)
