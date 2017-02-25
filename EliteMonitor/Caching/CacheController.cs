@@ -20,6 +20,10 @@ namespace EliteMonitor.Caching
         /// The path for the directory in which caches are saved.
         /// </summary>
         public string cachePath { get; private set; }
+        /// <summary>
+        /// The path for the directory in which HUD presets are saved
+        /// </summary>
+        public string hudPresetPath { get; private set; }
         public string journalLengthCache { get; private set; }
         [Obsolete]
         public string journalEntryCache { get; private set; }
@@ -45,8 +49,9 @@ namespace EliteMonitor.Caching
             this.mainForm = main;
             this.logger = new Logging.Logger("CacheController");
             this.cachePath = Path.Combine(Utils.getApplicationEXEFolderPath(), "cache");
-            this.journalLengthCache = Path.Combine(this.cachePath, "journal.emc");
             this.dataPath = Path.Combine(Utils.getApplicationEXEFolderPath(), "data");
+            this.hudPresetPath = Path.Combine(Utils.getApplicationEXEFolderPath(), "huds");
+            this.journalLengthCache = Path.Combine(this.cachePath, "journal.emc");
             this.bodyDataCache = Path.Combine(this.dataPath, "bodies.sqlite");
             this.systemDataCache = Path.Combine(this.dataPath, "systems.sqlite");
             this.rawSystemDataCache = Path.Combine(this.dataPath, "raw_systems.csv");
@@ -58,6 +63,8 @@ namespace EliteMonitor.Caching
                 Directory.CreateDirectory(this.cachePath);
             if (!Directory.Exists(this.dataPath))
                 Directory.CreateDirectory(this.dataPath);
+            if (!Directory.Exists(this.hudPresetPath))
+                Directory.CreateDirectory(this.hudPresetPath);
         }
 
         public bool cacheExists()

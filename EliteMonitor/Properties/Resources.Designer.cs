@@ -73,16 +73,6 @@ namespace EliteMonitor.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap elitehud {
-            get {
-                object obj = ResourceManager.GetObject("elitehud", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap empire {
             get {
                 object obj = ResourceManager.GetObject("empire", resourceCulture);
@@ -96,6 +86,66 @@ namespace EliteMonitor.Properties {
         internal static System.Drawing.Bitmap federation {
             get {
                 object obj = ResourceManager.GetObject("federation", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap hud_commodities {
+            get {
+                object obj = ResourceManager.GetObject("hud_commodities", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap hud_crotch {
+            get {
+                object obj = ResourceManager.GetObject("hud_crotch", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap hud_flight {
+            get {
+                object obj = ResourceManager.GetObject("hud_flight", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap hud_panelleft {
+            get {
+                object obj = ResourceManager.GetObject("hud_panelleft", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap hud_panelright {
+            get {
+                object obj = ResourceManager.GetObject("hud_panelright", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap hud_station {
+            get {
+                object obj = ResourceManager.GetObject("hud_station", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

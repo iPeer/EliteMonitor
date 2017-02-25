@@ -121,14 +121,29 @@
   <data name="alliance" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\alliance.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="elitehud" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\elitehud.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="empire" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\empire.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="federation" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\federation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="hud_commodities" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\359320_20170224211525_1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="hud_crotch" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\359320_20170224211736_1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="hud_flight" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\359320_20170224220206_1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="hud_panelleft" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\359320_20170224211724_1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="hud_panelright" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\359320_20170224211731_1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="hud_station" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\359320_20170224211458_1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="rank_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\rank-1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

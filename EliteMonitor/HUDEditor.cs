@@ -1,13 +1,18 @@
-﻿using System;
+﻿using EliteMonitor.Elite;
+using EliteMonitor.Utilities;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace EliteMonitor
 {
@@ -24,7 +29,7 @@ namespace EliteMonitor
     {
         private bool dontProcessMatrixText = false;
         private bool updateInProgress = false;
-        private float[][] hudMatrix =
+        /*private float[][] hudMatrix =
         {   
             //          RR, GR, BR
             new float[] { 1, 0, 0, 0, 0 }, // R
@@ -34,27 +39,116 @@ namespace EliteMonitor
             new float[] { 0, 0, 1, 0, 0 }, // B
             new float[] { 0, 0, 0, 1, 0 }, // ??
             new float[] { 0, 0, 0, 0, 1 } // ??
-        };
+        };*/
+
+        private HUDMatrix hudMatrix = new HUDMatrix();
 
         private int maxVal = 100;
         private int minVal = 0;
 
         private Ranges currentRange = Ranges.M0P100;
 
-        private Image hud = Properties.Resources.elitehud;
+        private Image hud = Properties.Resources.hud_flight;
         private Image currentHUD;
+
+        private Dictionary<string, HUDMatrix> savedHUDs;
+        private Dictionary<string, Image> hudImages = new Dictionary<string, Image>()
+        {
+            {"Flight", Properties.Resources.hud_flight },
+            {"Left panel", Properties.Resources.hud_panelleft },
+            {"Right panel", Properties.Resources.hud_panelright },
+            {"Station", Properties.Resources.hud_station },
+            {"Crotchcam™", Properties.Resources.hud_crotch },
+            {"Commodities market", Properties.Resources.hud_commodities }
+        };
+        private int stockHUDCount = 0;
 
         public HUDEditor()
         {
             InitializeComponent();
-#if RELEASE
+            loadSavedHUDs();
+#if !DEBUG
             this.debugLabel.Visible = false;
 #endif
             /*this.pictureBox1.Image = applyMatrixToHud(hudMatrix);*/
-            applyMatrixToHud(hudMatrix);
-            updateSlidersAndTextBoxes();
-            updateMatrixTextBox();
 
+            // Populate the HUD dropdown
+
+            foreach (string s in this.hudImages.Keys)
+            {
+                this.comboBoxHUDImage.Items.Add(s);
+            }
+            this.comboBoxHUDImage.SelectedIndex = this.comboBoxHUDImage.Items.IndexOf("Flight");
+
+            /*applyMatrixToHud(hudMatrix);
+            updateSlidersAndTextBoxes();
+            updateMatrixTextBox();*/
+
+        }
+
+        private void loadSavedHUDs()
+        {
+            this.savedHUDs = new Dictionary<string, HUDMatrix>();
+            this.savedHUDs.Add("Default", new HUDMatrix(100, 0, 0, 0, 100, 0, 0, 0, 100));
+            this.savedHUDs.Add("Default (reversed)", new HUDMatrix(0, 0, 100, 0, 100, 0, 100, 0, 0));
+            this.savedHUDs.Add("iPeer", new HUDMatrix(30, 30, 42, 40, 40, 40, 100, -10, 100));
+            this.savedHUDs.Add("Kofeyh", new HUDMatrix(30, 30, 40, 20, 60, 10, 90, 15, 15));
+
+            this.stockHUDCount = this.savedHUDs.Count;
+
+            // Load the user's current config into memory (if it exists) so we can add it to the "saved" HUD list
+
+            if (File.Exists(EliteUtils.GRAPHICS_OVERRIDE_PATH))
+            {
+                XDocument xml = XDocument.Load(EliteUtils.GRAPHICS_OVERRIDE_PATH); // XML is such a pain in the ass to work with.
+                try
+                {
+                    string redMatrix = xml.Element("GraphicsConfig").Element("GUIColour").Element("Default").Element("MatrixRed").Value;
+                    string greenMatrix = xml.Element("GraphicsConfig").Element("GUIColour").Element("Default").Element("MatrixGreen").Value;
+                    string blueMatrix = xml.Element("GraphicsConfig").Element("GUIColour").Element("Default").Element("MatrixBlue").Value;
+
+                    int rr, rg, rb;
+                    int gr, gg, gb;
+                    int br, bg, bb;
+
+                    string[] data = redMatrix.Trim().Split(',');
+
+                    rr = (int)Math.Round(Convert.ToSingle(data[0].Trim()) * 100);
+                    rg = (int)Math.Round(Convert.ToSingle(data[1].Trim()) * 100);
+                    rb = (int)Math.Round(Convert.ToSingle(data[2].Trim()) * 100);
+
+                    data = greenMatrix.Trim().Split(',');
+
+                    gr = (int)Math.Round(Convert.ToSingle(data[0].Trim()) * 100);
+                    gg = (int)Math.Round(Convert.ToSingle(data[1].Trim()) * 100);
+                    gb = (int)Math.Round(Convert.ToSingle(data[2].Trim()) * 100);
+
+                    data = blueMatrix.Trim().Split(',');
+
+                    br = (int)Math.Round(Convert.ToSingle(data[0].Trim()) * 100);
+                    bg = (int)Math.Round(Convert.ToSingle(data[1].Trim()) * 100);
+                    bb = (int)Math.Round(Convert.ToSingle(data[2].Trim()) * 100);
+
+                    HUDMatrix hud = new HUDMatrix(rr, rg, rb, gr, gg, gb, br, bg, bb);
+                    this.savedHUDs.Add("Current", hud);
+                }
+                catch {  }
+            }
+
+            // Load any custom presets the user might have
+            string[] files = Directory.GetFiles(MainForm.Instance.cacheController.hudPresetPath);
+            foreach (string file in files)
+            {
+                FileInfo fi = new FileInfo(file);
+                string presetName = fi.Name.Replace(".hud", "");
+                HUDMatrix matrix = JsonConvert.DeserializeObject<HUDMatrix>(File.ReadAllText(fi.FullName));
+                this.savedHUDs.Add(presetName, matrix);
+            }
+
+            this.comboBoxLoadPreset.Items.Clear();
+            foreach (KeyValuePair<string, HUDMatrix> kvp in this.savedHUDs)
+                this.comboBoxLoadPreset.Items.Add(kvp.Key);
+            this.comboBoxLoadPreset.SelectedIndex = this.comboBoxLoadPreset.Items.IndexOf(this.savedHUDs.ContainsKey("Current") ? "Current" : "Default");
         }
 
         private void switchRange(Ranges range, bool updateSliders = true) // Holy cow.
@@ -277,7 +371,7 @@ namespace EliteMonitor
 
             // RR
 
-            int val = (int)(hudMatrix[0][0] * 100F);
+            int val = hudMatrix.RR;
             if (val > this.maxVal)
                 val = this.maxVal;
             this.trackBarRR.Value = val;
@@ -285,7 +379,7 @@ namespace EliteMonitor
 
             // RG
 
-            val = (int)(hudMatrix[1][0] * 100F);
+            val = hudMatrix.RG;
             if (val > this.maxVal)
                 val = this.maxVal;
             this.trackBarRG.Value = val;
@@ -293,7 +387,7 @@ namespace EliteMonitor
 
             // RB
 
-            val = (int)(hudMatrix[2][0] * 100F);
+            val = hudMatrix.RB;
             if (val > this.maxVal)
                 val = this.maxVal;
             this.trackBarRB.Value = val;
@@ -301,7 +395,7 @@ namespace EliteMonitor
 
             // GR
 
-            val = (int)(hudMatrix[0][1] * 100F);
+            val = hudMatrix.GR;
             if (val > this.maxVal)
                 val = this.maxVal;
             this.trackBarGR.Value = val;
@@ -309,7 +403,7 @@ namespace EliteMonitor
 
             // GG
 
-            val = (int)(hudMatrix[1][1] * 100F);
+            val = hudMatrix.GG;
             if (val > this.maxVal)
                 val = this.maxVal;
             this.trackBarGG.Value = val;
@@ -317,7 +411,7 @@ namespace EliteMonitor
 
             // GB
 
-            val = (int)(hudMatrix[2][1] * 100F);
+            val = hudMatrix.GB;
             if (val > this.maxVal)
                 val = this.maxVal;
             this.trackBarGB.Value = val;
@@ -325,7 +419,7 @@ namespace EliteMonitor
 
             // BR
 
-            val = (int)(hudMatrix[0][2] * 100F);
+            val = hudMatrix.BR;
             if (val > this.maxVal)
                 val = this.maxVal;
             this.trackBarBR.Value = val;
@@ -333,7 +427,7 @@ namespace EliteMonitor
 
             // BG
 
-            val = (int)(hudMatrix[1][2] * 100F);
+            val = hudMatrix.BG;
             if (val > this.maxVal)
                 val = this.maxVal;
             this.trackBarBG.Value = val;
@@ -341,7 +435,7 @@ namespace EliteMonitor
 
             // BB
 
-            val = (int)(hudMatrix[2][2] * 100F);
+            val = hudMatrix.BB;
             if (val > this.maxVal)
                 val = this.maxVal;
             this.trackBarBB.Value = val;
@@ -354,7 +448,7 @@ namespace EliteMonitor
             applyMatrixToHud(this.hudMatrix);
         }
 
-        private void applyMatrixToHud(float[][] matrix)
+        private void applyMatrixToHud(HUDMatrix matrix)
         {
             if (this.updateInProgress)
                 return;
@@ -362,7 +456,8 @@ namespace EliteMonitor
 #if DEBUG
             StringBuilder sb = new StringBuilder();
             int f1 = 0;
-            foreach (float[] f2 in matrix)
+            float[][] matrixFloats = matrix.asFloats();
+            foreach (float[] f2 in matrixFloats)
             {
                 sb.AppendFormat("{0}: ", f1++, f2.ToString());
                 string floats = "[ ";
@@ -380,7 +475,7 @@ namespace EliteMonitor
 #endif
 
             ImageAttributes at = new ImageAttributes();
-            ColorMatrix cm = new ColorMatrix(matrix);
+            ColorMatrix cm = matrix.ColorMatrix();
             at.SetColorMatrix(cm, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
             if (this.currentHUD != null)
                 this.currentHUD.Dispose();
@@ -388,8 +483,6 @@ namespace EliteMonitor
             using (Graphics g = Graphics.FromImage(this.currentHUD))
             {
                 g.DrawImage(this.hud, new Rectangle(0, 0, hud.Width, hud.Height), 0, 0, hud.Width, hud.Height, GraphicsUnit.Pixel, at);
-                // TODO: Make own image(s)
-                g.DrawString("PLACEHOLDER IMAGE", new Font(this.Font.FontFamily, this.Font.Size, FontStyle.Bold), Brushes.Red, new Rectangle(0, 0, hud.Width, hud.Height));
                 g.Flush();
             }
             this.pictureBox1.Image = this.currentHUD;
@@ -402,7 +495,7 @@ namespace EliteMonitor
         {
             int val = ((TrackBar)sender).Value;
             this.colourRR.Text = val.ToString();
-            this.hudMatrix[0][0] = (float)((float)val / 100F);
+            this.hudMatrix.RR = val;
             applyMatrixToHud(this.hudMatrix);
         }
 
@@ -410,7 +503,7 @@ namespace EliteMonitor
         {
             int val = ((TrackBar)sender).Value;
             this.colourRG.Text = val.ToString();
-            this.hudMatrix[1][0] = (float)((float)val / 100F);
+            this.hudMatrix.RG = val;
             applyMatrixToHud(this.hudMatrix);
         }
 
@@ -418,7 +511,7 @@ namespace EliteMonitor
         {
             int val = ((TrackBar)sender).Value;
             this.colourRB.Text = val.ToString();
-            this.hudMatrix[2][0] = (float)((float)val / 100F);
+            this.hudMatrix.RB = val;
             applyMatrixToHud(this.hudMatrix);
         }
 
@@ -426,7 +519,7 @@ namespace EliteMonitor
         {
             int val = ((TrackBar)sender).Value;
             this.colourGR.Text = val.ToString();
-            this.hudMatrix[0][1] = (float)((float)val / 100F);
+            this.hudMatrix.GR = val;
             applyMatrixToHud(this.hudMatrix);
         }
 
@@ -434,7 +527,7 @@ namespace EliteMonitor
         {
             int val = ((TrackBar)sender).Value;
             this.colourGG.Text = val.ToString();
-            this.hudMatrix[1][1] = (float)((float)val / 100F);
+            this.hudMatrix.GG = val;
             applyMatrixToHud(this.hudMatrix);
         }
 
@@ -442,7 +535,7 @@ namespace EliteMonitor
         {
             int val = ((TrackBar)sender).Value;
             this.colourGB.Text = val.ToString();
-            this.hudMatrix[2][1] = (float)((float)val / 100F);
+            this.hudMatrix.GB = val;
             applyMatrixToHud(this.hudMatrix);
         }
 
@@ -450,7 +543,7 @@ namespace EliteMonitor
         {
             int val = ((TrackBar)sender).Value;
             this.colourBR.Text = val.ToString();
-            this.hudMatrix[0][2] = (float)((float)val / 100F);
+            this.hudMatrix.BR = val;
             applyMatrixToHud(this.hudMatrix);
         }
 
@@ -458,7 +551,7 @@ namespace EliteMonitor
         {
             int val = ((TrackBar)sender).Value;
             this.colourBG.Text = val.ToString();
-            this.hudMatrix[1][2] = (float)((float)val / 100F);
+            this.hudMatrix.BG = val;
             applyMatrixToHud(this.hudMatrix);
         }
 
@@ -466,7 +559,7 @@ namespace EliteMonitor
         {
             int val = ((TrackBar)sender).Value;
             this.colourBB.Text = val.ToString();
-            this.hudMatrix[2][2] = (float)((float)val / 100F);
+            this.hudMatrix.BB = val;
             applyMatrixToHud(this.hudMatrix);
         }
 
@@ -503,15 +596,11 @@ namespace EliteMonitor
             radioButton3.Checked = this.currentRange == Ranges.M200P200;
         }
 
+        /*[Obsolete("Use HUDMatrix.getXMLMatrix() instead", true)]
         private string createXMLMatrixText()
         {
             string[] lines = new string[3]
             {
-                /*
-                 * <MatrixRed> 1, 0, 0 </MatrixRed>
-                 * <MatrixGreen> 0, 1, 0 </MatrixGreen>
-                 * <MatrixBlue> 0, 0, 1 </MatrixBlue>
-                 */
                 string.Format("<MatrixRed> {0}, {1}, {2} </MatrixRed>", this.hudMatrix[0][0], this.hudMatrix[0][1], this.hudMatrix[0][2]),
                 string.Format("<MatrixGreen> {0}, {1}, {2} </MatrixGreen>", this.hudMatrix[1][0], this.hudMatrix[1][1], this.hudMatrix[1][2]),
                 string.Format("<MatrixBlue> {0}, {1}, {2} </MatrixBlue>", this.hudMatrix[2][0], this.hudMatrix[2][1], this.hudMatrix[2][2])
@@ -522,7 +611,7 @@ namespace EliteMonitor
                 sb.AppendLine(l);
             return sb.ToString();
 
-        }
+        }*/
 
         private void matrixTextBox_TextChanged(object sender, EventArgs e)
         {
@@ -537,6 +626,7 @@ namespace EliteMonitor
             {
                 int x = 0;
                 Ranges highestRange = Ranges.M0P100;
+                float[][] matrix = this.hudMatrix.asFloats();
                 foreach (String s in this.matrixTextBox.Lines)
                 {
                     int start = s.IndexOf('>') + 1;
@@ -545,25 +635,97 @@ namespace EliteMonitor
                     int y = 0;
                     foreach (string m in pars.Split(','))
                     {
-                        float f = Convert.ToSingle(m);
+                        float f = /*Convert.ToSingle(m);*/float.Parse(m);
+                        Console.WriteLine(string.Format("{0} / {1}", m, f));
                         if (f < 0 && highestRange < Ranges.M100P100)
                             highestRange = Ranges.M100P100;
                         else if ((f < -1 || f > 1) && highestRange < Ranges.M200P200)
                             highestRange = Ranges.M200P200;
-                        this.hudMatrix[x][y++] = f;
+                        matrix[x][y++] = f;
                     }
                     x++;
 
                 }
+                this.hudMatrix.setFromFloats(matrix);
                 switchRange(highestRange);
                 updateSlidersAndTextBoxes();
                 this.updateInProgress = false;
                 applyMatrixToHud();
                 this.dontProcessMatrixText = true;
-                this.matrixTextBox.Text = createXMLMatrixText().Trim();
+                this.matrixTextBox.Text = this.hudMatrix.getXMLMatrix();
                 this.dontProcessMatrixText = false;
             }
             catch (Exception _e) { Console.WriteLine(_e.Message + "\n" + _e.StackTrace); }
+        }
+
+        private void buttonSavePreset_Click(object sender, EventArgs e)
+        {
+            string presetName = Utils.Prompt("Please enter a name for this preset", "Enter preset name");
+            string hudsPath = MainForm.Instance.cacheController.hudPresetPath;
+            string hudPath = Path.Combine(hudsPath, String.Format("{0}.hud", presetName));
+            bool fileExists = File.Exists(hudPath);
+            if (!fileExists || (fileExists && MessageBox.Show($"A preset with the name '{presetName}' already exists, do you want to overwrite it?", "Confirm overwrite", MessageBoxButtons.YesNo) == DialogResult.Yes))
+            {
+                using (StreamWriter sw = new StreamWriter(hudPath))
+                {
+                    sw.WriteLine(JsonConvert.SerializeObject(this.hudMatrix, Formatting.Indented));
+                }
+                if (this.savedHUDs.ContainsKey(presetName))
+                    this.savedHUDs[presetName] = new HUDMatrix(this.hudMatrix);
+                else
+                    this.savedHUDs.Add(presetName, new HUDMatrix(this.hudMatrix));
+                if (!this.comboBoxLoadPreset.Items.Contains(presetName))
+                {
+                    this.comboBoxLoadPreset.Items.Add(presetName);
+                    this.comboBoxLoadPreset.SelectedIndex = this.comboBoxLoadPreset.Items.IndexOf(presetName);
+                }
+            }
+        }
+
+        private void buttonApply_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Are you sure you want to apply this HUD matrix?", "Confirm HUD apply", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                this.hudMatrix.writeToXMLFile();
+        }
+
+        private void comboBoxLoadPreset_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string hmName = ((ComboBox)sender).SelectedItem.ToString();
+            if (((ComboBox)sender).SelectedIndex <= this.stockHUDCount)
+                this.buttonDeletePreset.Enabled = false;
+            else
+                this.buttonDeletePreset.Enabled = true;
+            HUDMatrix hm = new HUDMatrix(this.savedHUDs[hmName]); // so we don't "pollute" the defaults/saved huds
+            this.hudMatrix = hm;
+            this.updateInProgress = true;
+            switchRange(hm.getHighestRange());
+            updateSlidersAndTextBoxes();
+            this.updateInProgress = false;
+            applyMatrixToHud();
+        }
+
+        private void comboBoxHUDImage_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Image toSwitch = this.hudImages[this.comboBoxHUDImage.SelectedItem.ToString()];
+            this.hud = toSwitch;
+            applyMatrixToHud();
+            updateRangeCheckboxes();
+            updateRangeCheckboxes();
+            updateMatrixTextBox();
+        }
+
+        private void buttonDeletePreset_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Are you sure you want to delete this preset?", "Confirm deletion", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                string presetName = this.comboBoxLoadPreset.SelectedItem.ToString();
+                string hudsPath = MainForm.Instance.cacheController.hudPresetPath;
+                string hudPath = Path.Combine(hudsPath, String.Format("{0}.hud", presetName));
+                this.savedHUDs.Remove(presetName);
+                this.comboBoxLoadPreset.Items.Remove(presetName);
+                File.Delete(hudPath);
+                this.comboBoxLoadPreset.SelectedIndex = 0;
+            }
         }
     }
 }

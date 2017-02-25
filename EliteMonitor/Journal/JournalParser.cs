@@ -355,7 +355,7 @@ namespace EliteMonitor.Journal
                 }
                 commander.addJournalEntry(je, checkDuplicates);
             }
-            if (!fullParseInProgress && Properties.Settings.Default.autoSwitchActiveCommander && !viewedCommander.Name.Equals(activeCommander.Name))
+            if (viewedCommander != null && activeCommander != null && commander != null && !fullParseInProgress && Properties.Settings.Default.autoSwitchActiveCommander && !viewedCommander.Name.Equals(activeCommander.Name))
             {
                 switchViewedCommander(commander);
                 if (!Properties.Settings.Default.autoSwitchMessagesDisplayed)
@@ -506,7 +506,7 @@ namespace EliteMonitor.Journal
                             goto readFile;
                         }
                     }
-                    Console.WriteLine("--> " + last.Length);
+                    //Console.WriteLine("--> " + last.Length);
                     Thread.Sleep(Properties.Settings.Default.tailFilePollInterval);
                 }
             });

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(HUDEditor));
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -53,7 +54,6 @@
             this.colourBB = new System.Windows.Forms.TextBox();
             this.colourBG = new System.Windows.Forms.TextBox();
             this.colourBR = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
             this.debugLabel = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
@@ -62,6 +62,13 @@
             this.radioButton3 = new System.Windows.Forms.RadioButton();
             this.matrixTextBox = new System.Windows.Forms.RichTextBox();
             this.label8 = new System.Windows.Forms.Label();
+            this.buttonSavePreset = new System.Windows.Forms.Button();
+            this.buttonApply = new System.Windows.Forms.Button();
+            this.comboBoxLoadPreset = new System.Windows.Forms.ComboBox();
+            this.comboBoxHUDImage = new System.Windows.Forms.ComboBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.buttonDeletePreset = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarRR)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarRG)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarRB)).BeginInit();
@@ -237,7 +244,7 @@
             // pictureBox1
             // 
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pictureBox1.InitialImage = global::EliteMonitor.Properties.Resources.elitehud;
+            this.pictureBox1.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.InitialImage")));
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.MaximumSize = new System.Drawing.Size(1280, 720);
             this.pictureBox1.Name = "pictureBox1";
@@ -326,16 +333,6 @@
             this.colourBR.Text = "0";
             this.colourBR.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(1143, 738);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(149, 23);
-            this.button1.TabIndex = 25;
-            this.button1.Text = "DEBUG: Force update";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
             // panel1
             // 
             this.panel1.AutoScroll = true;
@@ -359,7 +356,7 @@
             // label7
             // 
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(652, 743);
+            this.label7.Location = new System.Drawing.Point(652, 748);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(67, 23);
             this.label7.TabIndex = 28;
@@ -369,7 +366,7 @@
             // radioButton1
             // 
             this.radioButton1.Checked = true;
-            this.radioButton1.Location = new System.Drawing.Point(652, 769);
+            this.radioButton1.Location = new System.Drawing.Point(652, 774);
             this.radioButton1.Name = "radioButton1";
             this.radioButton1.Size = new System.Drawing.Size(67, 17);
             this.radioButton1.TabIndex = 29;
@@ -381,7 +378,7 @@
             // radioButton2
             // 
             this.radioButton2.AutoSize = true;
-            this.radioButton2.Location = new System.Drawing.Point(652, 792);
+            this.radioButton2.Location = new System.Drawing.Point(652, 797);
             this.radioButton2.Name = "radioButton2";
             this.radioButton2.Size = new System.Drawing.Size(67, 17);
             this.radioButton2.TabIndex = 30;
@@ -392,7 +389,7 @@
             // radioButton3
             // 
             this.radioButton3.AutoSize = true;
-            this.radioButton3.Location = new System.Drawing.Point(652, 815);
+            this.radioButton3.Location = new System.Drawing.Point(652, 820);
             this.radioButton3.Name = "radioButton3";
             this.radioButton3.Size = new System.Drawing.Size(67, 17);
             this.radioButton3.TabIndex = 31;
@@ -402,7 +399,7 @@
             // 
             // matrixTextBox
             // 
-            this.matrixTextBox.Location = new System.Drawing.Point(727, 776);
+            this.matrixTextBox.Location = new System.Drawing.Point(727, 781);
             this.matrixTextBox.Name = "matrixTextBox";
             this.matrixTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
             this.matrixTextBox.Size = new System.Drawing.Size(263, 51);
@@ -415,17 +412,94 @@
             // 
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.Location = new System.Drawing.Point(725, 760);
+            this.label8.Location = new System.Drawing.Point(725, 765);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(151, 13);
             this.label8.TabIndex = 34;
             this.label8.Text = "Import via existing matrix:";
+            // 
+            // buttonSavePreset
+            // 
+            this.buttonSavePreset.Location = new System.Drawing.Point(996, 764);
+            this.buttonSavePreset.Name = "buttonSavePreset";
+            this.buttonSavePreset.Size = new System.Drawing.Size(141, 23);
+            this.buttonSavePreset.TabIndex = 35;
+            this.buttonSavePreset.Text = "Save this HUD";
+            this.buttonSavePreset.UseVisualStyleBackColor = true;
+            this.buttonSavePreset.Click += new System.EventHandler(this.buttonSavePreset_Click);
+            // 
+            // buttonApply
+            // 
+            this.buttonApply.Location = new System.Drawing.Point(996, 820);
+            this.buttonApply.Name = "buttonApply";
+            this.buttonApply.Size = new System.Drawing.Size(141, 23);
+            this.buttonApply.TabIndex = 36;
+            this.buttonApply.Text = "Apply current HUD";
+            this.buttonApply.UseVisualStyleBackColor = true;
+            this.buttonApply.Click += new System.EventHandler(this.buttonApply_Click);
+            // 
+            // comboBoxLoadPreset
+            // 
+            this.comboBoxLoadPreset.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxLoadPreset.FormattingEnabled = true;
+            this.comboBoxLoadPreset.Location = new System.Drawing.Point(996, 793);
+            this.comboBoxLoadPreset.Name = "comboBoxLoadPreset";
+            this.comboBoxLoadPreset.Size = new System.Drawing.Size(141, 21);
+            this.comboBoxLoadPreset.TabIndex = 37;
+            this.comboBoxLoadPreset.SelectedIndexChanged += new System.EventHandler(this.comboBoxLoadPreset_SelectedIndexChanged);
+            // 
+            // comboBoxHUDImage
+            // 
+            this.comboBoxHUDImage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxHUDImage.FormattingEnabled = true;
+            this.comboBoxHUDImage.Location = new System.Drawing.Point(1143, 793);
+            this.comboBoxHUDImage.Name = "comboBoxHUDImage";
+            this.comboBoxHUDImage.Size = new System.Drawing.Size(141, 21);
+            this.comboBoxHUDImage.TabIndex = 38;
+            this.comboBoxHUDImage.SelectedIndexChanged += new System.EventHandler(this.comboBoxHUDImage_SelectedIndexChanged);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(1143, 776);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(93, 13);
+            this.label9.TabIndex = 39;
+            this.label9.Text = "Preview image:";
+            // 
+            // label10
+            // 
+            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label10.ForeColor = System.Drawing.Color.Red;
+            this.label10.Location = new System.Drawing.Point(725, 735);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(570, 26);
+            this.label10.TabIndex = 40;
+            this.label10.Text = resources.GetString("label10.Text");
+            // 
+            // buttonDeletePreset
+            // 
+            this.buttonDeletePreset.Location = new System.Drawing.Point(1143, 820);
+            this.buttonDeletePreset.Name = "buttonDeletePreset";
+            this.buttonDeletePreset.Size = new System.Drawing.Size(141, 23);
+            this.buttonDeletePreset.TabIndex = 41;
+            this.buttonDeletePreset.Text = "Delete selected preset";
+            this.buttonDeletePreset.UseVisualStyleBackColor = true;
+            this.buttonDeletePreset.Click += new System.EventHandler(this.buttonDeletePreset_Click);
             // 
             // HUDEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1303, 851);
+            this.Controls.Add(this.buttonDeletePreset);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.comboBoxHUDImage);
+            this.Controls.Add(this.comboBoxLoadPreset);
+            this.Controls.Add(this.buttonApply);
+            this.Controls.Add(this.buttonSavePreset);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.matrixTextBox);
             this.Controls.Add(this.radioButton3);
@@ -433,7 +507,6 @@
             this.Controls.Add(this.radioButton1);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.button1);
             this.Controls.Add(this.colourBB);
             this.Controls.Add(this.colourBG);
             this.Controls.Add(this.colourBR);
@@ -509,7 +582,6 @@
         public System.Windows.Forms.TextBox colourBB;
         public System.Windows.Forms.TextBox colourBG;
         public System.Windows.Forms.TextBox colourBR;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.RadioButton radioButton1;
@@ -518,5 +590,12 @@
         private System.Windows.Forms.RichTextBox matrixTextBox;
         private System.Windows.Forms.Label debugLabel;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Button buttonSavePreset;
+        private System.Windows.Forms.Button buttonApply;
+        private System.Windows.Forms.ComboBox comboBoxLoadPreset;
+        private System.Windows.Forms.ComboBox comboBoxHUDImage;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Button buttonDeletePreset;
     }
 }

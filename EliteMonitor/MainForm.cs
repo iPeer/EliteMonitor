@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,6 +65,27 @@ namespace EliteMonitor
             });
             eliteCheckerThread.IsBackground = true;
             eliteCheckerThread.Start();
+
+            Thread updateCheck = new Thread(() =>
+            {
+                WebClient wc = new WebClient();
+                JObject json = JObject.Parse(wc.DownloadString("https://ipeer.auron.co.uk/EliteMonitor/version.json"));
+                string version = (string)json["version"];
+                Version v = new Version(version);
+                this.logger.Log("Version check came back with {0}", version);
+                if (v > new Version(Utils.getApplicationVersion()))
+                {
+                    this.appVersionStatusLabel.Text = "UPDATE AVAILABLE!";
+                    this.logger.Log("Version running is out of date, prompting user for update.");
+                    if (MessageBox.Show("An update is available for EliteMonitor, would you like to download it now?", "Update available", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        Process.Start("https://ipeer.auron.co.uk/EliteMonitor/EliteMonitor.zip");
+                    }
+                }
+
+            });
+            updateCheck.IsBackground = true;
+            updateCheck.Start();
 
             /*string[] lines = new string[]
             {
