@@ -350,6 +350,41 @@ namespace EliteMonitor.Elite
         public void OnLoad()
         {
 
+            MainForm m = MainForm.Instance;
+            string messageText = String.Format("Applying post-load Journal entry patched for commander '{0}'", this.Name);
+            m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+            m.journalParser.logger.Log(messageText);
+
+            int patchVer = 0;
+
+            if (this.cacheVersion < (patchVer = 680)) // Update MaterialCollected, MaterialDiscovered and MaterialDiscarded
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("MaterialDiscovered") || a.Event.Equals("MaterialCollected") || a.Event.Equals("MaterialDiscarded"));
+                m.journalParser.logger.Log("{0} entries need updating to version {1} for commander '{2}'", toUpdate.Count, patchVer, this.Name);
+
+                DateTime timeStarted = DateTime.Now;
+                DateTime lastETAUpdate = DateTime.Now;
+                int lastPercent = 0;
+                int cEntry = 0;
+                foreach (JournalEntry j in toUpdate)
+                {
+                    double percent = ((double)cEntry++ / (double)toUpdate.Count) * 100.00;
+                    //Console.WriteLine(percent + " / " + lastPercent);
+                    if ((int)percent > lastPercent || DateTime.Now.Subtract(lastETAUpdate).TotalSeconds >= 1.00)
+                    {
+                        TimeSpan ts = (DateTime.Now - timeStarted);
+                        double timeLeft = (ts.TotalSeconds / cEntry) * (toUpdate.Count - cEntry);
+                        lastETAUpdate = DateTime.Now;
+                        lastPercent = (int)percent;
+                        m.InvokeIfRequired(() => m.appStatus.Text = String.Format("Updating Journal entries... ({0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft)));
+                    }
+                    Commander __;
+                    JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true);
+                    j.Data = nje.Data;
+                }
+                m.journalParser.logger.Log("{0} entries have been updated to version {1} for commander '{2}'", cEntry, patchVer, this.Name);
+            }
+
         }
     }
 }

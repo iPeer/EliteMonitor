@@ -119,6 +119,8 @@
     <Compile Include="Elite\Commander.cs" />
     <Compile Include="Elite\HUDMatrix.cs" />
     <Compile Include="Elite\JournalEntry.cs" />
+    <Compile Include="Elite\Material.cs" />
+    <Compile Include="Elite\Materials.cs" />
     <Compile Include="Elite\PlanetaryMaterialData.cs" />
     <Compile Include="Elite\Ranks.cs" />
     <Compile Include="Elite\Ships.cs" />

@@ -20,6 +20,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.ListView;
 
 namespace EliteMonitor
 {
@@ -36,6 +37,7 @@ namespace EliteMonitor
         private Thread eliteCheckerThread;
         private SQLiteConnection sql;
         private const int PRELOAD_BODY_DATA_LIMIT = 100000;
+        private string lastHighlight = "";
 
         public MainForm()
         {
@@ -191,7 +193,34 @@ namespace EliteMonitor
         private void eventFilterDropdown_SelectionChangeCommitted(object sender, EventArgs e)
         {
             string selected = eventFilterDropdown.SelectedItem.ToString();
-            foreach (ListViewItem i in eventList.Items)
+
+            if (selected.Equals(this.lastHighlight)) return;
+
+            IEnumerable<ListViewItem> items = this.eventList.Items.Cast<ListViewItem>();
+            if (!this.lastHighlight.Equals(string.Empty))
+            {
+                List<ListViewItem> toRemove = items.Where(a => a.SubItems[1].Text.Equals(this.lastHighlight)).ToList();
+                foreach (ListViewItem i in toRemove)
+                {
+                    if (defaultColours.ContainsKey(i.SubItems[1].Text))
+                        i.BackColor = defaultColours[i.SubItems[1].Text];
+                }
+                this.lastHighlight = selected;
+            }
+
+            List<ListViewItem> toAdd = items.Where(a => a.SubItems[1].Text.Equals(selected)).ToList();
+            if (toAdd.Count > 0)
+            {
+                foreach (ListViewItem i in toAdd)
+                {
+                    if (!defaultColours.ContainsKey(i.SubItems[1].Text))
+                        defaultColours.Add(i.SubItems[1].Text, i.BackColor);
+                    i.BackColor = Color.LightBlue;
+                }
+                this.eventList.EnsureVisible(this.eventList.Items.IndexOf(toAdd.First()));
+            }
+
+            /*foreach (ListViewItem i in eventList.Items)
             {
                 if (i.SubItems[1].Text.Equals(selected))
                 {
@@ -207,7 +236,7 @@ namespace EliteMonitor
                     if (defaultColours.ContainsKey(i.SubItems[1].Text))
                         i.BackColor = defaultColours[i.SubItems[1].Text];
                 }
-            }
+            }*/
         }
 
         delegate void ThreadSafeAppStatusLabelTextChange(string text);

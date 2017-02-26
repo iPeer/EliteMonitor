@@ -205,7 +205,7 @@ namespace EliteMonitor.Caching
                 foreach (JournalEntry je in needsUpdating)
                 {
                     Commander __ = c;
-                    JournalEntry nje = mainForm.journalParser.parseEvent(je.Json, out __);
+                    JournalEntry nje = mainForm.journalParser.parseEvent(je.Json, out __, true);
                     if (nje.isKnown)
                     {
                         updated++;

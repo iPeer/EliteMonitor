@@ -61,7 +61,7 @@ namespace EliteMonitor.Journal
             }
         }
 
-        public JournalEntry parseEvent(string json, out Commander commander)
+        public JournalEntry parseEvent(string json, out Commander commander, bool isReparse = false)
         {
             /*
             { "timestamp":"2017-01-26T21:23:18Z", "event":"Fileheader", "part":1, "language":"English\\UK", "gameversion":"2.2", "build":"r131487/r0 " }
@@ -153,10 +153,13 @@ namespace EliteMonitor.Journal
                         else
                             price = (long)j["TotalSale"];
                         string prefix = b ? "Bought" : "Sold";
-                        if (b)
-                            commander.deductCredits(price);
-                        else
-                            commander.addCredits(price);
+                        if (!isReparse)
+                        {
+                            if (b)
+                                commander.deductCredits(price);
+                            else
+                                commander.addCredits(price);
+                        }
                         return new JournalEntry(timestamp, @event, $"{prefix} {count} {product} for {String.Format("{0:n0}", price)} credits", j);
                     case "SendText":
                         string message = (string)j["Message"];
@@ -197,18 +200,21 @@ namespace EliteMonitor.Journal
                     case "RefuelAll":
                         long cost = (long)j["Cost"];
                         float amount = (float)j["Amount"];
-                        commander.deductCredits(cost);
+                        if (!isReparse)
+                            commander.deductCredits(cost);
                         return new JournalEntry(timestamp, @event, $"Refuelled {String.Format("{0:f2}", amount)} tonnes for {String.Format("{0:n0}", cost)} credits", j);
                     case "BuyAmmo":
                         cost = (long)j["Cost"];
-                        commander.deductCredits(cost);
+                        if (!isReparse)
+                            commander.deductCredits(cost);
                         return new JournalEntry(timestamp, @event, $"Refilled ammunition for {String.Format("{0:n0}", cost)} credits", j);
                     case "FSDJump":
                         return new JournalEntry(timestamp, @event, $"Jumped to {(string)j["StarSystem"]} ({String.Format("{0:f2}", (float)j["JumpDist"])}Ly)", j);
                     case "RepairPartial": // Legacy
                     case "RepairAll":
                         cost = (long)j["Cost"];
-                        commander.deductCredits(cost);
+                        if (!isReparse)
+                            commander.deductCredits(cost);
                         return new JournalEntry(timestamp, @event, $"Repaired ship for {String.Format("{0:n0}", cost)} credits", j);
                     case "SupercruiseExit":
                         string system = (string)j["StarSystem"];
@@ -224,28 +230,32 @@ namespace EliteMonitor.Journal
                     case "MaterialCollected":
                         string material = (string)j["Name"];
                         count = (int)j["Count"];
-                        commander.addMaterial(material, count);
-                        /*if (_materialCounts.ContainsKey(material))
-                        {
-                            _materialCounts[material] += count;
-                        }
-                        else
-                            _materialCounts.Add(material, count);*/
-                        return new JournalEntry(timestamp, @event, $"Collected {material}", j);
-                    case "MaterialDisgarded":
+                        string category = (string)j["Category"];
+                        if (!isReparse)
+                            commander.addMaterial(material, count);
+                        return new JournalEntry(timestamp, @event, String.Format("Collected. {0} : {1} ({2})", category, Materials.getMaterialNameFromInternalName(material), count), j);
+                    case "MaterialDiscovered":
+                        material = (string)j["Name"];
+                        category = (string)j["Category"];
+                        return new JournalEntry(timestamp, @event, String.Format("Discovered new material: {0} : {1}", category, Materials.getMaterialNameFromInternalName(material)), j);
+                    case "MaterialDiscarded":
                         material = (string)j["Name"];
                         count = (int)j["Count"];
-                        commander.removeMaterial(material, count);
+                        if (!isReparse)
+                            commander.removeMaterial(material, count);
                         //_materialCounts[material] -= count;
-                        return new JournalEntry(timestamp, @event, $"Disgarded {material}", j);
+                        return new JournalEntry(timestamp, @event, String.Format("Discarded. {0} : {1} ({2})", Materials.getTypeForMaterialByInternalName(material), Materials.getMaterialNameFromInternalName(material), count), j);
                     case "MissionCompleted":
                         //Console.WriteLine(j.ToString());
                         bool donate = j["Reward"] == null;
                         long credits = donate ? (long)j["Donation"] : (long)j["Reward"];
-                        if (donate)
-                            commander.deductCredits(credits);
-                        else
-                            commander.addCredits(credits);
+                        if (!isReparse)
+                        {
+                            if (donate)
+                                commander.deductCredits(credits);
+                            else
+                                commander.addCredits(credits);
+                        }
                         prefix = donate ? "Donated" : "Rewarded";
                         return new JournalEntry(timestamp, @event, $"Completed mission. {prefix} {String.Format("{0:n0}", credits)} credits.", j);
                     case "FuelScoop":
