@@ -105,7 +105,7 @@ namespace EliteMonitor.Journal
                         string commanderShip = (string)j["Ship"];
                         try
                         {
-                            commanderShip = Ships.RealShipNames[commanderShip.ToLower()];
+                            commanderShip = mainForm.Database.getShipNameFromInternalName(commanderShip.ToLower());
                         }
                         catch
                         {
@@ -189,11 +189,21 @@ namespace EliteMonitor.Journal
                         string stationName = (string)j["StationName"];
                         string stationType = (string)j["StationType"];
                         string starSystem = (string)j["StarSystem"];
+                        if (!isReparse)
+                        {
+                            commander.isDocked = true;
+                            commander.CurrentSystem = starSystem;
+                            commander.CurrentLocation = stationName;
+                        }
                         string eventText = String.Format("Docked at {0}{1} in {2}", stationName, stationType == null || stationType.Equals(string.Empty) ? "" : $" ({stationType})", starSystem);
                         return new JournalEntry(timestamp, @event, eventText, j);
                     case "Undocked":
                         stationName = (string)j["StationName"];
                         stationType = (string)j["StationType"];
+                        if (!isReparse)
+                        {
+                            commander.isDocked = false;
+                        }
                         eventText = String.Format("Undocked from {0}{1}", stationName, stationType == null || stationType.Equals(string.Empty) ? "" : $" ({stationType})");
                         return new JournalEntry(timestamp, @event, eventText, j);
                     case "RefuelPartial": // Legacy
@@ -209,6 +219,11 @@ namespace EliteMonitor.Journal
                             commander.deductCredits(cost);
                         return new JournalEntry(timestamp, @event, $"Refilled ammunition for {String.Format("{0:n0}", cost)} credits", j);
                     case "FSDJump":
+                        if (!isReparse)
+                        {
+                            commander.CurrentSystem = (string)j["StarSystem"];
+                            commander.CurrentLocation = string.Empty;
+                        }
                         return new JournalEntry(timestamp, @event, $"Jumped to {(string)j["StarSystem"]} ({String.Format("{0:f2}", (float)j["JumpDist"])}Ly)", j);
                     case "RepairPartial": // Legacy
                     case "RepairAll":
@@ -220,9 +235,19 @@ namespace EliteMonitor.Journal
                         string system = (string)j["StarSystem"];
                         string body = (string)j["Body"];
                         string bodyType = (string)j["BodyType"];
+                        if (!isReparse)
+                        {
+                            commander.CurrentSystem = system;
+                            commander.CurrentLocation = body;
+                        }
                         return new JournalEntry(timestamp, @event, $"Exited Supercruise in {system} near {body} ({bodyType})", j);
                     case "SupercruiseEntry":
                         system = (string)j["StarSystem"];
+                        if (!isReparse)
+                        {
+                            commander.CurrentSystem = system;
+                            commander.CurrentLocation = string.Empty;
+                        }
                         return new JournalEntry(timestamp, @event, $"Entered Supercruise in {system}", j);
                     case "ShieldState":
                         bool s = (bool)j["ShieldsUp"];
@@ -233,18 +258,18 @@ namespace EliteMonitor.Journal
                         string category = (string)j["Category"];
                         if (!isReparse)
                             commander.addMaterial(material, count);
-                        return new JournalEntry(timestamp, @event, String.Format("Collected. {0} : {1} ({2})", category, Materials.getMaterialNameFromInternalName(material), count), j);
+                        return new JournalEntry(timestamp, @event, String.Format("Collected. {0} : {1} ({2})", category, mainForm.Database.getMaterialNameFromInternalName(material), count), j);
                     case "MaterialDiscovered":
                         material = (string)j["Name"];
                         category = (string)j["Category"];
-                        return new JournalEntry(timestamp, @event, String.Format("Discovered new material: {0} : {1}", category, Materials.getMaterialNameFromInternalName(material)), j);
+                        return new JournalEntry(timestamp, @event, String.Format("Discovered new material: {0} : {1}", category, mainForm.Database.getMaterialNameFromInternalName(material)), j);
                     case "MaterialDiscarded":
                         material = (string)j["Name"];
                         count = (int)j["Count"];
                         if (!isReparse)
                             commander.removeMaterial(material, count);
                         //_materialCounts[material] -= count;
-                        return new JournalEntry(timestamp, @event, String.Format("Discarded. {0} : {1} ({2})", Materials.getTypeForMaterialByInternalName(material), Materials.getMaterialNameFromInternalName(material), count), j);
+                        return new JournalEntry(timestamp, @event, String.Format("Discarded. {0} : {1} ({2})", mainForm.Database.getTypeForMaterialByInternalName(material), mainForm.Database.getMaterialNameFromInternalName(material), count), j);
                     case "MissionCompleted":
                         //Console.WriteLine(j.ToString());
                         bool donate = j["Reward"] == null;
@@ -262,12 +287,76 @@ namespace EliteMonitor.Journal
                         return new JournalEntry(timestamp, @event, $"Scooped {String.Format("{0:f2}", (float)j["Scooped"])} tonnes of fuel.", j);
                     case "ModuleRetrieve":
                         string shipname = (string)j["Ship"];
+                        string module = (string)j["RetrievedItem_Localised"];
+                        string moduleInternal = (string)j["RetrievedItem"];
+                        string[] moduleClassandSize = EliteUtils.getSizeAndClassFromInternalName(moduleInternal, true);
+                        bool hasStored = true;
+                        string moduleStored, moduleStoredInternal, fullStoredModuleName = string.Empty;
+                        string[] moduleStoredClassandSize;
                         try
                         {
-                            shipname = Ships.RealShipNames[shipname];
+                            moduleStored = (string)j["SwapOutItem_Localised"];
+                            moduleStoredInternal = (string)j["SwapOutItem"];
+                            moduleStoredClassandSize = EliteUtils.getSizeAndClassFromInternalName(moduleStoredInternal, true);
+                            fullStoredModuleName = string.Format("{0} {1}", string.Join("", moduleStoredClassandSize), moduleStored);
+                        }
+                        catch { hasStored = false; }
+
+                        try
+                        {
+                            shipname = mainForm.Database.getShipNameFromInternalName(shipname);
                         }
                         catch { }
-                        return new JournalEntry(timestamp, @event, String.Format("Transferred module '{0}' to {1}", (string)j["RetrievedItem_Localised"], shipname), j);
+                        string fullModuleName = string.Format("{0} {1}", string.Join("", moduleClassandSize), module);
+                        string eText = string.Empty;
+                        if (hasStored)
+                            eText = string.Format("Swapped '{0}' with '{1}' in your {2}", fullStoredModuleName, fullModuleName, shipname);
+                        else
+                            eText = String.Format("Transferred module '{0}' to your {1}", fullModuleName, shipname);
+                        return new JournalEntry(timestamp, @event, eText, j);
+                    case "ModuleStore":
+                        shipname = (string)j["Ship"];
+                        module = (string)j["StoredItem_Localised"];
+                        moduleInternal = (string)j["StoredItem"];
+                        moduleClassandSize = EliteUtils.getSizeAndClassFromInternalName(moduleInternal, true);
+                        try
+                        {
+                            shipname = mainForm.Database.getShipNameFromInternalName(shipname);
+                        }
+                        catch { }
+                        fullModuleName = string.Format("{0} {1}", string.Join("", moduleClassandSize), module);
+                        return new JournalEntry(timestamp, @event, String.Format("Stored module '{0}' from your {1}", fullModuleName, shipname), j);
+                    case "ModuleBuy":
+                        bool partExchange = true;
+                        string soldModule = string.Empty, soldModuleFull = string.Empty;
+                        long soldModulePrice = 0;
+                        try
+                        {
+                            soldModulePrice = (long)j["SellPrice"];
+                            soldModule = (string)j["SellItem_Localised"];
+                            string sMI = (string)j["SellItem"];
+                            string[] sMICS = EliteUtils.getSizeAndClassFromInternalName(sMI, true);
+                            soldModuleFull = string.Format("{0} {1}", string.Join("", sMICS), soldModule);
+                        }
+                        catch { partExchange = false; }
+
+                        long buyModulePrice = (long)j["BuyPrice"];
+                        string buyModule = (string)j["BuyItem_Localised"];
+                        string bMI = (string)j["BuyItem"];
+                        string[] bMICS = EliteUtils.getSizeAndClassFromInternalName(bMI, true);
+                        string buyModuleFull = string.Format("{0} {1}", string.Join("", bMICS), buyModule);
+
+                        long totalCost = buyModulePrice - soldModulePrice;
+
+                        if (partExchange)
+                            eText = string.Format("Traded in '{0}' for '{1}'. {3}: {2:n0}", soldModuleFull, buyModuleFull, Math.Abs(totalCost), totalCost < 0L ? "Gain" : "Loss");
+                        else
+                            eText = string.Format("Purchased '{0}' for {1:n0} credits", buyModuleFull, totalCost);
+
+                        if (!isReparse)
+                            commander.adjustCredits(totalCost);
+
+                        return new JournalEntry(timestamp, @event, eText, j);
                     case "EjectCargo":
                         string cargo = (string)j["Type"];
                         count = (int)j["Count"];
@@ -281,16 +370,63 @@ namespace EliteMonitor.Journal
                         string realRank = Ranks.rankNames[skill.ToLower()][rank];
                         commander.applyPromotion(skill, rank);
                         return new JournalEntry(timestamp, @event, $"Promoted to {realRank} in {skill.Replace("Explore", "Exploration")}", j);
+                    case "FactionKillBond":
+                        int value = (int)j["Reward"];
+                        string issuingFaction = (string)j["AwardingFaction"];
+                        string againstFaction = (string)j["VictimFaction"];
+                        eText = string.Format("Combat Bond valued at {0:n0} awarded from {1} for destruction of ship from {2}.", value, issuingFaction, againstFaction);
+                        return new JournalEntry(timestamp, @event, eText, j);
+                    case "Bounty":
+                        try
+                        {
+                            value = (int)j["TotalReward"];
+                        }
+                        catch { value = (int)j["Reward"]; }
+                        againstFaction = (string)j["VictimFaction"];
+                        string ship = string.Empty;
+                        try
+                        {
+                            ship = (string)j["Target"];
+                        }
+                        catch { }
+                        if (string.IsNullOrEmpty(ship))
+                            eText = string.Format("Bountry credit of {0:n0} awarded.", value);
+                        else 
+                            eText = string.Format("Bountry credit of {0:n0} awarded for destruction of {1} {2}.", value, againstFaction, mainForm.Database.getShipNameFromInternalName(ship));
+                        return new JournalEntry(timestamp, @event, eText, j);
+                    case "RedeemVoucher":
+                        value = (int)j["Amount"];
+                        string voucherType = (string)j["Type"];
+                        try
+                        {
+                            voucherType = mainForm.Database.VoucherTypes[voucherType];
+                        }
+                        catch { }
+                        if (!isReparse)
+                            commander.addCredits(value);
+                        eText = string.Format("Redeemed {0}s valued at {1:n0}", voucherType, value);
+                        return new JournalEntry(timestamp, @event, eText, j);
+                    case "HeatWarning":
+                        return new JournalEntry(timestamp, @event, "Heat levels critical!", j);
+                    case "HullDamage":
+                        return new JournalEntry(timestamp, @event, string.Format("Took hull damage! Hull health: {0:n0}%", (float)j["Health"] * 100.00), j);
+                    case "ShipyardSwap":
+                        string oldShip = (string)j["StoreOldShip"];
+                        string newShip = (string)j["ShipType"];
+                        eText = string.Format("Switch from ship {0} to {1}.", mainForm.Database.getShipNameFromInternalName(oldShip), mainForm.Database.getShipNameFromInternalName(newShip));
+                        if (!isReparse)
+                            commander.Ship = mainForm.Database.getShipNameFromInternalName(newShip);
+                        return new JournalEntry(timestamp, @event, eText, j);
                     default:
                         return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
                 }
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                this.logger.Log("Exception while parsing event '{1}': {0}", LogLevel.ERR, e.Message, @event);
+                this.logger.Log("Exception while parsing event '{1}': {0}", LogLevel.ERR, exception.Message, @event);
                 this.logger.Log("Event JSON: {0}", j.ToString());
-                this.logger.Log("{0}", LogLevel.ERR, e.StackTrace);
-                throw new Exception(e.Message, e);
+                this.logger.Log("{0}", LogLevel.ERR, exception.StackTrace);
+                throw new Exception(exception.Message, exception);
             }
            
         }
@@ -329,16 +465,17 @@ namespace EliteMonitor.Journal
                     }
                 }
             }
-            createJournalEntries(allJournalEntries);
+            createJournalEntries(allJournalEntries, false, true);
             mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Switching commander...");
             switchViewedCommander(activeCommander);
             mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Ready.");
             this.fullParseInProgress = false;
         }
 
-        public void createJournalEntries(List<string> entries, bool checkDuplicates = false)
+        public void createJournalEntries(List<string> entries, bool checkDuplicates = false, bool dontUpdateDisplays = false)
         {
             mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Generating Journal entries...");
+            mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.BeginUpdate());
             int cEntry = 0;
             int lastPercent = 0;
             DateTime timeStarted = DateTime.Now;
@@ -364,8 +501,9 @@ namespace EliteMonitor.Journal
                     mainForm.comboCommanderList.InvokeIfRequired(() => mainForm.comboCommanderList.Items.Add(commander.Name));
                     commander.JournalEntries = new List<JournalEntry>(entries.Count);
                 }
-                commander.addJournalEntry(je, checkDuplicates);
+                commander.addJournalEntry(je, checkDuplicates, dontUpdateDisplays);
             }
+            mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.EndUpdate());
             if (viewedCommander != null && activeCommander != null && commander != null && !fullParseInProgress && Properties.Settings.Default.autoSwitchActiveCommander && !viewedCommander.Name.Equals(activeCommander.Name))
             {
                 switchViewedCommander(commander);
@@ -468,8 +606,15 @@ namespace EliteMonitor.Journal
                 lvi.BackColor = Color.Pink;
                 lvi.SubItems[3].Text = "UNKNOWN EVENT";
             }
-            else if (j.Event.Equals("LoadGame"))
-                lvi.BackColor = Color.LightGreen;
+            if (Properties.Settings.Default.enableEntryHighlighting)
+            {
+                if (j.Event.Equals("LoadGame"))
+                    lvi.BackColor = Color.LightGreen;
+                else if (j.Event.Equals("SendText") || j.Event.Equals("ReceiveText"))
+                    lvi.BackColor = Color.LightGoldenrodYellow;
+                else if (j.Event.Equals("FSDJump"))
+                    lvi.BackColor = Color.LightGray;
+            }
             return lvi;
         }
 

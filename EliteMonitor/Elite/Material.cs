@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,11 +20,11 @@ namespace EliteMonitor.Elite
     public class Material
     {
 
-        public string InternalName { get; private set; }
-        public string Name { get; private set; }
-        public string Type { get; private set; }
-        public Rarity Rarity { get; private set; }
-        public string Symbol { get; private set; }
+        public string InternalName { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public Rarity Rarity { get; set; }
+        public string Symbol { get; set; }
 
         public Material(string internalName, string type, string realName, Rarity rarity, string symbol = null)
         {

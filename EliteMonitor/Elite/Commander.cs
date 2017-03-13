@@ -44,6 +44,10 @@ namespace EliteMonitor.Elite
         public int cqcRank { get; set; }
         public int federationRank { get; set; }
         public int imperialRank { get; set; }
+        public bool isDocked { get; set; }
+        public bool isLanded { get; set; }
+        public string CurrentSystem { get; set; }
+        public string CurrentLocation { get; set; }
 
         [JsonIgnore]
         public string combatRankName
@@ -151,6 +155,13 @@ namespace EliteMonitor.Elite
             }
         }
 
+        public Commander adjustCredits(long amount)
+        {
+            if (amount < 0)
+                return deductCredits(Math.Abs(amount));
+            else return addCredits(amount);
+        }
+
         public Commander deductCredits(long credits)
         {
             this.Credits -= credits;
@@ -253,7 +264,13 @@ namespace EliteMonitor.Elite
         {
             // Commander data
 
-            m.commanderLabel.InvokeIfRequired(() => m.commanderLabel.Text = String.Format("{0} | {1} {2}", this.Name, this.Ship, !this.PrivateGroup.Equals(string.Empty) && this.PrivateGroup != null ? $"/ {this.PrivateGroup}" : ""));
+            m.commanderLabel.InvokeIfRequired(() => {
+                string format = "{0} {1} | {2} | {3}{4} in {5}";
+                if (string.IsNullOrEmpty(this.CurrentLocation) && string.IsNullOrEmpty(this.CurrentSystem))
+                    format = "{0} {1} | {2}";
+                m.commanderLabel.Text = string.Format(format, this.Name, string.IsNullOrEmpty(this.PrivateGroup) ? "" : $"({this.PrivateGroup})", this.Ship, this.isDocked || this.isLanded ? this.isLanded ? "Landed at " : "Docked at " : "", this.CurrentLocation, this.CurrentSystem);
+            });
+            //m.commanderLabel.InvokeIfRequired(() => m.commanderLabel.Text = String.Format("{0} | {1} {2}", this.Name, this.Ship, !this.PrivateGroup.Equals(string.Empty) && this.PrivateGroup != null ? $"/ {this.PrivateGroup}" : ""));
 
             // Credits
 
@@ -314,7 +331,7 @@ namespace EliteMonitor.Elite
             });
         }
 
-        public Commander addJournalEntry(JournalEntry je, bool checkDuplicates = false)
+        public Commander addJournalEntry(JournalEntry je, bool checkDuplicates = false, bool dontUpdateDialogDisplays = false)
         {
             if (!checkDuplicates || (checkDuplicates && !this.JournalEntries.Contains(je)))
             {
@@ -328,7 +345,8 @@ namespace EliteMonitor.Elite
                 this.JournalEntries.Add(je);
                 if (this.isViewed)
                 {
-                    this.updateDialogDisplays();
+                    if (!dontUpdateDialogDisplays)
+                        this.updateDialogDisplays();
                     MainForm m = MainForm.Instance;
                     m.eventList.InvokeIfRequired(() => m.eventList.Items.Insert(0, m.journalParser.getListViewEntryForEntry(je)));
                 }
@@ -360,31 +378,41 @@ namespace EliteMonitor.Elite
             if (this.cacheVersion < (patchVer = 680)) // Update MaterialCollected, MaterialDiscovered and MaterialDiscarded
             {
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("MaterialDiscovered") || a.Event.Equals("MaterialCollected") || a.Event.Equals("MaterialDiscarded"));
-                m.journalParser.logger.Log("{0} entries need updating to version {1} for commander '{2}'", toUpdate.Count, patchVer, this.Name);
-
-                DateTime timeStarted = DateTime.Now;
-                DateTime lastETAUpdate = DateTime.Now;
-                int lastPercent = 0;
-                int cEntry = 0;
-                foreach (JournalEntry j in toUpdate)
-                {
-                    double percent = ((double)cEntry++ / (double)toUpdate.Count) * 100.00;
-                    //Console.WriteLine(percent + " / " + lastPercent);
-                    if ((int)percent > lastPercent || DateTime.Now.Subtract(lastETAUpdate).TotalSeconds >= 1.00)
-                    {
-                        TimeSpan ts = (DateTime.Now - timeStarted);
-                        double timeLeft = (ts.TotalSeconds / cEntry) * (toUpdate.Count - cEntry);
-                        lastETAUpdate = DateTime.Now;
-                        lastPercent = (int)percent;
-                        m.InvokeIfRequired(() => m.appStatus.Text = String.Format("Updating Journal entries... ({0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft)));
-                    }
-                    Commander __;
-                    JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true);
-                    j.Data = nje.Data;
-                }
-                m.journalParser.logger.Log("{0} entries have been updated to version {1} for commander '{2}'", cEntry, patchVer, this.Name);
+                updateJournalEntries(toUpdate, m, patchVer);
+            }
+            if (this.cacheVersion < (patchVer = 770))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("ModuleRetrieve"));
+                updateJournalEntries(toUpdate, m, patchVer);
             }
 
+        }
+
+        private void updateJournalEntries(List<JournalEntry> toUpdate, MainForm m, int patchVer)
+        {
+            m.journalParser.logger.Log("{0} entries need updating to version {1} for commander '{2}'", toUpdate.Count, patchVer, this.Name);
+
+            DateTime timeStarted = DateTime.Now;
+            DateTime lastETAUpdate = DateTime.Now;
+            int lastPercent = 0;
+            int cEntry = 0;
+            foreach (JournalEntry j in toUpdate)
+            {
+                double percent = ((double)cEntry++ / (double)toUpdate.Count) * 100.00;
+                //Console.WriteLine(percent + " / " + lastPercent);
+                if ((int)percent > lastPercent || DateTime.Now.Subtract(lastETAUpdate).TotalSeconds >= 1.00)
+                {
+                    TimeSpan ts = (DateTime.Now - timeStarted);
+                    double timeLeft = (ts.TotalSeconds / cEntry) * (toUpdate.Count - cEntry);
+                    lastETAUpdate = DateTime.Now;
+                    lastPercent = (int)percent;
+                    m.InvokeIfRequired(() => m.appStatus.Text = String.Format("Updating Journal entries... ({0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft)));
+                }
+                Commander __;
+                JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true);
+                j.Data = nje.Data;
+            }
+            m.journalParser.logger.Log("{0} entries have been updated to version {1} for commander '{2}'", cEntry, patchVer, this.Name);
         }
     }
 }

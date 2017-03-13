@@ -38,16 +38,21 @@ namespace EliteMonitor
         private SQLiteConnection sql;
         private const int PRELOAD_BODY_DATA_LIMIT = 100000;
         private string lastHighlight = "";
+        public EliteDatabase Database;
 
         public MainForm()
         {
             this.logger = new Logger("Main");
             InitializeComponent();
+#if !DEBUG
+            dEBUGToolStripMenuItem.Visible = false;
+#endif
             appVersionStatusLabel.Text = Utils.getApplicationVersion();
             eventFilterDropdown.SelectedIndex = eventFilterDropdown.Items.IndexOf("NONE");
             Instance = this;
             journalParser = new JournalParser(this);
             cacheController = new CacheController(this);
+            Database = new EliteDatabase(this);
             if (!cacheController.cacheExists())
             {
                 startNoCacheLoadThread();
@@ -98,6 +103,13 @@ namespace EliteMonitor
             };
             foreach (string s in lines)
                 jp.parseEvent(s.Replace(@"\", ""));*/
+
+            // I'm too lazy to write these JSON files, so I just export them :)
+            /*using (StreamWriter sw = new StreamWriter(Path.Combine(cacheController.dataPath, "commodities.json")))
+            {
+                sw.WriteLine(JsonConvert.SerializeObject(Materials.MATERIALS, Formatting.Indented));
+            }*/
+
         }
 
         public void startNoCacheLoadThread()

@@ -119,7 +119,7 @@ namespace EliteMonitor.Caching
                         this._journalLengthCache.Add(f.Name, f.Length);
                 }
                 this.logger.Log("Creating up to {0} new entries from files that failed verification", newEntries.Count);
-                mainForm.journalParser.createJournalEntries(newEntries, true);
+                mainForm.journalParser.createJournalEntries(newEntries, true, true);
                 this.saveAllCaches();
             }
         }

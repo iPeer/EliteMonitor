@@ -58,5 +58,29 @@ namespace EliteMonitor.Properties {
                 this["tailFilePollInterval"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool enableEntryHighlighting {
+            get {
+                return ((bool)(this["enableEntryHighlighting"]));
+            }
+            set {
+                this["enableEntryHighlighting"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool moduleClassBeforeSize {
+            get {
+                return ((bool)(this["moduleClassBeforeSize"]));
+            }
+            set {
+                this["moduleClassBeforeSize"] = value;
+            }
+        }
     }
 }

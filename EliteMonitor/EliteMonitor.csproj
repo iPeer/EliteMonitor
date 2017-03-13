@@ -117,13 +117,12 @@
     <Compile Include="Elite\BasicSystem.cs" />
     <Compile Include="Elite\Body.cs" />
     <Compile Include="Elite\Commander.cs" />
+    <Compile Include="Elite\EliteDatabase.cs" />
     <Compile Include="Elite\HUDMatrix.cs" />
     <Compile Include="Elite\JournalEntry.cs" />
     <Compile Include="Elite\Material.cs" />
-    <Compile Include="Elite\Materials.cs" />
     <Compile Include="Elite\PlanetaryMaterialData.cs" />
     <Compile Include="Elite\Ranks.cs" />
-    <Compile Include="Elite\Ships.cs" />
     <Compile Include="Elite\EliteUtils.cs" />
     <Compile Include="Extensions\ControlExtensions.cs" />
     <Compile Include="Extensions\JsonExtensions.cs" />
@@ -146,6 +145,8 @@
     <Compile Include="Misc\AssemblyBuildTimeAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utilities\DownloadableDataItem.cs" />
+    <Compile Include="Utilities\FileDownloadHandler.cs" />
     <Compile Include="Utilities\Utils.cs" />
     <EmbeddedResource Include="HUDEditor.resx">
       <DependentUpon>HUDEditor.cs</DependentUpon>
@@ -189,7 +190,6 @@
     <None Include="Resources\359320_20170224211724_1.png" />
     <None Include="Resources\359320_20170224211525_1.png" />
     <None Include="Resources\359320_20170224211458_1.png" />
-    <None Include="Resources\elitehud.jpg" />
     <None Include="Resources\federation.png" />
     <None Include="Resources\empire.png" />
     <None Include="Resources\alliance.png" />

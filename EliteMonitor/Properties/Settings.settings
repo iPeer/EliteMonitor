@@ -11,5 +11,11 @@
     <Setting Name="tailFilePollInterval" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">30000</Value>
     </Setting>
+    <Setting Name="enableEntryHighlighting" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="moduleClassBeforeSize" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

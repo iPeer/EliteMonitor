@@ -13,7 +13,8 @@ namespace EliteMonitor.Elite
 {
     public class HUDMatrix
     {
-        private HUDMatrix hUDMatrix;
+
+        public static float CONTRAST = .2f;
 
         public int RR { get; set; } = 100;
         public int RG { get; set; }
@@ -70,25 +71,43 @@ namespace EliteMonitor.Elite
             });
         }
 
-        internal float[][] asFloats()
+        internal float[][] asFloats(bool applyCurve = false)
         {
-            return new float[][]
-        {   
-            //          RR, GR, BR
-            new float[] { (float)(this.RR / 100.0), (float)(this.GR / 100.0), (float)(this.BR / 100.0), 0, 0 }, // R
-            //          RG, GG, BG
-            new float[] { (float)(this.RG / 100.0), (float)(this.GG / 100.0), (float)(this.BG / 100.0), 0, 0 }, // G
-            //          RB, BG, BB
-            new float[] { (float)(this.RB / 100.0), (float)(this.GB / 100.0), (float)(this.BB / 100.0), 0, 0 }, // B
-            new float[] { 0, 0, 0, 1, 0 }, // ??
-            new float[] { 0, 0, 0, 0, 1 } // ??
-        };
+            float[][] f = new float[][]
+            {   
+                //          RR, GR, BR
+                new float[] { (float)(this.RR / 100.0), (float)(this.GR / 100.0), (float)(this.BR / 100.0), 0, 0 }, // R
+                //          RG, GG, BG
+                new float[] { (float)(this.RG / 100.0), (float)(this.GG / 100.0), (float)(this.BG / 100.0), 0, 0 }, // G
+                //          RB, BG, BB
+                new float[] { (float)(this.RB / 100.0), (float)(this.GB / 100.0), (float)(this.BB / 100.0), 0, 0 }, // B
+
+                /*//          RR, GR, BR
+                new float[] { (float)(this.RR / 100.0), (float)(this.RG / 100.0), (float)(this.RB / 100.0), 0, 0 }, // R
+                //          RG, GG, BG
+                new float[] { (float)(this.GR / 100.0), (float)(this.GG / 100.0), (float)(this.GB / 100.0), 0, 0 }, // G
+                //          RB, BG, BB
+                new float[] { (float)(this.BR / 100.0), (float)(this.BG / 100.0), (float)(this.BB / 100.0), 0, 0 }, // B*/
+
+                new float[] { 0, 0, 0, 1, 0 }, // ??
+                new float[] { 0, 0, 0, 0, 1 } // ??
+            };
+            if (applyCurve)
+            {
+                if (f[0][0] < 1f)
+                    f[0][0] += (float)(1.00 * f[0][0]);
+                if (f[0][1] < 1f)
+                    f[0][1] += (float)(1.00 * f[0][1]);
+                if (f[0][2] < 1f)
+                    f[0][2] += (float)(1.00 * f[0][2]);
+            }
+            return f;
         }
 
         public ColorMatrix ColourMatrix() => ColorMatrix();
-        public ColorMatrix ColorMatrix()
+        public ColorMatrix ColorMatrix(bool applyCurve = false)
         {
-            return new ColorMatrix(this.asFloats());
+            return new ColorMatrix(this.asFloats(applyCurve));
         }
 
         internal void setFromFloats(float[][] matrix)
@@ -148,14 +167,21 @@ namespace EliteMonitor.Elite
                     xml.WriteStartElement("GUIColour");
 
                     xml.WriteStartElement("Default");
+                    //          0:0 0:1 0:2
+                    //          RR, GR, BR
+                    //          1:0 1:1 1:2
+                    //          RG, GG, BG
+                    //          2:0 2:1 2:2
+                    //          RB, BG, BB
 
                     xml.WriteElementString("LocalisationName", "Standard");
                     float[][] floats = asFloats();
+
                     xml.WriteElementString("MatrixRed", String.Format(" {0}, {1}, {2} ", floats[0][0], floats[0][1], floats[0][2]));
                     xml.WriteElementString("MatrixGreen", String.Format(" {0}, {1}, {2} ", floats[1][0], floats[1][1], floats[1][2]));
                     xml.WriteElementString("MatrixBlue", String.Format(" {0}, {1}, {2} ", floats[2][0], floats[2][1], floats[2][2]));
 
-                    xml.WriteEndElement();
+                     xml.WriteEndElement();
                     xml.WriteEndElement();
                     xml.WriteEndElement();
                     xml.WriteEndDocument();

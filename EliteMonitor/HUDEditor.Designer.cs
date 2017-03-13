@@ -349,9 +349,9 @@
             this.debugLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.debugLabel.Location = new System.Drawing.Point(1140, 0);
             this.debugLabel.Name = "debugLabel";
-            this.debugLabel.Size = new System.Drawing.Size(140, 64);
+            this.debugLabel.Size = new System.Drawing.Size(140, 145);
             this.debugLabel.TabIndex = 1;
-            this.debugLabel.Text = "{debug data}";
+            this.debugLabel.Text = "0:\r\n1:\r\n2:\r\n3:\r\n4:\r\n--\r\n0:\r\n1:\r\n2:\r\n3:\r\n4:";
             // 
             // label7
             // 

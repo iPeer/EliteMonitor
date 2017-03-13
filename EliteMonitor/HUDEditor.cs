@@ -453,10 +453,27 @@ namespace EliteMonitor
             if (this.updateInProgress)
                 return;
             this.updateInProgress = true;
+            bool station = this.comboBoxHUDImage.SelectedIndex != this.comboBoxHUDImage.Items.IndexOf("Station");
 #if DEBUG
             StringBuilder sb = new StringBuilder();
             int f1 = 0;
             float[][] matrixFloats = matrix.asFloats();
+            foreach (float[] f2 in matrixFloats)
+            {
+                sb.AppendFormat("{0}: ", f1++, f2.ToString());
+                string floats = "[ ";
+                foreach (float f in f2)
+                {
+
+                    floats += (floats.Length > 2 ? ", " : "") + f.ToString();
+
+                }
+                floats += " ]";
+                sb.AppendFormat("{0}\n", floats);
+            }
+            sb.AppendFormat("Curve: {0}\n", station ? "active" : "inactive");
+            matrixFloats = matrix.asFloats(station);
+            f1 = 0;
             foreach (float[] f2 in matrixFloats)
             {
                 sb.AppendFormat("{0}: ", f1++, f2.ToString());
@@ -475,8 +492,8 @@ namespace EliteMonitor
 #endif
 
             ImageAttributes at = new ImageAttributes();
-            ColorMatrix cm = matrix.ColorMatrix();
-            at.SetColorMatrix(cm, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+            ColorMatrix cm = matrix.ColorMatrix(station);
+            at.SetColorMatrix(cm, ColorMatrixFlag.Default, ColorAdjustType.Default);
             if (this.currentHUD != null)
                 this.currentHUD.Dispose();
             this.currentHUD = new Bitmap(this.hud);

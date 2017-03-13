@@ -1,9 +1,12 @@
 ﻿using EliteMonitor.Extensions;
 using EliteMonitor.Utilities;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace EliteMonitor.Logging
 {
@@ -56,12 +59,17 @@ namespace EliteMonitor.Logging
         {
             if (!File.Exists(this.LogPath))
                 return;
-            int log = 1;
-            while (File.Exists(String.Format("{0}.{1}", this.LogPath, log.ToString()))) {
-                log++;
+
+            List<string> numberedFiles = Directory.GetFiles(Path.GetDirectoryName(this.LogPath)).Where(a => Regex.IsMatch(a, @"log\.[0-9]+")).ToList();
+            if (numberedFiles.Count > 0)
+                foreach (string s in numberedFiles)
+                    File.Delete(s);
+
+            if (File.Exists(String.Format("{0}.last", this.LogPath))) {
+                File.Delete(String.Format("{0}.last", this.LogPath));
             }
 
-            File.Copy(this.LogPath, String.Format("{0}.{1}", this.LogPath, log.ToString()));
+            File.Copy(this.LogPath, String.Format("{0}.last", this.LogPath));
             File.WriteAllText(this.LogPath, string.Empty);
 
         }
