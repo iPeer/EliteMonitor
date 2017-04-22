@@ -166,6 +166,7 @@ namespace EliteMonitor.Elite
 
         public string getShipNameFromInternalName(string internalName)
         {
+            internalName = internalName.ToLower();
             if (this.Ships.ContainsKey(internalName))
                 return this.Ships[internalName];
             else return internalName;

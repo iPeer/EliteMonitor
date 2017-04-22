@@ -81,14 +81,14 @@ namespace EliteMonitor.Journal
 
             // NOTES: Missions that rank up a player in a major power have RankFed or RamkEmp in the names. This is (currently) the ONLY way to detect a Fed/Empire rank-up
 
-            try
-            {
+            /*try
+            {*/
 
                 switch (@event)
                 {
                     case "Fileheader":
                         return new JournalEntry(timestamp, @event, "", j);
-                    case "LoadGame":
+                    case "LoadGame": // TODO: Parse ship name/ID from event and update accordingly
                         bool isGroup = false;
                         try
                         {
@@ -114,11 +114,15 @@ namespace EliteMonitor.Journal
                         }
                         long commanderCredits = (long)j["Credits"];
                         string commanderName = (string)j["Commander"];
-                        string commanderString = $"{commanderName} | {commanderShip}" + (isGroup ? $" / {pGroup}" : "");
+                        string shipName = (string)j["ShipName"];
+                        string shipID = (string)j["ShipIdent"];
+                        string commanderString = $"{commanderName}" + (isGroup ? $" ({pGroup})" : "");
                         Commander _commander = registerCommander(commanderName);
                         _commander.setBasicInfo(commanderShip, commanderCredits, isGroup ? pGroup : "");
+                        _commander.SetShip(commanderShip, shipID, shipName);
                         commander = activeCommander = _commander;
-                        return new JournalEntry(timestamp, @event, $"Commander {commanderString} | Ship: {commanderShip}, Credit balance: {String.Format("{0:n0}", commanderCredits)}", j);
+                        string commanderShipFormatted = commander.ShipData.getFormattedShipString();
+                        return new JournalEntry(timestamp, @event, $"Commander {commanderString} | {commanderShipFormatted} | Credit balance: {String.Format("{0:n0}", commanderCredits)}", j);
                     case "Rank":
 
                         int c = (int)j["Combat"];
@@ -415,19 +419,31 @@ namespace EliteMonitor.Journal
                         string newShip = (string)j["ShipType"];
                         eText = string.Format("Switch from ship {0} to {1}.", mainForm.Database.getShipNameFromInternalName(oldShip), mainForm.Database.getShipNameFromInternalName(newShip));
                         if (!isReparse)
-                            commander.Ship = mainForm.Database.getShipNameFromInternalName(newShip);
+                            commander.SetShip(mainForm.Database.getShipNameFromInternalName(newShip), "", "");
+                            /*commander.Ship = mainForm.Database.getShipNameFromInternalName(newShip);*/
                         return new JournalEntry(timestamp, @event, eText, j);
+                    case "Loadout":
+                        if (commander != null)
+                        {
+                            ship = (string)j["Ship"];
+                            shipName = (string)j["ShipName"];
+                            shipID = (string)j["ShipIdent"];
+                            commander.SetShip(new CommanderShip(ship, shipID, shipName));
+                            int commanderShipID = (int)j["ShipID"];
+                            commander.UpdateShipLoadout(commanderShipID, mainForm.Database.getShipNameFromInternalName(ship), shipID, shipName.Equals(ship) ? "" : shipName, j["Modules"].ToString());
+                        }
+                        return new JournalEntry(timestamp, @event, "--PLACEHOLDER--", "KNOWN-ISH EVENT", j, false);
                     default:
                         return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
                 }
-            }
+            /*}
             catch (Exception exception)
             {
                 this.logger.Log("Exception while parsing event '{1}': {0}", LogLevel.ERR, exception.Message, @event);
                 this.logger.Log("Event JSON: {0}", j.ToString());
                 this.logger.Log("{0}", LogLevel.ERR, exception.StackTrace);
                 throw new Exception(exception.Message, exception);
-            }
+            }*/
            
         }
 
@@ -472,20 +488,22 @@ namespace EliteMonitor.Journal
             this.fullParseInProgress = false;
         }
 
-        public void createJournalEntries(List<string> entries, bool checkDuplicates = false, bool dontUpdateDisplays = false)
+        public void createJournalEntries(List<string> entries, bool checkDuplicates = false, bool dontUpdateDisplays = false, bool dontUpdatePercentage = false)
         {
-            mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Generating Journal entries...");
+            if (!dontUpdatePercentage)
+                mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Generating Journal entries...");
             mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.BeginUpdate());
             int cEntry = 0;
             int lastPercent = 0;
             DateTime timeStarted = DateTime.Now;
             DateTime lastETAUpdate = DateTime.Now;
             Commander commander = activeCommander;
+            List<string> preLoadCommanderData = new List<string>(3);
             foreach (string s in entries)
             {
                 double percent = ((double)cEntry++ / (double)entries.Count) * 100.00;
                 //Console.WriteLine(percent + " / " + lastPercent);
-                if ((int)percent > lastPercent || DateTime.Now.Subtract(lastETAUpdate).TotalSeconds >= 1.00)
+                if (!dontUpdatePercentage && ((int)percent > lastPercent || DateTime.Now.Subtract(lastETAUpdate).TotalSeconds >= 1.00))
                 {
                     TimeSpan ts = (DateTime.Now - timeStarted);
                     double timeLeft = (ts.TotalSeconds / cEntry) * (entries.Count - cEntry);
@@ -496,6 +514,16 @@ namespace EliteMonitor.Journal
                 JournalEntry je = parseEvent(s, out commander);
                 if (je.Event.Equals("Fileheader"))
                     continue;
+                if (je.Event.Equals("LoadGame") && /*!hasAlreadyLoaded*/commander != null)
+                {
+                    createJournalEntries(preLoadCommanderData, checkDuplicates, dontUpdateDisplays, true);
+                    preLoadCommanderData.Clear();
+                }
+                if (/*!hasLoadedCommander*/commander == null)
+                {
+                    preLoadCommanderData.Add(s);
+                    continue;
+                }
                 if (!mainForm.comboCommanderList.Items.Contains(commander.Name))
                 {
                     mainForm.comboCommanderList.InvokeIfRequired(() => mainForm.comboCommanderList.Items.Add(commander.Name));
@@ -604,7 +632,7 @@ namespace EliteMonitor.Journal
             if (!j.isKnown)
             {
                 lvi.BackColor = Color.Pink;
-                lvi.SubItems[3].Text = "UNKNOWN EVENT";
+                //lvi.SubItems[3].Text = "UNKNOWN EVENT";
             }
             if (Properties.Settings.Default.enableEntryHighlighting)
             {

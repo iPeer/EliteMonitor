@@ -11,6 +11,46 @@ using System.Threading.Tasks;
 
 namespace EliteMonitor.Elite
 {
+
+    public class CommanderShipLoadout
+    {
+        public CommanderShip ShipData { get; set; }
+        public string LoadoutJson { get; set; } = "";
+    }
+
+    public class CommanderShip
+    {
+        public string ShipNonVanityName { get; set; }
+        [JsonIgnore]
+        private string _shipName = "";
+        public string ShipName
+        {
+            get
+            {
+                return this._shipName == string.Empty ? this.ShipNonVanityName : this._shipName;
+            }
+            set
+            {
+                this._shipName = value;
+            }
+        }
+        public string ShipID { get; set; } = "";
+
+        public CommanderShip(string nonVanity, string shipID = "", string shipName = "")
+        {
+            this.ShipNonVanityName = nonVanity;
+            this.ShipID = shipID;
+            this.ShipName = shipName;
+        }
+
+        public string getFormattedShipString()
+        {
+            if ((this.ShipID == null || this.ShipName == null) || this.ShipID.Equals("") && this.ShipName.Equals(""))
+                return this.ShipNonVanityName;
+            return string.Format("{0}{1}{2}", this.ShipID, this.ShipName.Equals(this.ShipNonVanityName) ? "" : string.Format(": {0} (", this.ShipName), string.Format(this.ShipName.Equals(this.ShipNonVanityName) ? "{0}" : "{0})", this.ShipNonVanityName));
+        }
+    }
+
     public class Commander
     {
 
@@ -21,6 +61,7 @@ namespace EliteMonitor.Elite
         [Obsolete("No longer needed", true)]
         public List<string> Journal { get; set; } = new List<string>();
         public Dictionary<string, int> Materials { get; set; } = new Dictionary<string, int>();
+        public Dictionary<int, CommanderShipLoadout> Fleet = new Dictionary<int, CommanderShipLoadout>();
         public int cacheVersion = Utils.getBuildNumber();
         public long nextId = 0;
         [JsonIgnore]
@@ -34,6 +75,7 @@ namespace EliteMonitor.Elite
         public bool isViewed { get; set; } = false;
         public string Name { get; set; }
         public long Credits { get; set; }
+        public CommanderShip ShipData { get; set; }
         public string Ship { get; set; }
         [JsonIgnore] // We don't need to save this because it's kind of irrelevant
         public string PrivateGroup { get; set; } = "";
@@ -115,9 +157,21 @@ namespace EliteMonitor.Elite
             this.Name = name;
         }
 
+        public Commander SetShip (string nV, string sI, string sN)
+        {
+            this.ShipData = new CommanderShip(nV, sI, sN);
+            return this;
+        }
+
+        public Commander SetShip(CommanderShip ship)
+        {
+            this.ShipData = ship;
+            return this;
+        }
+
         public Commander setBasicInfo(string ship, long credits, string privateGroup)
         {
-            this.Ship = ship;
+            this.ShipData = new CommanderShip(ship);
             this.Credits = credits;
             this.PrivateGroup = privateGroup;
             return this;
@@ -265,10 +319,10 @@ namespace EliteMonitor.Elite
             // Commander data
 
             m.commanderLabel.InvokeIfRequired(() => {
-                string format = "{0} {1} | {2} | {3}{4} in {5}";
+                string format = "{0} {1} | {2} | {3}{4}in {5}";
                 if (string.IsNullOrEmpty(this.CurrentLocation) && string.IsNullOrEmpty(this.CurrentSystem))
                     format = "{0} {1} | {2}";
-                m.commanderLabel.Text = string.Format(format, this.Name, string.IsNullOrEmpty(this.PrivateGroup) ? "" : $"({this.PrivateGroup})", this.Ship, this.isDocked || this.isLanded ? this.isLanded ? "Landed at " : "Docked at " : "", this.CurrentLocation, this.CurrentSystem);
+                m.commanderLabel.Text = string.Format(format, this.Name, string.IsNullOrEmpty(this.PrivateGroup) ? "" : $"({this.PrivateGroup})", (this.ShipData != null ? this.ShipData.getFormattedShipString() : this.Ship), this.isDocked || this.isLanded ? this.isLanded ? "Landed at " : "Docked at " : "", String.Format("{0} ", this.CurrentLocation), this.CurrentSystem);
             });
             //m.commanderLabel.InvokeIfRequired(() => m.commanderLabel.Text = String.Format("{0} | {1} {2}", this.Name, this.Ship, !this.PrivateGroup.Equals(string.Empty) && this.PrivateGroup != null ? $"/ {this.PrivateGroup}" : ""));
 
@@ -354,6 +408,18 @@ namespace EliteMonitor.Elite
 
             return this;
         }
+
+        public void UpdateShipLoadout(int shipID, string shipNoneVanityName, string shipIdent, string shipName, string modules)
+        {
+            CommanderShipLoadout sl = new CommanderShipLoadout();
+            sl.ShipData = new CommanderShip(shipNoneVanityName, shipIdent, shipName);
+            sl.LoadoutJson = modules;
+            if (this.Fleet.ContainsKey(shipID))
+                this.Fleet[shipID] = sl;
+            else
+                this.Fleet.Add(shipID, sl);
+        }
+
         /// <summary>
         /// Do things before saving commander data here
         /// </summary>
