@@ -315,10 +315,10 @@ namespace EliteMonitor.Elite
             }
             else if (type.Equals("empire"))
             {
-                if (rank > this.explorationRank)
+                if (rank > this.imperialRank)
                 {
-                    this.explorationRank = rank;
-                    this.explorationProgress = 0;
+                    this.imperialRank = rank;
+                    this.imperialProgress = 0;
                 }
             }
             return this;
