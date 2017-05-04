@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -33,5 +34,57 @@ namespace EliteMonitor.Elite
         public static string[] federation = new string[] { "None", "Recruit", "Cadet", "Midshipman", "Petty Officer", "Chief Petty Officer", "Warrant Officer", "Ensign", "Lieutenant", "Lieutenant Commander", "Post Commander", "Post Captain", "Rear Admiral", "Vice Admiral", "Admiral" };
         public static string[] empire = new string[] { "None", "Outsider", "Serf", "Master", "Squire", "Knight", "Lord", "Baron", "Viscount", "Count", "Earl", "Marquis", "Duke", "Prince", "King" };
 
+        public static long[] promotionValuesExploration = new long[] { 0, 20000, 135000, 570000, 2070000, 5070000, 17500000, 58000000, 156500000 };
+        public static long[] promotionValuesTrading = new long[] { 0, 5000, 100000, 800000, 3700000, 30000000, 133510138, 381000000, 1011828840 };
+
+        public static long[] calculateRankCredits(RankType type, int currentRank, int currentRankPercentage)
+        {
+            long[] ret = new long[3];
+            long[] dataArray = (type == RankType.EXPLORATION ? promotionValuesExploration : promotionValuesTrading);
+
+            double rankProgression = (double)currentRankPercentage / 100d;
+            long creditsAtCurrentRank = dataArray[currentRank + 1];
+            long currentRankProgression = 0;
+            if (currentRank < 8)
+            {
+                currentRankProgression = Convert.ToInt64(Math.Floor((double)creditsAtCurrentRank * rankProgression));
+            }
+            long creditsToNextRank = (currentRank == 8 || currentRankPercentage == 100 ? 0 : dataArray[currentRank + 1] - currentRankProgression);
+            long creditsFrom0Rank = currentRankProgression;
+            for (int x = 0; x < currentRank; x++)
+            {
+                creditsFrom0Rank += dataArray[x];
+            }
+
+            return new long[] { currentRankProgression, creditsToNextRank, creditsFrom0Rank };
+
+        }
+
+        public enum RankType
+        {
+            TRADE,
+            EXPLORATION
+        }
+
+    }
+
+    [Serializable]
+    internal class UnsuitableRankException : Exception
+    {
+        public UnsuitableRankException()
+        {
+        }
+
+        public UnsuitableRankException(string message) : base(message)
+        {
+        }
+
+        public UnsuitableRankException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected UnsuitableRankException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
     }
 }

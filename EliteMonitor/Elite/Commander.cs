@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO.Compression;
 
 namespace EliteMonitor.Elite
 {
@@ -199,14 +200,23 @@ namespace EliteMonitor.Elite
             return this;
         }
 
-        public void saveData()
+        public long saveData()
         {
             this.OnSave();
-            string commanderSavePath = Path.Combine(MainForm.Instance.cacheController.cachePath, $"journal_{this.Name}.emc");
-            using (StreamWriter sw = new StreamWriter(commanderSavePath, false, Encoding.UTF8))
+            string commanderSavePath = Path.Combine(MainForm.Instance.cacheController.cachePath, MainForm.Instance.cacheController.commanderCaches.ContainsKey(this.Name) ? MainForm.Instance.cacheController.commanderCaches[this.Name].Item1 : $"{this.Name}.emj");
+            byte[] bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(this, Formatting.Indented));
+            using (FileStream fs = new FileStream(commanderSavePath, FileMode.Create))
+            {
+                using (GZipStream gz = new GZipStream(fs, CompressionLevel.Optimal))
+                {
+                    gz.Write(bytes, 0, bytes.Length);
+                }
+            }
+            return bytes.LongLength;
+            /*using (StreamWriter sw = new StreamWriter(commanderSavePath, false, Encoding.UTF8))
             {
                 sw.WriteLine(JsonConvert.SerializeObject(this, Formatting.Indented));
-            }
+            }*/
         }
 
         public Commander adjustCredits(long amount)
@@ -352,8 +362,40 @@ namespace EliteMonitor.Elite
             string imperialRank = string.Format("{0} | {1}%", this.imperialRankName, this.imperialProgress);
 
             m.combatRankName.InvokeIfRequired(() => m.combatRankName.Text = combatRank);
-            m.tradeRankName.InvokeIfRequired(() => m.tradeRankName.Text = tradeRank);
-            m.exploreRankName.InvokeIfRequired(() => m.exploreRankName.Text  = explorationRank);
+            m.tradeRankName.InvokeIfRequired(() => 
+            {
+                m.tradeRankName.Text = tradeRank;
+                long[] rankData = Ranks.calculateRankCredits(Ranks.RankType.TRADE, this.tradeRank, this.tradeProgress);
+                StringBuilder sb = new StringBuilder("Rank progression based on approximate values:\n");
+                if (this.tradeRank < 8)
+                {
+                    sb.AppendLineFormatted("Credits past {0}: {1:n0}", this.tradeRankName, rankData[0]);
+                    sb.AppendLineFormatted("Credits to {0}: {1:n0}", Ranks.rankNames["trade"][this.tradeRank + 1], rankData[1]);
+                }
+                sb.AppendLineFormatted("Credits past {0}: {1:n0}", Ranks.rankNames["trade"][0], rankData[2]);
+#if DEBUG
+                Console.WriteLine("DEBUG TRADE RANK DATA:");
+                Console.WriteLine(sb.ToString());
+#endif
+                m.rankInfoTooltip.SetToolTip(m.tradeRankName, sb.ToString());
+            });
+            m.exploreRankName.InvokeIfRequired(() => 
+            {
+                m.exploreRankName.Text = explorationRank;
+                long[] rankData = Ranks.calculateRankCredits(Ranks.RankType.EXPLORATION, this.explorationRank, this.explorationProgress);
+                StringBuilder sb = new StringBuilder("Rank progression based on approximate values:\n");
+                if (this.explorationRank < 8)
+                {
+                    sb.AppendLineFormatted("Credits past {0}: {1:n0}", this.explorationRankName, rankData[0]);
+                    sb.AppendLineFormatted("Credits to {0}: {1:n0}", Ranks.rankNames["explore"][this.explorationRank + 1], rankData[1]);
+                }
+                sb.AppendLineFormatted("Credits past {0}: {1:n0}", Ranks.rankNames["explore"][0], rankData[2]);
+#if DEBUG
+                Console.WriteLine("DEBUG EXPLORATION RANK DATA:");
+                Console.WriteLine(sb.ToString());
+#endif
+                m.rankInfoTooltip.SetToolTip(m.exploreRankName, sb.ToString());
+            });
             m.cqcRankName.InvokeIfRequired(() => m.cqcRankName.Text = cqcRank);
             m.fedRankName.InvokeIfRequired(() => m.fedRankName.Text = federationRank);
             m.empireRankName.InvokeIfRequired(() => m.empireRankName.Text = imperialRank);
@@ -449,6 +491,12 @@ namespace EliteMonitor.Elite
             if (this.cacheVersion < (patchVer = 770))
             {
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("ModuleRetrieve"));
+                updateJournalEntries(toUpdate, m, patchVer);
+            }
+
+            if (this.cacheVersion < (patchVer = 879))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("ReceiveText"));
                 updateJournalEntries(toUpdate, m, patchVer);
             }
 

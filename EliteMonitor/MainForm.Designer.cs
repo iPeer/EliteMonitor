@@ -41,6 +41,7 @@
             this.openCacheDirectoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearCachesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.realoadJournalEntriesFromCacheToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eliteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.launchEliteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -82,7 +83,8 @@
             this.eventFilterDropdown = new System.Windows.Forms.ComboBox();
             this.pickCommanderLabel = new System.Windows.Forms.Label();
             this.comboCommanderList = new System.Windows.Forms.ComboBox();
-            this.resetSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rankInfoTooltip = new System.Windows.Forms.ToolTip(this.components);
+            this.toolStripTailingFailed = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
@@ -98,10 +100,12 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.appStatus,
+            this.toolStripTailingFailed,
             this.eliteRunningStatus,
             this.appVersionStatusLabel});
             this.statusStrip1.Location = new System.Drawing.Point(0, 641);
             this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.ShowItemToolTips = true;
             this.statusStrip1.Size = new System.Drawing.Size(966, 22);
             this.statusStrip1.TabIndex = 0;
             this.statusStrip1.Text = "statusStrip1";
@@ -156,7 +160,7 @@
             this.cachingToolStripMenuItem,
             this.resetSettingsToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
             this.settingsToolStripMenuItem.Text = "&Settings";
             // 
             // applicationSettingsToolStripMenuItem
@@ -196,10 +200,17 @@
             this.realoadJournalEntriesFromCacheToolStripMenuItem.Text = "Reload current commander\'s events";
             this.realoadJournalEntriesFromCacheToolStripMenuItem.Click += new System.EventHandler(this.debugRefreshJournal_Click);
             // 
+            // resetSettingsToolStripMenuItem
+            // 
+            this.resetSettingsToolStripMenuItem.Name = "resetSettingsToolStripMenuItem";
+            this.resetSettingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.resetSettingsToolStripMenuItem.Text = "Reset settings";
+            this.resetSettingsToolStripMenuItem.Click += new System.EventHandler(this.resetSettingsToolStripMenuItem_Click);
+            // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -215,13 +226,13 @@
             // launchEliteToolStripMenuItem
             // 
             this.launchEliteToolStripMenuItem.Name = "launchEliteToolStripMenuItem";
-            this.launchEliteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.launchEliteToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.launchEliteToolStripMenuItem.Text = "Launch Elite";
             // 
             // hUDEditorToolStripMenuItem
             // 
             this.hUDEditorToolStripMenuItem.Name = "hUDEditorToolStripMenuItem";
-            this.hUDEditorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.hUDEditorToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.hUDEditorToolStripMenuItem.Text = "HUD Editor";
             this.hUDEditorToolStripMenuItem.Click += new System.EventHandler(this.hUDEditorToolStripMenuItem_Click);
             // 
@@ -623,12 +634,23 @@
             this.comboCommanderList.ValueMember = "None";
             this.comboCommanderList.SelectionChangeCommitted += new System.EventHandler(this.comboCommanderList_SelectionChangeCommitted);
             // 
-            // resetSettingsToolStripMenuItem
+            // rankInfoTooltip
             // 
-            this.resetSettingsToolStripMenuItem.Name = "resetSettingsToolStripMenuItem";
-            this.resetSettingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.resetSettingsToolStripMenuItem.Text = "Reset settings";
-            this.resetSettingsToolStripMenuItem.Click += new System.EventHandler(this.resetSettingsToolStripMenuItem_Click);
+            this.rankInfoTooltip.AutoPopDelay = 15000;
+            this.rankInfoTooltip.InitialDelay = 500;
+            this.rankInfoTooltip.ReshowDelay = 100;
+            // 
+            // toolStripTailingFailed
+            // 
+            this.toolStripTailingFailed.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.toolStripTailingFailed.ForeColor = System.Drawing.Color.Red;
+            this.toolStripTailingFailed.Name = "toolStripTailingFailed";
+            this.toolStripTailingFailed.Size = new System.Drawing.Size(113, 17);
+            this.toolStripTailingFailed.Text = "TAILING DISABLED";
+            this.toolStripTailingFailed.ToolTipText = "Automatic updating (tailing) is currently disabled because EliteMonitor came acro" +
+    "ss an error while attempting to retrieve data from the Journal files. If this pe" +
+    "rsists, please file a bug report.";
+            this.toolStripTailingFailed.Visible = false;
             // 
             // MainForm
             // 
@@ -707,7 +729,6 @@
         public System.Windows.Forms.Label fedRankName;
         public System.Windows.Forms.PictureBox federationRankImage;
         public System.Windows.Forms.ToolStripStatusLabel appStatus;
-        private System.Windows.Forms.ToolTip toolTip;
         public System.Windows.Forms.ListView eventList;
         private System.Windows.Forms.Label label2;
         public System.Windows.Forms.ComboBox eventFilterDropdown;
@@ -724,6 +745,9 @@
         private System.Windows.Forms.ToolStripMenuItem testBodiesDatabaseReadToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem showDistanceFromSolToNetoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem resetSettingsToolStripMenuItem;
+        public System.Windows.Forms.ToolTip toolTip;
+        public System.Windows.Forms.ToolTip rankInfoTooltip;
+        public System.Windows.Forms.ToolStripStatusLabel toolStripTailingFailed;
     }
 }
 

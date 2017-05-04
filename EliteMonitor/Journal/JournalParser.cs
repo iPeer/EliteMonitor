@@ -31,6 +31,8 @@ namespace EliteMonitor.Journal
         private string currentTailFile = "";
         private bool hasChangedLogFile = false;
         private bool tailerRunning = false;
+        private Thread journalTailThread;
+        private bool abortJournalTailing = false;
 
         public JournalParser(MainForm m)
         {
@@ -73,7 +75,15 @@ namespace EliteMonitor.Journal
             */
             mainForm.cacheController.addJournalEntryToCache(json);
             commander = activeCommander ?? viewedCommander; // Under normal operating procedures, activeCommander will NEVER be null. It can be null during testing due to "hot inserting" of events (because we don't parse the full log properly), so if it's null, we default the the currently viewed commander.
-            JObject j = JObject.Parse(json);
+            JObject j;
+            try
+            {
+                j = JObject.Parse(json);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
             string @event = (string)j["event"];
             DateTime tsData = (DateTime)j["timestamp"];
             string timestamp = tsData.ToString("G");
@@ -81,369 +91,371 @@ namespace EliteMonitor.Journal
 
             // NOTES: Missions that rank up a player in a major power have RankFed or RamkEmp in the names. This is (currently) the ONLY way to detect a Fed/Empire rank-up
 
-            /*try
-            {*/
-
-                switch (@event)
-                {
-                    case "Fileheader":
-                        return new JournalEntry(timestamp, @event, "", j);
-                    case "LoadGame": // TODO: Parse ship name/ID from event and update accordingly
-                        bool isGroup = false;
-                        try
-                        {
-                            isGroup = ((string)j["GameMode"]).Equals("Group");
-                        }
-                        catch { this.logger.Log("GameMode is not set."); }
-                        string pGroup = "";
-                        try
-                        {
-                            pGroup = (string)j["Group"];
-                        }
-                        catch { this.logger.Log("Private group is not set."); }
-
-                        string commanderShip = (string)j["Ship"];
-                        try
-                        {
-                            commanderShip = mainForm.Database.getShipNameFromInternalName(commanderShip.ToLower());
-                        }
-                        catch
-                        {
-                            this.logger.Log("No real name for ship: {0}", LogLevel.ERR, commanderShip == string.Empty || commanderShip == null ? "{!!empty string!!}" : commanderShip);
-                            this.logger.Log("{0}", LogLevel.ERR, j.ToString());
-                        }
-                        long commanderCredits = (long)j["Credits"];
-                        string commanderName = (string)j["Commander"];
-                        string shipName = (string)j["ShipName"];
-                        string shipID = (string)j["ShipIdent"];
-                        string commanderString = $"{commanderName}" + (isGroup ? $" ({pGroup})" : "");
-                        Commander _commander = registerCommander(commanderName);
-                        _commander.setBasicInfo(commanderShip, commanderCredits, isGroup ? pGroup : "");
-                        _commander.SetShip(commanderShip, shipID, shipName);
-                        commander = activeCommander = _commander;
-                        string commanderShipFormatted = commander.ShipData.getFormattedShipString();
-                        return new JournalEntry(timestamp, @event, $"Commander {commanderString} | {commanderShipFormatted} | Credit balance: {String.Format("{0:n0}", commanderCredits)}", j);
-                    case "Rank":
-
-                        int c = (int)j["Combat"];
-                        int t = (int)j["Trade"];
-                        int e = (int)j["Explore"];
-                        int q = (int)j["CQC"];
-                        int fed = (int)j["Federation"];
-                        int imp = (int)j["Empire"];
-
-                        commander.setRanks(c, t, e, q, fed, imp);
-
-                        return new JournalEntry(timestamp, @event, $"Combat: {commander.combatRankName}, Trading: {commander.tradeRankName}, Exploration: {commander.explorationRankName}, CQC: {commander.cqcRankName} | Federation: {commander.federationRankName}, Empire: {commander.imperialRankName}", j);
-                    case "Progress":
-                        int cp = (int)j["Combat"];
-                        int tp = (int)j["Trade"];
-                        int ep = (int)j["Explore"];
-                        int fp = (int)j["Federation"];
-                        int ip = (int)j["Empire"];
-                        int qp = (int)j["CQC"];
-
-                        commander.setRankProgress(cp, tp, ep, qp, fp, ip);
-
-                        return new JournalEntry(timestamp, @event, $"Combat: {cp}, Trade: {tp}, Exploration: {ep}, CQC: {qp} | Federation: {fp}, Empire: {ip}", j);
-                    case "MarketBuy":
-                    case "MarketSell":
-                        bool b = @event.Equals("MarketBuy");
-                        string product = (string)j["Type"];
-                        int count = (int)j["Count"];
-                        long price = 0;
-                        if (b)
-                            price = (long)j["TotalCost"];
-                        else
-                            price = (long)j["TotalSale"];
-                        string prefix = b ? "Bought" : "Sold";
-                        if (!isReparse)
-                        {
-                            if (b)
-                                commander.deductCredits(price);
-                            else
-                                commander.addCredits(price);
-                        }
-                        return new JournalEntry(timestamp, @event, $"{prefix} {count} {product} for {String.Format("{0:n0}", price)} credits", j);
-                    case "SendText":
-                        string message = (string)j["Message"];
-                        string to = (string)j["To"];
-                        if (to.StartsWith("$cmdr_decorate"))
-                            to = (string)j["To_Localised"];
-                        return new JournalEntry(timestamp, @event, $"TO {to}: {message}", j);
-                    case "ReceiveText":
-                        string channel = (string)j["Channel"] ?? "-";
-                        message = "";
-                        string sender = (string)j["From"];
-                        if (channel.Equals("player") || sender.StartsWith("$cmdr_decorate"))
-                            message = (string)j["Message"];
-                        else
-                            message = (string)j["Message_Localised"];
-                        if (sender.StartsWith("$npc_name_decorate") || sender.StartsWith("$cmdr_decorate") || sender.StartsWith("$ShipName"))
-                            sender = (string)j["From_Localised"];
-                        else if (sender.StartsWith("&"))
-                            sender = sender.Substring(1);
-
-                        return new JournalEntry(timestamp, @event, $"FROM {sender}: {message}", j);
-                    case "DockingRequested":
-                        return new JournalEntry(timestamp, @event, $"Requested docking at {(string)j["StationName"]}", j);
-                    case "DockingGranted":
-                        return new JournalEntry(timestamp, @event, $"Docking granted on pad {(string)j["LandingPad"]} at {(string)j["StationName"]}", j);
-                    case "Docked":
-                        string stationName = (string)j["StationName"];
-                        string stationType = (string)j["StationType"];
-                        string starSystem = (string)j["StarSystem"];
-                        if (!isReparse)
-                        {
-                            commander.isDocked = true;
-                            commander.CurrentSystem = starSystem;
-                            commander.CurrentLocation = stationName;
-                        }
-                        string eventText = String.Format("Docked at {0}{1} in {2}", stationName, stationType == null || stationType.Equals(string.Empty) ? "" : $" ({stationType})", starSystem);
-                        return new JournalEntry(timestamp, @event, eventText, j);
-                    case "Undocked":
-                        stationName = (string)j["StationName"];
-                        stationType = (string)j["StationType"];
-                        if (!isReparse)
-                        {
-                            commander.isDocked = false;
-                        }
-                        eventText = String.Format("Undocked from {0}{1}", stationName, stationType == null || stationType.Equals(string.Empty) ? "" : $" ({stationType})");
-                        return new JournalEntry(timestamp, @event, eventText, j);
-                    case "RefuelPartial": // Legacy
-                    case "RefuelAll":
-                        long cost = (long)j["Cost"];
-                        float amount = (float)j["Amount"];
-                        if (!isReparse)
-                            commander.deductCredits(cost);
-                        return new JournalEntry(timestamp, @event, $"Refuelled {String.Format("{0:f2}", amount)} tonnes for {String.Format("{0:n0}", cost)} credits", j);
-                    case "BuyAmmo":
-                        cost = (long)j["Cost"];
-                        if (!isReparse)
-                            commander.deductCredits(cost);
-                        return new JournalEntry(timestamp, @event, $"Refilled ammunition for {String.Format("{0:n0}", cost)} credits", j);
-                    case "FSDJump":
-                        if (!isReparse)
-                        {
-                            commander.CurrentSystem = (string)j["StarSystem"];
-                            commander.CurrentLocation = string.Empty;
-                        }
-                        return new JournalEntry(timestamp, @event, $"Jumped to {(string)j["StarSystem"]} ({String.Format("{0:f2}", (float)j["JumpDist"])}Ly)", j);
-                    case "RepairPartial": // Legacy
-                    case "RepairAll":
-                        cost = (long)j["Cost"];
-                        if (!isReparse)
-                            commander.deductCredits(cost);
-                        return new JournalEntry(timestamp, @event, $"Repaired ship for {String.Format("{0:n0}", cost)} credits", j);
-                    case "SupercruiseExit":
-                        string system = (string)j["StarSystem"];
-                        string body = (string)j["Body"];
-                        string bodyType = (string)j["BodyType"];
-                        if (!isReparse)
-                        {
-                            commander.CurrentSystem = system;
-                            commander.CurrentLocation = body;
-                        }
-                        return new JournalEntry(timestamp, @event, $"Exited Supercruise in {system} near {body} ({bodyType})", j);
-                    case "SupercruiseEntry":
-                        system = (string)j["StarSystem"];
-                        if (!isReparse)
-                        {
-                            commander.CurrentSystem = system;
-                            commander.CurrentLocation = string.Empty;
-                        }
-                        return new JournalEntry(timestamp, @event, $"Entered Supercruise in {system}", j);
-                    case "ShieldState":
-                        bool s = (bool)j["ShieldsUp"];
-                        return new JournalEntry(timestamp, @event, String.Format("Shields {0}.", s ? "ONLINE" : "OFFLINE"), j);
-                    case "MaterialCollected":
-                        string material = (string)j["Name"];
-                        count = (int)j["Count"];
-                        string category = (string)j["Category"];
-                        if (!isReparse)
-                            commander.addMaterial(material, count);
-                        return new JournalEntry(timestamp, @event, String.Format("Collected. {0} : {1} ({2})", category, mainForm.Database.getMaterialNameFromInternalName(material), count), j);
-                    case "MaterialDiscovered":
-                        material = (string)j["Name"];
-                        category = (string)j["Category"];
-                        return new JournalEntry(timestamp, @event, String.Format("Discovered new material: {0} : {1}", category, mainForm.Database.getMaterialNameFromInternalName(material)), j);
-                    case "MaterialDiscarded":
-                        material = (string)j["Name"];
-                        count = (int)j["Count"];
-                        if (!isReparse)
-                            commander.removeMaterial(material, count);
-                        //_materialCounts[material] -= count;
-                        return new JournalEntry(timestamp, @event, String.Format("Discarded. {0} : {1} ({2})", mainForm.Database.getTypeForMaterialByInternalName(material), mainForm.Database.getMaterialNameFromInternalName(material), count), j);
-                    case "MissionCompleted":
-                        //Console.WriteLine(j.ToString());
-                        bool donate = j["Reward"] == null;
-                        long credits = donate ? (long)j["Donation"] : (long)j["Reward"];
-                        if (!isReparse)
-                        {
-                            if (donate)
-                                commander.deductCredits(credits);
-                            else
-                                commander.addCredits(credits);
-                        }
-                        prefix = donate ? "Donated" : "Rewarded";
-                        return new JournalEntry(timestamp, @event, $"Completed mission. {prefix} {String.Format("{0:n0}", credits)} credits.", j);
-                    case "FuelScoop":
-                        return new JournalEntry(timestamp, @event, $"Scooped {String.Format("{0:f2}", (float)j["Scooped"])} tonnes of fuel.", j);
-                    case "ModuleRetrieve":
-                        string shipname = (string)j["Ship"];
-                        string module = (string)j["RetrievedItem_Localised"];
-                        string moduleInternal = (string)j["RetrievedItem"];
-                        string[] moduleClassandSize = EliteUtils.getSizeAndClassFromInternalName(moduleInternal, true);
-                        bool hasStored = true;
-                        string moduleStored, moduleStoredInternal, fullStoredModuleName = string.Empty;
-                        string[] moduleStoredClassandSize;
-                        try
-                        {
-                            moduleStored = (string)j["SwapOutItem_Localised"];
-                            moduleStoredInternal = (string)j["SwapOutItem"];
-                            moduleStoredClassandSize = EliteUtils.getSizeAndClassFromInternalName(moduleStoredInternal, true);
-                            fullStoredModuleName = string.Format("{0} {1}", string.Join("", moduleStoredClassandSize), moduleStored);
-                        }
-                        catch { hasStored = false; }
-
-                        try
-                        {
-                            shipname = mainForm.Database.getShipNameFromInternalName(shipname);
-                        }
-                        catch { }
-                        string fullModuleName = string.Format("{0} {1}", string.Join("", moduleClassandSize), module);
-                        string eText = string.Empty;
-                        if (hasStored)
-                            eText = string.Format("Swapped '{0}' with '{1}' in your {2}", fullStoredModuleName, fullModuleName, shipname);
-                        else
-                            eText = String.Format("Transferred module '{0}' to your {1}", fullModuleName, shipname);
-                        return new JournalEntry(timestamp, @event, eText, j);
-                    case "ModuleStore":
-                        shipname = (string)j["Ship"];
-                        module = (string)j["StoredItem_Localised"];
-                        moduleInternal = (string)j["StoredItem"];
-                        moduleClassandSize = EliteUtils.getSizeAndClassFromInternalName(moduleInternal, true);
-                        try
-                        {
-                            shipname = mainForm.Database.getShipNameFromInternalName(shipname);
-                        }
-                        catch { }
-                        fullModuleName = string.Format("{0} {1}", string.Join("", moduleClassandSize), module);
-                        return new JournalEntry(timestamp, @event, String.Format("Stored module '{0}' from your {1}", fullModuleName, shipname), j);
-                    case "ModuleBuy":
-                        bool partExchange = true;
-                        string soldModule = string.Empty, soldModuleFull = string.Empty;
-                        long soldModulePrice = 0;
-                        try
-                        {
-                            soldModulePrice = (long)j["SellPrice"];
-                            soldModule = (string)j["SellItem_Localised"];
-                            string sMI = (string)j["SellItem"];
-                            string[] sMICS = EliteUtils.getSizeAndClassFromInternalName(sMI, true);
-                            soldModuleFull = string.Format("{0} {1}", string.Join("", sMICS), soldModule);
-                        }
-                        catch { partExchange = false; }
-
-                        long buyModulePrice = (long)j["BuyPrice"];
-                        string buyModule = (string)j["BuyItem_Localised"];
-                        string bMI = (string)j["BuyItem"];
-                        string[] bMICS = EliteUtils.getSizeAndClassFromInternalName(bMI, true);
-                        string buyModuleFull = string.Format("{0} {1}", string.Join("", bMICS), buyModule);
-
-                        long totalCost = buyModulePrice - soldModulePrice;
-
-                        if (partExchange)
-                            eText = string.Format("Traded in '{0}' for '{1}'. {3}: {2:n0}", soldModuleFull, buyModuleFull, Math.Abs(totalCost), totalCost < 0L ? "Gain" : "Loss");
-                        else
-                            eText = string.Format("Purchased '{0}' for {1:n0} credits", buyModuleFull, totalCost);
-
-                        if (!isReparse)
-                            commander.adjustCredits(totalCost);
-
-                        return new JournalEntry(timestamp, @event, eText, j);
-                    case "EjectCargo":
-                        string cargo = (string)j["Type"];
-                        count = (int)j["Count"];
-                        bool abandoned = (bool)j["Abandoned"];
-                        return new JournalEntry(timestamp, @event, String.Format("{0} {1} {2}", abandoned ? "Abandoned" : "Ejected", count, cargo), j);
-                    // { "timestamp":"2017-02-11T20:21:42Z", "event":"Promotion", "Combat":5 }
-                    case "Promotion":
-                        JProperty jt = j.Last as JProperty;
-                        string skill = jt.Name;
-                        int rank = Convert.ToInt32(jt.Value);
-                        string realRank = Ranks.rankNames[skill.ToLower()][rank];
-                        commander.applyPromotion(skill, rank);
-                        return new JournalEntry(timestamp, @event, $"Promoted to {realRank} in {skill.Replace("Explore", "Exploration")}", j);
-                    case "FactionKillBond":
-                        int value = (int)j["Reward"];
-                        string issuingFaction = (string)j["AwardingFaction"];
-                        string againstFaction = (string)j["VictimFaction"];
-                        eText = string.Format("Combat Bond valued at {0:n0} awarded from {1} for destruction of ship from {2}.", value, issuingFaction, againstFaction);
-                        return new JournalEntry(timestamp, @event, eText, j);
-                    case "Bounty":
-                        try
-                        {
-                            value = (int)j["TotalReward"];
-                        }
-                        catch { value = (int)j["Reward"]; }
-                        againstFaction = (string)j["VictimFaction"];
-                        string ship = string.Empty;
-                        try
-                        {
-                            ship = (string)j["Target"];
-                        }
-                        catch { }
-                        if (string.IsNullOrEmpty(ship))
-                            eText = string.Format("Bountry credit of {0:n0} awarded.", value);
-                        else 
-                            eText = string.Format("Bountry credit of {0:n0} awarded for destruction of {1} {2}.", value, againstFaction, mainForm.Database.getShipNameFromInternalName(ship));
-                        return new JournalEntry(timestamp, @event, eText, j);
-                    case "RedeemVoucher":
-                        value = (int)j["Amount"];
-                        string voucherType = (string)j["Type"];
-                        try
-                        {
-                            voucherType = mainForm.Database.VoucherTypes[voucherType];
-                        }
-                        catch { }
-                        if (!isReparse)
-                            commander.addCredits(value);
-                        eText = string.Format("Redeemed {0}s valued at {1:n0}", voucherType, value);
-                        return new JournalEntry(timestamp, @event, eText, j);
-                    case "HeatWarning":
-                        return new JournalEntry(timestamp, @event, "Heat levels critical!", j);
-                    case "HullDamage":
-                        return new JournalEntry(timestamp, @event, string.Format("Took hull damage! Hull health: {0:n0}%", (float)j["Health"] * 100.00), j);
-                    case "ShipyardSwap":
-                        string oldShip = (string)j["StoreOldShip"];
-                        string newShip = (string)j["ShipType"];
-                        eText = string.Format("Switch from ship {0} to {1}.", mainForm.Database.getShipNameFromInternalName(oldShip), mainForm.Database.getShipNameFromInternalName(newShip));
-                        if (!isReparse)
-                            commander.SetShip(mainForm.Database.getShipNameFromInternalName(newShip), "", "");
-                            /*commander.Ship = mainForm.Database.getShipNameFromInternalName(newShip);*/
-                        return new JournalEntry(timestamp, @event, eText, j);
-                    case "Loadout":
-                        if (commander != null)
-                        {
-                            ship = (string)j["Ship"];
-                            shipName = (string)j["ShipName"];
-                            shipID = (string)j["ShipIdent"];
-                            commander.SetShip(new CommanderShip(ship, shipID, shipName));
-                            int commanderShipID = (int)j["ShipID"];
-                            commander.UpdateShipLoadout(commanderShipID, mainForm.Database.getShipNameFromInternalName(ship), shipID, shipName.Equals(ship) ? "" : shipName, j["Modules"].ToString());
-                        }
-                        return new JournalEntry(timestamp, @event, "--PLACEHOLDER--", "KNOWN-ISH EVENT", j, false);
-                    default:
-                        return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
-                }
-            /*}
-            catch (Exception exception)
+            switch (@event)
             {
-                this.logger.Log("Exception while parsing event '{1}': {0}", LogLevel.ERR, exception.Message, @event);
-                this.logger.Log("Event JSON: {0}", j.ToString());
-                this.logger.Log("{0}", LogLevel.ERR, exception.StackTrace);
-                throw new Exception(exception.Message, exception);
-            }*/
+                case "Fileheader":
+                    return new JournalEntry(timestamp, @event, "", j);
+                case "LoadGame": // TODO: Parse ship name/ID from event and update accordingly
+                    bool isGroup = false;
+                    try
+                    {
+                        isGroup = ((string)j["GameMode"]).Equals("Group");
+                    }
+                    catch { this.logger.Log("GameMode is not set."); }
+                    string pGroup = "";
+                    try
+                    {
+                        pGroup = (string)j["Group"];
+                    }
+                    catch { this.logger.Log("Private group is not set."); }
+
+                    string commanderShip = (string)j["Ship"];
+                    try
+                    {
+                        commanderShip = mainForm.Database.getShipNameFromInternalName(commanderShip.ToLower());
+                    }
+                    catch
+                    {
+                        this.logger.Log("No real name for ship: {0}", LogLevel.ERR, commanderShip == string.Empty || commanderShip == null ? "{!!empty string!!}" : commanderShip);
+                        this.logger.Log("{0}", LogLevel.ERR, j.ToString());
+                    }
+                    long commanderCredits = (long)j["Credits"];
+                    string commanderName = (string)j["Commander"];
+                    string shipName = (string)j["ShipName"];
+                    string shipID = (string)j["ShipIdent"];
+                    string commanderString = $"{commanderName}" + (isGroup ? $" ({pGroup})" : "");
+                    Commander _commander = registerCommander(commanderName);
+                    _commander.setBasicInfo(commanderShip, commanderCredits, isGroup ? pGroup : "");
+                    _commander.SetShip(commanderShip, shipID, shipName);
+                    commander = activeCommander = _commander;
+                    string commanderShipFormatted = commander.ShipData.getFormattedShipString();
+                    return new JournalEntry(timestamp, @event, $"Commander {commanderString} | {commanderShipFormatted} | Credit balance: {String.Format("{0:n0}", commanderCredits)}", j);
+                case "Rank":
+
+                    int c = (int)j["Combat"];
+                    int t = (int)j["Trade"];
+                    int e = (int)j["Explore"];
+                    int q = (int)j["CQC"];
+                    int fed = (int)j["Federation"];
+                    int imp = (int)j["Empire"];
+
+                    commander.setRanks(c, t, e, q, fed, imp);
+
+                    return new JournalEntry(timestamp, @event, $"Combat: {commander.combatRankName}, Trading: {commander.tradeRankName}, Exploration: {commander.explorationRankName}, CQC: {commander.cqcRankName} | Federation: {commander.federationRankName}, Empire: {commander.imperialRankName}", j);
+                case "Progress":
+                    int cp = (int)j["Combat"];
+                    int tp = (int)j["Trade"];
+                    int ep = (int)j["Explore"];
+                    int fp = (int)j["Federation"];
+                    int ip = (int)j["Empire"];
+                    int qp = (int)j["CQC"];
+
+                    commander.setRankProgress(cp, tp, ep, qp, fp, ip);
+
+                    return new JournalEntry(timestamp, @event, $"Combat: {cp}, Trade: {tp}, Exploration: {ep}, CQC: {qp} | Federation: {fp}, Empire: {ip}", j);
+                case "MarketBuy":
+                case "MarketSell":
+                    bool b = @event.Equals("MarketBuy");
+                    string product = (string)j["Type"];
+                    int count = (int)j["Count"];
+                    long price = 0;
+                    if (b)
+                        price = (long)j["TotalCost"];
+                    else
+                        price = (long)j["TotalSale"];
+                    string prefix = b ? "Bought" : "Sold";
+                    if (!isReparse)
+                    {
+                        if (b)
+                            commander.deductCredits(price);
+                        else
+                            commander.addCredits(price);
+                    }
+                    return new JournalEntry(timestamp, @event, $"{prefix} {count} {product} for {String.Format("{0:n0}", price)} credits", j);
+                case "SendText":
+                    string message = (string)j["Message"];
+                    string to = (string)j["To"];
+                    if (to.StartsWith("$cmdr_decorate"))
+                        to = (string)j["To_Localised"];
+                    return new JournalEntry(timestamp, @event, $"TO {to}: {message}", j);
+                case "ReceiveText":
+                    string channel = (string)j["Channel"] ?? "-";
+                    message = "";
+                    string sender = (string)j["From"];
+                    if (channel.Equals("player") || sender.StartsWith("$cmdr_decorate") || channel.Equals("wing"))
+                        message = (string)j["Message"];
+                    else
+                        message = (string)j["Message_Localised"];
+                    if (sender.StartsWith("$npc_name_decorate") || sender.StartsWith("$cmdr_decorate") || sender.StartsWith("$ShipName"))
+                        sender = (string)j["From_Localised"];
+                    else if (sender.StartsWith("&"))
+                        sender = sender.Substring(1);
+
+                    return new JournalEntry(timestamp, @event, $"FROM {sender}: {message}", j);
+                case "DockingRequested":
+                    return new JournalEntry(timestamp, @event, $"Requested docking at {(string)j["StationName"]}", j);
+                case "DockingGranted":
+                    return new JournalEntry(timestamp, @event, $"Docking granted on pad {(string)j["LandingPad"]} at {(string)j["StationName"]}", j);
+                case "Docked":
+                    string stationName = (string)j["StationName"];
+                    string stationType = (string)j["StationType"];
+                    string starSystem = (string)j["StarSystem"];
+                    if (!isReparse)
+                    {
+                        commander.isDocked = true;
+                        commander.CurrentSystem = starSystem;
+                        commander.CurrentLocation = stationName;
+                    }
+                    string eventText = String.Format("Docked at {0}{1} in {2}", stationName, stationType == null || stationType.Equals(string.Empty) ? "" : $" ({stationType})", starSystem);
+                    return new JournalEntry(timestamp, @event, eventText, j);
+                case "Undocked":
+                    stationName = (string)j["StationName"];
+                    stationType = (string)j["StationType"];
+                    if (!isReparse)
+                    {
+                        commander.isDocked = false;
+                    }
+                    eventText = String.Format("Undocked from {0}{1}", stationName, stationType == null || stationType.Equals(string.Empty) ? "" : $" ({stationType})");
+                    return new JournalEntry(timestamp, @event, eventText, j);
+                case "RefuelPartial": // Legacy
+                case "RefuelAll":
+                    long cost = (long)j["Cost"];
+                    float amount = (float)j["Amount"];
+                    if (!isReparse)
+                        commander.deductCredits(cost);
+                    return new JournalEntry(timestamp, @event, $"Refuelled {String.Format("{0:f2}", amount)} tonnes for {String.Format("{0:n0}", cost)} credits", j);
+                case "BuyAmmo":
+                    cost = (long)j["Cost"];
+                    if (!isReparse)
+                        commander.deductCredits(cost);
+                    return new JournalEntry(timestamp, @event, $"Refilled ammunition for {String.Format("{0:n0}", cost)} credits", j);
+                case "FSDJump":
+                    if (!isReparse)
+                    {
+                        commander.CurrentSystem = (string)j["StarSystem"];
+                        commander.CurrentLocation = string.Empty;
+                    }
+                    return new JournalEntry(timestamp, @event, $"Jumped to {(string)j["StarSystem"]} ({String.Format("{0:f2}", (float)j["JumpDist"])}Ly)", j);
+                case "RepairPartial": // Legacy
+                case "RepairAll":
+                    cost = (long)j["Cost"];
+                    if (!isReparse)
+                        commander.deductCredits(cost);
+                    return new JournalEntry(timestamp, @event, $"Repaired ship for {String.Format("{0:n0}", cost)} credits", j);
+                case "SupercruiseExit":
+                    string system = (string)j["StarSystem"];
+                    string body = (string)j["Body"];
+                    string bodyType = (string)j["BodyType"];
+                    if (!isReparse)
+                    {
+                        commander.CurrentSystem = system;
+                        commander.CurrentLocation = body;
+                    }
+                    return new JournalEntry(timestamp, @event, $"Exited Supercruise in {system} near {body} ({bodyType})", j);
+                case "SupercruiseEntry":
+                    system = (string)j["StarSystem"];
+                    if (!isReparse)
+                    {
+                        commander.CurrentSystem = system;
+                        commander.CurrentLocation = string.Empty;
+                    }
+                    return new JournalEntry(timestamp, @event, $"Entered Supercruise in {system}", j);
+                case "ShieldState":
+                    bool s = (bool)j["ShieldsUp"];
+                    return new JournalEntry(timestamp, @event, String.Format("Shields {0}.", s ? "ONLINE" : "OFFLINE"), j);
+                case "MaterialCollected":
+                    string material = (string)j["Name"];
+                    count = (int)j["Count"];
+                    string category = (string)j["Category"];
+                    if (!isReparse)
+                        commander.addMaterial(material, count);
+                    return new JournalEntry(timestamp, @event, String.Format("Collected. {0} : {1} ({2})", category, mainForm.Database.getMaterialNameFromInternalName(material), count), j);
+                case "MaterialDiscovered":
+                    material = (string)j["Name"];
+                    category = (string)j["Category"];
+                    return new JournalEntry(timestamp, @event, String.Format("Discovered new material: {0} : {1}", category, mainForm.Database.getMaterialNameFromInternalName(material)), j);
+                case "MaterialDiscarded":
+                    material = (string)j["Name"];
+                    count = (int)j["Count"];
+                    if (!isReparse)
+                        commander.removeMaterial(material, count);
+                    //_materialCounts[material] -= count;
+                    return new JournalEntry(timestamp, @event, String.Format("Discarded. {0} : {1} ({2})", mainForm.Database.getTypeForMaterialByInternalName(material), mainForm.Database.getMaterialNameFromInternalName(material), count), j);
+                case "MissionCompleted":
+                    //Console.WriteLine(j.ToString());
+                    bool donate = j["Reward"] == null;
+                    long credits = donate ? (long)j["Donation"] : (long)j["Reward"];
+                    if (!isReparse)
+                    {
+                        if (donate)
+                            commander.deductCredits(credits);
+                        else
+                            commander.addCredits(credits);
+                    }
+                    prefix = donate ? "Donated" : "Rewarded";
+                    return new JournalEntry(timestamp, @event, $"Completed mission. {prefix} {String.Format("{0:n0}", credits)} credits.", j);
+                case "FuelScoop":
+                    return new JournalEntry(timestamp, @event, $"Scooped {String.Format("{0:f2}", (float)j["Scooped"])} tonnes of fuel.", j);
+                case "ModuleRetrieve":
+                    string shipname = (string)j["Ship"];
+                    string module = (string)j["RetrievedItem_Localised"];
+                    string moduleInternal = (string)j["RetrievedItem"];
+                    string[] moduleClassandSize = EliteUtils.getSizeAndClassFromInternalName(moduleInternal, true);
+                    bool hasStored = true;
+                    string moduleStored, moduleStoredInternal, fullStoredModuleName = string.Empty;
+                    string[] moduleStoredClassandSize;
+                    try
+                    {
+                        moduleStored = (string)j["SwapOutItem_Localised"];
+                        moduleStoredInternal = (string)j["SwapOutItem"];
+                        moduleStoredClassandSize = EliteUtils.getSizeAndClassFromInternalName(moduleStoredInternal, true);
+                        fullStoredModuleName = string.Format("{0} {1}", string.Join("", moduleStoredClassandSize), moduleStored);
+                    }
+                    catch { hasStored = false; }
+
+                    try
+                    {
+                        shipname = mainForm.Database.getShipNameFromInternalName(shipname);
+                    }
+                    catch { }
+                    string fullModuleName = string.Format("{0} {1}", string.Join("", moduleClassandSize), module);
+                    string eText = string.Empty;
+                    if (hasStored)
+                        eText = string.Format("Swapped '{0}' with '{1}' in your {2}", fullStoredModuleName, fullModuleName, shipname);
+                    else
+                        eText = String.Format("Transferred module '{0}' to your {1}", fullModuleName, shipname);
+                    return new JournalEntry(timestamp, @event, eText, j);
+                case "ModuleStore":
+                    shipname = (string)j["Ship"];
+                    module = (string)j["StoredItem_Localised"];
+                    moduleInternal = (string)j["StoredItem"];
+                    moduleClassandSize = EliteUtils.getSizeAndClassFromInternalName(moduleInternal, true);
+                    try
+                    {
+                        shipname = mainForm.Database.getShipNameFromInternalName(shipname);
+                    }
+                    catch { }
+                    fullModuleName = string.Format("{0} {1}", string.Join("", moduleClassandSize), module);
+                    return new JournalEntry(timestamp, @event, String.Format("Stored module '{0}' from your {1}", fullModuleName, shipname), j);
+                case "ModuleBuy":
+                    bool partExchange = true;
+                    string soldModule = string.Empty, soldModuleFull = string.Empty;
+                    long soldModulePrice = 0;
+                    try
+                    {
+                        soldModulePrice = (long)j["SellPrice"];
+                        soldModule = (string)j["SellItem_Localised"];
+                        string sMI = (string)j["SellItem"];
+                        string[] sMICS = EliteUtils.getSizeAndClassFromInternalName(sMI, true);
+                        soldModuleFull = string.Format("{0} {1}", string.Join("", sMICS), soldModule);
+                    }
+                    catch { partExchange = false; }
+
+                    long buyModulePrice = (long)j["BuyPrice"];
+                    string buyModule = (string)j["BuyItem_Localised"];
+                    string bMI = (string)j["BuyItem"];
+                    string[] bMICS = EliteUtils.getSizeAndClassFromInternalName(bMI, true);
+                    string buyModuleFull = string.Format("{0} {1}", string.Join("", bMICS), buyModule);
+
+                    long totalCost = buyModulePrice - soldModulePrice;
+
+                    if (partExchange)
+                        eText = string.Format("Traded in '{0}' for '{1}'. {3}: {2:n0}", soldModuleFull, buyModuleFull, Math.Abs(totalCost), totalCost < 0L ? "Gain" : "Loss");
+                    else
+                        eText = string.Format("Purchased '{0}' for {1:n0} credits", buyModuleFull, totalCost);
+
+                    if (!isReparse)
+                        commander.adjustCredits(totalCost);
+
+                    return new JournalEntry(timestamp, @event, eText, j);
+                case "EjectCargo":
+                    string cargo = (string)j["Type"];
+                    count = (int)j["Count"];
+                    bool abandoned = (bool)j["Abandoned"];
+                    return new JournalEntry(timestamp, @event, String.Format("{0} {1} {2}", abandoned ? "Abandoned" : "Ejected", count, cargo), j);
+                // { "timestamp":"2017-02-11T20:21:42Z", "event":"Promotion", "Combat":5 }
+                case "Promotion":
+                    JProperty jt = j.Last as JProperty;
+                    string skill = jt.Name;
+                    int rank = Convert.ToInt32(jt.Value);
+                    string realRank = Ranks.rankNames[skill.ToLower()][rank];
+                    commander.applyPromotion(skill, rank);
+                    return new JournalEntry(timestamp, @event, $"Promoted to {realRank} in {skill.Replace("Explore", "Exploration")}", j);
+                case "FactionKillBond":
+                    int value = (int)j["Reward"];
+                    string issuingFaction = (string)j["AwardingFaction"];
+                    string againstFaction = (string)j["VictimFaction"];
+                    eText = string.Format("Combat Bond valued at {0:n0} awarded from {1} for destruction of ship from {2}.", value, issuingFaction, againstFaction);
+                    return new JournalEntry(timestamp, @event, eText, j);
+                case "Bounty":
+                    try
+                    {
+                        value = (int)j["TotalReward"];
+                    }
+                    catch { value = (int)j["Reward"]; }
+                    againstFaction = (string)j["VictimFaction"];
+                    string ship = string.Empty;
+                    try
+                    {
+                        ship = (string)j["Target"];
+                    }
+                    catch { }
+                    if (string.IsNullOrEmpty(ship))
+                        eText = string.Format("Bountry credit of {0:n0} awarded.", value);
+                    else
+                        eText = string.Format("Bountry credit of {0:n0} awarded for destruction of {1} {2}.", value, againstFaction, mainForm.Database.getShipNameFromInternalName(ship));
+                    return new JournalEntry(timestamp, @event, eText, j);
+                case "RedeemVoucher":
+                    value = (int)j["Amount"];
+                    string voucherType = (string)j["Type"];
+                    try
+                    {
+                        voucherType = mainForm.Database.VoucherTypes[voucherType];
+                    }
+                    catch { }
+                    if (!isReparse)
+                        commander.addCredits(value);
+                    eText = string.Format("Redeemed {0}s valued at {1:n0}", voucherType, value);
+                    return new JournalEntry(timestamp, @event, eText, j);
+                case "HeatWarning":
+                    return new JournalEntry(timestamp, @event, "Heat levels critical!", j);
+                case "HullDamage":
+                    return new JournalEntry(timestamp, @event, string.Format("Took hull damage! Hull health: {0:n0}%", (float)j["Health"] * 100.00), j);
+                case "ShipyardSwap":
+                    string oldShip = (string)j["StoreOldShip"];
+                    string newShip = (string)j["ShipType"];
+                    eText = string.Format("Switch from ship {0} to {1}.", mainForm.Database.getShipNameFromInternalName(oldShip), mainForm.Database.getShipNameFromInternalName(newShip));
+                    if (!isReparse)
+                        commander.SetShip(mainForm.Database.getShipNameFromInternalName(newShip), "", "");
+                    return new JournalEntry(timestamp, @event, eText, j);
+                case "StartJump": // { "timestamp":"2017-04-29T01:28:25Z", "event":"StartJump", "JumpType":"Hyperspace", "StarSystem":"CD-77 1073", "StarClass":"K" }
+                    string jumpType = (string)j["JumpType"];
+                    eventText = "";
+                    if (jumpType.Equals("Supercruise"))
+                    {
+                        eventText = "Jumped to Supercruise";
+                    }
+                    else
+                    {
+                        system = (string)j["StarSystem"];
+                        string starClass = (string)j["StarClass"];
+                        eventText = string.Format("Preparing to jump to {0} | Star Class: {1}", system, starClass);
+                    }
+                    return new JournalEntry(timestamp, @event, eventText, j);
+                case "Loadout":
+                    if (commander != null)
+                    {
+                        ship = (string)j["Ship"];
+                        shipName = (string)j["ShipName"];
+                        shipID = (string)j["ShipIdent"];
+                        commander.SetShip(new CommanderShip(ship, shipID, shipName));
+                        int commanderShipID = (int)j["ShipID"];
+                        commander.UpdateShipLoadout(commanderShipID, mainForm.Database.getShipNameFromInternalName(ship), shipID, shipName.Equals(ship) ? "" : shipName, j["Modules"].ToString());
+                    }
+                    return new JournalEntry(timestamp, @event, "--PLACEHOLDER--", "KNOWN-ISH EVENT", j, false); // TODO
+                default:
+                    return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
+            }
            
         }
 
@@ -481,7 +493,14 @@ namespace EliteMonitor.Journal
                     }
                 }
             }
-            createJournalEntries(allJournalEntries, false, true);
+            try
+            {
+                createJournalEntries(allJournalEntries, false, true);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
             mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Switching commander...");
             switchViewedCommander(activeCommander);
             mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Ready.");
@@ -640,7 +659,7 @@ namespace EliteMonitor.Journal
                     lvi.BackColor = Color.LightGreen;
                 else if (j.Event.Equals("SendText") || j.Event.Equals("ReceiveText"))
                     lvi.BackColor = Color.LightGoldenrodYellow;
-                else if (j.Event.Equals("FSDJump"))
+                else if (j.Event.Equals("FSDJump") || j.Event.Equals("StartJump"))
                     lvi.BackColor = Color.LightGray;
             }
             return lvi;
@@ -655,6 +674,17 @@ namespace EliteMonitor.Journal
 
         public void tailJournal(string path)
         {
+            if (abortJournalTailing)
+            {
+                string err = "Tailing not started due to Journal error.";
+                mainForm.InvokeIfRequired(() => 
+                {
+                    mainForm.appStatus.Text = err;
+                    mainForm.toolStripTailingFailed.Visible = true;
+                });
+                this.logger.Log(err);
+                return;
+            }
             if (this.tailerRunning)
                 return;
             this.tailerRunning = true;
@@ -665,12 +695,14 @@ namespace EliteMonitor.Journal
 
             this.currentTailFile = last.FullName;
 
-            Thread t = new Thread(() =>
+            journalTailThread = new Thread(() =>
             {
                 long lastSize = 0L;
                 mainForm.cacheController._journalLengthCache.TryGetValue(last.Name, out lastSize);
                 while (true)
                 {
+                    if (this.abortJournalTailing)
+                        break;
                     last.Refresh();
                     if (this.hasChangedLogFile || last.Length > lastSize)
                     {
@@ -694,8 +726,8 @@ namespace EliteMonitor.Journal
                     Thread.Sleep(Properties.Settings.Default.tailFilePollInterval);
                 }
             });
-            t.IsBackground = true; // do not block the application from terminating
-            t.Start();
+            journalTailThread.IsBackground = true; // do not block the application from terminating
+            journalTailThread.Start();
 
             this.logger.Log($"Setting up file watcher on directory {path}...");
             path = Environment.ExpandEnvironmentVariables(path);
@@ -707,6 +739,14 @@ namespace EliteMonitor.Journal
             fileSystemWatcher.Filter = "Journal*.log";
             fileSystemWatcher.EnableRaisingEvents = true;
             mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Tailing started...");
+        }
+
+        public void stopTailing()
+        {
+            this.abortJournalTailing = true;
+            if (this.fileSystemWatcher != null)
+                this.fileSystemWatcher.Dispose();
+            mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Tailing aborted due to error.");
         }
 
         private void fileCreated(object sender, FileSystemEventArgs e)
