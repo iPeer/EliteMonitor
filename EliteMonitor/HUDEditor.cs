@@ -713,9 +713,12 @@ namespace EliteMonitor
             else
                 this.buttonDeletePreset.Enabled = true;
             HUDMatrix hm = new HUDMatrix(this.savedHUDs[hmName]); // so we don't "pollute" the defaults/saved huds
-            this.hudMatrix = hm;
+#if DEBUG
+            Console.WriteLine(string.Format("Switching to matrix {0} {1} {2} // {3} {4} {5} // {6} {7} {8}", hm.RR, hm.GR, hm.BR, hm.RG, hm.GG, hm.BG, hm.RB, hm.GB, hm.BB));
+#endif
             this.updateInProgress = true;
-            switchRange(hm.getHighestRange());
+            switchRange(hm.getHighestRange()); // Build 890: The order of this and the statement below were switched to fix an issue with switching back to the default matrix while having matricies out of range of the default range.
+            this.hudMatrix = hm;
             updateSlidersAndTextBoxes();
             this.updateInProgress = false;
             applyMatrixToHud();
