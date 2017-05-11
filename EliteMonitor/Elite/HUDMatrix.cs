@@ -150,8 +150,6 @@ namespace EliteMonitor.Elite
 
                 File.Copy(xmlPath, xmlPath.Replace(".xml", String.Format("-{0}.xml", DateTime.Now.ToString("yyyyMMdd-HHmmss"))));
 
-                // TODO: Backup old file
-
                 XmlWriterSettings xmlWriterSettings = new XmlWriterSettings()
                 {
                     Indent = true,

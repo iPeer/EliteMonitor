@@ -43,7 +43,7 @@ namespace EliteMonitor.Elite
             long[] dataArray = (type == RankType.EXPLORATION ? promotionValuesExploration : promotionValuesTrading);
 
             double rankProgression = (double)currentRankPercentage / 100d;
-            long creditsAtCurrentRank = dataArray[currentRank + 1];
+            long creditsAtCurrentRank = dataArray[(currentRank == 8 ? currentRank : currentRank + 1)];
             long currentRankProgression = 0;
             if (currentRank < 8)
             {

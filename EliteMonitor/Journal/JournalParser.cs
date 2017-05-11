@@ -33,6 +33,7 @@ namespace EliteMonitor.Journal
         private bool tailerRunning = false;
         private Thread journalTailThread;
         private bool abortJournalTailing = false;
+        private bool fileWatcherRunning = false;
 
         public JournalParser(MainForm m)
         {
@@ -95,7 +96,7 @@ namespace EliteMonitor.Journal
             {
                 case "Fileheader":
                     return new JournalEntry(timestamp, @event, "", j);
-                case "LoadGame": // TODO: Parse ship name/ID from event and update accordingly
+                case "LoadGame":
                     bool isGroup = false;
                     try
                     {
@@ -359,6 +360,11 @@ namespace EliteMonitor.Journal
 
                     long totalCost = buyModulePrice - soldModulePrice;
 
+                    if (totalCost < 0L)
+                        commander.deductCredits(Math.Abs(totalCost));
+                    else
+                        commander.addCredits(totalCost);
+
                     if (partExchange)
                         eText = string.Format("Traded in '{0}' for '{1}'. {3}: {2:n0}", soldModuleFull, buyModuleFull, Math.Abs(totalCost), totalCost < 0L ? "Gain" : "Loss");
                     else
@@ -442,6 +448,8 @@ namespace EliteMonitor.Journal
                         eventText = string.Format("Preparing to jump to {0} | Star Class: {1}", system, starClass);
                     }
                     return new JournalEntry(timestamp, @event, eventText, j);
+                /*case "Materials":
+                    return new JournalEntry(timestamp, @event, "Updated material counts.", j, false);*/ // TODO
                 case "Loadout":
                     if (commander != null)
                     {
@@ -479,7 +487,7 @@ namespace EliteMonitor.Journal
             {
                 string file = _file.FullName;
                 mainForm.cacheController._journalLengthCache.Add(_file.Name, _file.Length);
-                mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = $"Parsing Journal file ({x++}/{fileInfo.Length}): {file}...");
+                mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = $"Parsing Journal file ({x++}/{fileInfo.Length}): {_file.Name}...");
                 using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
@@ -667,13 +675,18 @@ namespace EliteMonitor.Journal
 
         public void switchTailFile(FileInfo fi)
         {
-            this.logger.Log("Requested change to Journal file {0} - file switch will occur at next poll", fi.FullName);
+            this.logger.Log("Requested change to Journal file {0}", fi.FullName);
             this.hasChangedLogFile = true;
             this.currentTailFile = fi.FullName;
         }
 
         public void tailJournal(string path)
         {
+
+            if (fileWatcherRunning)
+                return;
+            this.fileWatcherRunning = true;
+
             if (abortJournalTailing)
             {
                 string err = "Tailing not started due to Journal error.";
@@ -685,49 +698,17 @@ namespace EliteMonitor.Journal
                 this.logger.Log(err);
                 return;
             }
-            if (this.tailerRunning)
-                return;
-            this.tailerRunning = true;
+
+            //this.logger.Log("Most recent Journal file is {0}, setting up to tail that file...", last.Name);
+
+
             DirectoryInfo di = new DirectoryInfo(EliteUtils.JOURNAL_PATH);
             FileInfo last = di.GetFiles().OrderBy(f => f.CreationTime).ToArray().Last();
 
-            this.logger.Log("Most recent Journal file is {0}, setting up to tail that file...", last.Name);
-
             this.currentTailFile = last.FullName;
 
-            journalTailThread = new Thread(() =>
-            {
-                long lastSize = 0L;
-                mainForm.cacheController._journalLengthCache.TryGetValue(last.Name, out lastSize);
-                while (true)
-                {
-                    if (this.abortJournalTailing)
-                        break;
-                    last.Refresh();
-                    if (this.hasChangedLogFile || last.Length > lastSize)
-                    {
-                        readFile:
-                        readFileFromByteOffset(last.FullName, last.Name, lastSize);
-                        lastSize = last.Length;
-                        if (mainForm.cacheController._journalLengthCache.ContainsKey(last.Name))
-                            mainForm.cacheController._journalLengthCache[last.Name] = lastSize;
-                        else
-                            mainForm.cacheController._journalLengthCache.Add(last.Name, lastSize);
-                        if (this.hasChangedLogFile)
-                        {
-                            this.logger.Log("Journal file change is pending to change to Journal {0}", this.currentTailFile);
-                            last = new FileInfo(this.currentTailFile);
-                            lastSize = 0L;
-                            this.hasChangedLogFile = false;
-                            goto readFile;
-                        }
-                    }
-                    //Console.WriteLine("--> " + last.Length);
-                    Thread.Sleep(Properties.Settings.Default.tailFilePollInterval);
-                }
-            });
-            journalTailThread.IsBackground = true; // do not block the application from terminating
-            journalTailThread.Start();
+            tailFile(this.currentTailFile);
+
 
             this.logger.Log($"Setting up file watcher on directory {path}...");
             path = Environment.ExpandEnvironmentVariables(path);
@@ -741,8 +722,89 @@ namespace EliteMonitor.Journal
             mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Tailing started...");
         }
 
+        public void tailFile(string filePath)
+        {
+            if (this.tailerRunning)
+                return;
+            this.tailerRunning = true;
+
+            FileInfo last = new FileInfo(filePath);
+
+            this.logger.Log("Tailer running on {0}...", last.Name);
+
+            journalTailThread = new Thread(() =>
+            {
+                long lastSize = 0L;
+                mainForm.cacheController._journalLengthCache.TryGetValue(last.Name, out lastSize);
+                using (FileStream fs = new FileStream(last.FullName, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+                {
+                    if (mainForm.cacheController._journalLengthCache.ContainsKey(last.Name))
+                        fs.Seek(mainForm.cacheController._journalLengthCache[last.Name], SeekOrigin.Begin);
+                    using (StreamReader sr = new StreamReader(fs))
+                    {
+                        bool tailerRestartRequired = false;
+                        while (!this.abortJournalTailing && !tailerRestartRequired)
+                        {
+                            while (!sr.EndOfStream)
+                            {
+                                string newEntry = sr.ReadLine();
+                                createJournalEntries(new List<string>() { newEntry }, checkDuplicates: true, dontUpdatePercentage: true);
+                                if (mainForm.cacheController._journalLengthCache.ContainsKey(last.Name))
+                                    mainForm.cacheController._journalLengthCache[last.Name] = fs.Position;
+                                else
+                                    mainForm.cacheController._journalLengthCache.Add(last.Name, fs.Position);
+                            }
+                            while (sr.EndOfStream)
+                            {
+                                if (this.hasChangedLogFile)
+                                {
+                                    /*fs.Close();
+                                    sr.Close();*/
+                                    this.hasChangedLogFile = false;
+                                    Console.WriteLine("Tailer restart requested");
+                                    tailerRestartRequired = true;
+                                    this.tailerRunning = false;
+                                    tailFile(this.currentTailFile);
+                                    break;
+                                }
+                                Thread.Sleep(100);
+                            }
+                            /*if (this.abortJournalTailing)
+                                break;
+                            last.Refresh();
+                            if (this.hasChangedLogFile || last.Length > lastSize)
+                            {
+                                readFile:
+                                readFileFromByteOffset(last.FullName, last.Name, lastSize);
+                                lastSize = last.Length;
+                                if (mainForm.cacheController._journalLengthCache.ContainsKey(last.Name))
+                                    mainForm.cacheController._journalLengthCache[last.Name] = lastSize;
+                                else
+                                    mainForm.cacheController._journalLengthCache.Add(last.Name, lastSize);
+                                if (this.hasChangedLogFile)
+                                {
+                                    this.logger.Log("Journal file change is pending to change to Journal {0}", this.currentTailFile);
+                                    last = new FileInfo(this.currentTailFile);
+                                    lastSize = 0L;
+                                    this.hasChangedLogFile = false;
+                                    goto readFile;
+                                }
+                            }
+                            //Console.WriteLine("--> " + last.Length);
+                            Thread.Sleep(Properties.Settings.Default.tailFilePollInterval);*/
+                        }
+                    }
+                }
+            });
+            journalTailThread.Name = "JOURNAL TAIL THREAD: " + last.Name;
+            journalTailThread.IsBackground = true; // do not block the application from terminating
+            journalTailThread.Start();
+        }
+
         public void stopTailing()
         {
+            this.fileWatcherRunning = false;
+            this.tailerRunning = false;
             this.abortJournalTailing = true;
             if (this.fileSystemWatcher != null)
                 this.fileSystemWatcher.Dispose();
