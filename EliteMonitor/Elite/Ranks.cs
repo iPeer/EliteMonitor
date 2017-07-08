@@ -42,21 +42,29 @@ namespace EliteMonitor.Elite
             long[] ret = new long[3];
             long[] dataArray = (type == RankType.EXPLORATION ? promotionValuesExploration : promotionValuesTrading);
 
-            double rankProgression = (double)currentRankPercentage / 100d;
-            long creditsAtCurrentRank = dataArray[(currentRank == 8 ? currentRank : currentRank + 1)];
-            long currentRankProgression = 0;
-            if (currentRank < 8)
+            double rankProgression = (currentRankPercentage / 100d);
+            long creditsAtNextRank = dataArray[currentRank < 8 ? currentRank + 1 : currentRank];
+            long baseCreditsForCurrentRank = dataArray[currentRank];
+
+            long creditsDifferenceBetweenRanks = creditsAtNextRank - baseCreditsForCurrentRank;
+
+            long creditsPastCurrentRank = (long)Math.Floor((double)creditsDifferenceBetweenRanks * rankProgression);
+
+            //long creditsToNextRank = creditsAtNextRank - creditsPastCurrentRank;
+            long creditsToNextRank = creditsDifferenceBetweenRanks - creditsPastCurrentRank;
+            long creditsFrom0Rank = (creditsDifferenceBetweenRanks - creditsToNextRank) + dataArray[currentRank];
+            if (currentRank == 8)
             {
-                currentRankProgression = Convert.ToInt64(Math.Floor((double)creditsAtCurrentRank * rankProgression));
+                creditsFrom0Rank = dataArray[currentRank];
             }
-            long creditsToNextRank = (currentRank == 8 || currentRankPercentage == 100 ? 0 : dataArray[currentRank + 1] - currentRankProgression);
-            long creditsFrom0Rank = currentRankProgression;
-            for (int x = 0; x < currentRank; x++)
-            {
-                creditsFrom0Rank += dataArray[x];
+            else {
+                for (int x = 0; x < currentRank; x++)
+                {
+                    creditsFrom0Rank += dataArray[x];
+                }
             }
 
-            return new long[] { currentRankProgression, creditsToNextRank, creditsFrom0Rank };
+            return new long[] { creditsPastCurrentRank, creditsToNextRank, creditsFrom0Rank };
 
         }
 

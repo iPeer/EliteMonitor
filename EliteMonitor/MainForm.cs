@@ -672,5 +672,20 @@ namespace EliteMonitor
             Properties.Settings.Default.Reset();
             Properties.Settings.Default.Save();
         }
+
+        private void tradeRankName_Click(object sender, EventArgs e)
+        {
+            /*MouseEventArgs mea = (MouseEventArgs)e;
+            if (mea.Button == MouseButtons.Right)
+            {*/
+            RankEditor re = new RankEditor();
+            re.ShowDialog();
+            /*}*/
+        }
+
+        private void saveUncompressedCommanderDataToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.journalParser.viewedCommander.saveData(true);
+        }
     }
 }

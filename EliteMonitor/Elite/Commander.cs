@@ -61,6 +61,8 @@ namespace EliteMonitor.Elite
         [JsonIgnore]
         [Obsolete("No longer needed", true)]
         public List<string> Journal { get; set; } = new List<string>();
+        [JsonIgnore]
+        public long lastCreditsChange = 0L;
         public Dictionary<string, int> Materials { get; set; } = new Dictionary<string, int>();
         public Dictionary<int, CommanderShipLoadout> Fleet = new Dictionary<int, CommanderShipLoadout>();
         public int cacheVersion = Utils.getBuildNumber();
@@ -79,7 +81,7 @@ namespace EliteMonitor.Elite
         public CommanderShip ShipData { get; set; }
         public string Ship { get; set; }
         [JsonIgnore] // We don't need to save this because it's kind of irrelevant
-        public string PrivateGroup { get; set; } = "";
+        public string PrivateGroup { get; set; } = string.Empty;
 
         public int combatRank { get; set; }
         public int tradeRank { get; set; }
@@ -91,6 +93,9 @@ namespace EliteMonitor.Elite
         public bool isLanded { get; set; }
         public string CurrentSystem { get; set; }
         public string CurrentLocation { get; set; }
+        public bool isInMulticrew { get; set; } = false;
+        [JsonIgnore]
+        public string MultiCrewCommanderName { get; set; } = string.Empty;
 
         [JsonIgnore]
         public string combatRankName
@@ -200,23 +205,31 @@ namespace EliteMonitor.Elite
             return this;
         }
 
-        public long saveData()
+        public long saveData(bool uncompressed = false)
         {
             this.OnSave();
             string commanderSavePath = Path.Combine(MainForm.Instance.cacheController.cachePath, MainForm.Instance.cacheController.commanderCaches.ContainsKey(this.Name) ? MainForm.Instance.cacheController.commanderCaches[this.Name].Item1 : $"{this.Name}.emj");
-            byte[] bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(this, Formatting.Indented));
-            using (FileStream fs = new FileStream(commanderSavePath, FileMode.Create))
+            if (uncompressed)
             {
-                using (GZipStream gz = new GZipStream(fs, CompressionLevel.Optimal))
+                string theString = JsonConvert.SerializeObject(this, Formatting.Indented);
+                using (StreamWriter sw = new StreamWriter(string.Format("{0}.decompressed", commanderSavePath), false, Encoding.UTF8))
                 {
-                    gz.Write(bytes, 0, bytes.Length);
+                    sw.WriteLine(theString);
                 }
+                return Encoding.UTF8.GetBytes(theString).LongLength;
             }
-            return bytes.LongLength;
-            /*using (StreamWriter sw = new StreamWriter(commanderSavePath, false, Encoding.UTF8))
+            else
             {
-                sw.WriteLine(JsonConvert.SerializeObject(this, Formatting.Indented));
-            }*/
+                byte[] bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(this, Formatting.Indented));
+                using (FileStream fs = new FileStream(commanderSavePath, FileMode.Create))
+                {
+                    using (GZipStream gz = new GZipStream(fs, CompressionLevel.Optimal))
+                    {
+                        gz.Write(bytes, 0, bytes.Length);
+                    }
+                }
+                return bytes.LongLength;
+            }
         }
 
         public Commander adjustCredits(long amount)
@@ -229,12 +242,14 @@ namespace EliteMonitor.Elite
         public Commander deductCredits(long credits)
         {
             this.Credits -= credits;
+            this.lastCreditsChange = -credits;
             return this;
         }
 
         public Commander addCredits(long credits)
         {
             this.Credits += credits;
+            this.lastCreditsChange = credits;
             return this;
         }
 
@@ -330,15 +345,25 @@ namespace EliteMonitor.Elite
 
             m.commanderLabel.InvokeIfRequired(() => {
                 string format = "{0} {1} | {2} | {3}{4}in {5}";
+                if (isInMulticrew)
+                    format = "{0} {1} | {2} | {5}";
                 if (string.IsNullOrEmpty(this.CurrentLocation) && string.IsNullOrEmpty(this.CurrentSystem))
                     format = "{0} {1} | {2}";
-                m.commanderLabel.Text = string.Format(format, this.Name, string.IsNullOrEmpty(this.PrivateGroup) ? "" : $"({this.PrivateGroup})", (this.ShipData != null ? this.ShipData.getFormattedShipString() : this.Ship), this.isDocked || this.isLanded ? this.isLanded ? "Landed at " : "Docked at " : "", String.Format("{0} ", this.CurrentLocation), this.CurrentSystem);
+                m.commanderLabel.Text = string.Format(format, this.Name, (this.isInMulticrew ? this.MultiCrewCommanderName : (string.IsNullOrEmpty(this.PrivateGroup) ? "" : $"({this.PrivateGroup})")), (this.ShipData != null ? this.ShipData.getFormattedShipString() : this.Ship), this.isDocked || this.isLanded ? this.isLanded ? "Landed at " : "Docked at " : "", String.Format("{0} ", this.CurrentLocation), this.CurrentSystem);
             });
             //m.commanderLabel.InvokeIfRequired(() => m.commanderLabel.Text = String.Format("{0} | {1} {2}", this.Name, this.Ship, !this.PrivateGroup.Equals(string.Empty) && this.PrivateGroup != null ? $"/ {this.PrivateGroup}" : ""));
 
             // Credits
 
-            m.creditsLabel.InvokeIfRequired(() => m.creditsLabel.Text = string.Format("{0:n0} credits", this.Credits));
+            m.creditsLabel.InvokeIfRequired(() => m.creditsLabel.Text = string.Format("{0:n0} Cr", this.Credits));
+            if (this.lastCreditsChange != 0L)
+            {
+                m.labelCreditsChange.InvokeIfRequired(() =>
+                {
+                    m.labelCreditsChange.ForeColor = this.lastCreditsChange < 0L ? Color.Red : Color.DarkGreen;
+                    m.labelCreditsChange.Text = string.Format("{1}{0:n0} Cr", Math.Abs(this.lastCreditsChange), this.lastCreditsChange < 0L ? "-" : "+");
+                });
+            }
 
             // Ranks - Images
 
@@ -361,7 +386,7 @@ namespace EliteMonitor.Elite
             string federationRank = string.Format("{0} | {1}%", this.federationRankName, this.federationProgress);
             string imperialRank = string.Format("{0} | {1}%", this.imperialRankName, this.imperialProgress);
 
-            m.combatRankName.InvokeIfRequired(() => m.combatRankName.Text = combatRank);
+            m.combatRankName.InvokeIfRequired(() => { m.combatRankName.Text = combatRank; m.rankInfoTooltip.SetToolTip(m.combatRankName, "Left or right click to manually update rank progression."); });
             m.tradeRankName.InvokeIfRequired(() => 
             {
                 m.tradeRankName.Text = tradeRank;
@@ -373,6 +398,9 @@ namespace EliteMonitor.Elite
                     sb.AppendLineFormatted("Credits to {0}: {1:n0}", Ranks.rankNames["trade"][this.tradeRank + 1], rankData[1]);
                 }
                 sb.AppendLineFormatted("Credits past {0}: {1:n0}", Ranks.rankNames["trade"][0], rankData[2]);
+
+                sb.AppendLine();
+                sb.AppendLine("Left or right click to manually update rank progression.");
 #if DEBUG
                 Console.WriteLine("DEBUG TRADE RANK DATA:");
                 Console.WriteLine(sb.ToString());
@@ -390,15 +418,18 @@ namespace EliteMonitor.Elite
                     sb.AppendLineFormatted("Credits to {0}: {1:n0}", Ranks.rankNames["explore"][this.explorationRank + 1], rankData[1]);
                 }
                 sb.AppendLineFormatted("Credits past {0}: {1:n0}", Ranks.rankNames["explore"][0], rankData[2]);
+
+                sb.AppendLine();
+                sb.AppendLine("Left or right click to manually update rank progression.");
 #if DEBUG
                 Console.WriteLine("DEBUG EXPLORATION RANK DATA:");
                 Console.WriteLine(sb.ToString());
 #endif
                 m.rankInfoTooltip.SetToolTip(m.exploreRankName, sb.ToString());
             });
-            m.cqcRankName.InvokeIfRequired(() => m.cqcRankName.Text = cqcRank);
-            m.fedRankName.InvokeIfRequired(() => m.fedRankName.Text = federationRank);
-            m.empireRankName.InvokeIfRequired(() => m.empireRankName.Text = imperialRank);
+            m.cqcRankName.InvokeIfRequired(() => { m.cqcRankName.Text = cqcRank; m.rankInfoTooltip.SetToolTip(m.cqcRankName, "Left or right click to manually update rank progression."); });
+            m.fedRankName.InvokeIfRequired(() => { m.fedRankName.Text = federationRank; m.rankInfoTooltip.SetToolTip(m.fedRankName, "Left or right click to manually update rank progression."); });
+            m.empireRankName.InvokeIfRequired(() => { m.empireRankName.Text = imperialRank; m.rankInfoTooltip.SetToolTip(m.empireRankName, "Left or right click to manually update rank progression."); });
 
             m.combatProgress.InvokeIfRequired(() => m.combatProgress.Value = this.combatProgress);
             m.tradeRankProgress.InvokeIfRequired(() => m.tradeRankProgress.Value = this.tradeProgress);
@@ -500,6 +531,17 @@ namespace EliteMonitor.Elite
                 updateJournalEntries(toUpdate, m, patchVer);
             }
 
+            if (this.cacheVersion < (patchVer = 920))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("CommunityGoalReward") || a.Event.Equals("CommunityGoalJoin"));
+                updateJournalEntries(toUpdate, m, patchVer);
+            }
+
+            if (this.cacheVersion < (patchVer = 941))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("JoinACrew") || a.Event.Equals("QuitACrew") || a.Event.Equals("Loadout"));
+                updateJournalEntries(toUpdate, m, patchVer);
+            }
         }
 
         private void updateJournalEntries(List<JournalEntry> toUpdate, MainForm m, int patchVer)

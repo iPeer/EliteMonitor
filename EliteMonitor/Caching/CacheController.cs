@@ -190,8 +190,8 @@ namespace EliteMonitor.Caching
             this.logger.Log("Loading commander data for commander from {0}", filePath);
             try
             {
-                if (decompressedBytes < 10)
-                    decompressedBytes = 10; // This ensures we read the magic number for GZip and the code errors if it's not right so we can attempt a legacy load
+                if (decompressedBytes < 2)
+                    decompressedBytes = 2; // This ensures we read the magic number for GZip and the code errors if it's not right so we can attempt a legacy load
                 using (FileStream fs = new FileStream(filePath, FileMode.Open))
                 {
                     using (GZipStream gz = new GZipStream(fs, CompressionMode.Decompress))
@@ -199,12 +199,6 @@ namespace EliteMonitor.Caching
                         byte[] bytes = new byte[decompressedBytes];
                         gz.Read(bytes, 0, (int)decompressedBytes);
                         string commanderData = Encoding.UTF8.GetString(bytes);
-#if DEBUG
-                        using (StreamWriter sw = new StreamWriter(string.Format("{0}.decompressed", filePath)))
-                        {
-                            sw.WriteLine(commanderData);
-                        }
-#endif
                         Commander c = JsonConvert.DeserializeObject<Commander>(commanderData);
                         logger.Log("[GZIP] Loaded Commander data for commander '{0}' - Entries: {1:n0}", LogLevel.DEBUG, c.Name, c.JournalEntries.Count);
                         c.OnLoad();

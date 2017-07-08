@@ -31,6 +31,7 @@
             this.components = new System.ComponentModel.Container();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.appStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripTailingFailed = new System.Windows.Forms.ToolStripStatusLabel();
             this.eliteRunningStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.appVersionStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -52,27 +53,22 @@
             this.testBodiesDatabaseReadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDistanceFromSolToNetoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.commanderBox = new System.Windows.Forms.GroupBox();
+            this.labelCreditsChange = new System.Windows.Forms.Label();
             this.empireRankProgress = new System.Windows.Forms.ProgressBar();
             this.empireRankName = new System.Windows.Forms.Label();
-            this.empireRankImage = new System.Windows.Forms.PictureBox();
             this.fedRankProgress = new System.Windows.Forms.ProgressBar();
             this.fedRankName = new System.Windows.Forms.Label();
-            this.federationRankImage = new System.Windows.Forms.PictureBox();
             this.cqcRankProgress = new System.Windows.Forms.ProgressBar();
             this.cqcRankName = new System.Windows.Forms.Label();
-            this.cqcRankImage = new System.Windows.Forms.PictureBox();
             this.exploreRankProgress = new System.Windows.Forms.ProgressBar();
             this.exploreRankName = new System.Windows.Forms.Label();
-            this.exploreRankImage = new System.Windows.Forms.PictureBox();
             this.tradeRankProgress = new System.Windows.Forms.ProgressBar();
             this.tradeRankName = new System.Windows.Forms.Label();
-            this.tradeRankImage = new System.Windows.Forms.PictureBox();
             this.combatProgress = new System.Windows.Forms.ProgressBar();
             this.combatRankName = new System.Windows.Forms.Label();
             this.creditsLabel = new System.Windows.Forms.Label();
             this.commanderLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.combatRankImage = new System.Windows.Forms.PictureBox();
             this.eventList = new System.Windows.Forms.ListView();
             this.TimeStamp = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.EventName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -84,7 +80,13 @@
             this.pickCommanderLabel = new System.Windows.Forms.Label();
             this.comboCommanderList = new System.Windows.Forms.ComboBox();
             this.rankInfoTooltip = new System.Windows.Forms.ToolTip(this.components);
-            this.toolStripTailingFailed = new System.Windows.Forms.ToolStripStatusLabel();
+            this.empireRankImage = new System.Windows.Forms.PictureBox();
+            this.federationRankImage = new System.Windows.Forms.PictureBox();
+            this.cqcRankImage = new System.Windows.Forms.PictureBox();
+            this.exploreRankImage = new System.Windows.Forms.PictureBox();
+            this.tradeRankImage = new System.Windows.Forms.PictureBox();
+            this.combatRankImage = new System.Windows.Forms.PictureBox();
+            this.saveUncompressedCommanderDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
@@ -117,6 +119,18 @@
             this.appStatus.Spring = true;
             this.appStatus.Text = "Starting up...";
             this.appStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // toolStripTailingFailed
+            // 
+            this.toolStripTailingFailed.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.toolStripTailingFailed.ForeColor = System.Drawing.Color.Red;
+            this.toolStripTailingFailed.Name = "toolStripTailingFailed";
+            this.toolStripTailingFailed.Size = new System.Drawing.Size(113, 17);
+            this.toolStripTailingFailed.Text = "TAILING DISABLED";
+            this.toolStripTailingFailed.ToolTipText = "Automatic updating (tailing) is currently disabled because EliteMonitor came acro" +
+    "ss an error while attempting to retrieve data from the Journal files. If this pe" +
+    "rsists, please file a bug report.";
+            this.toolStripTailingFailed.Visible = false;
             // 
             // eliteRunningStatus
             // 
@@ -160,7 +174,7 @@
             this.cachingToolStripMenuItem,
             this.resetSettingsToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.settingsToolStripMenuItem.Text = "&Settings";
             // 
             // applicationSettingsToolStripMenuItem
@@ -174,7 +188,8 @@
             this.cachingToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openCacheDirectoryToolStripMenuItem,
             this.clearCachesToolStripMenuItem,
-            this.realoadJournalEntriesFromCacheToolStripMenuItem});
+            this.realoadJournalEntriesFromCacheToolStripMenuItem,
+            this.saveUncompressedCommanderDataToolStripMenuItem});
             this.cachingToolStripMenuItem.Name = "cachingToolStripMenuItem";
             this.cachingToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.cachingToolStripMenuItem.Text = "Caching";
@@ -278,6 +293,7 @@
             this.commanderBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.commanderBox.BackColor = System.Drawing.SystemColors.Control;
+            this.commanderBox.Controls.Add(this.labelCreditsChange);
             this.commanderBox.Controls.Add(this.empireRankProgress);
             this.commanderBox.Controls.Add(this.empireRankName);
             this.commanderBox.Controls.Add(this.empireRankImage);
@@ -306,6 +322,20 @@
             this.commanderBox.TabStop = false;
             this.commanderBox.Text = "Commander";
             // 
+            // labelCreditsChange
+            // 
+            this.labelCreditsChange.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.labelCreditsChange.AutoSize = true;
+            this.labelCreditsChange.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCreditsChange.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+            this.labelCreditsChange.Location = new System.Drawing.Point(589, 29);
+            this.labelCreditsChange.MaximumSize = new System.Drawing.Size(350, 13);
+            this.labelCreditsChange.MinimumSize = new System.Drawing.Size(350, 13);
+            this.labelCreditsChange.Name = "labelCreditsChange";
+            this.labelCreditsChange.Size = new System.Drawing.Size(350, 13);
+            this.labelCreditsChange.TabIndex = 21;
+            this.labelCreditsChange.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
             // empireRankProgress
             // 
             this.empireRankProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -327,20 +357,7 @@
             this.empireRankName.TabIndex = 19;
             this.empireRankName.Text = "None";
             this.empireRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // empireRankImage
-            // 
-            this.empireRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.empireRankImage.Image = global::EliteMonitor.Properties.Resources.empire;
-            this.empireRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.empireRankImage.Location = new System.Drawing.Point(656, 47);
-            this.empireRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.empireRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.empireRankImage.Name = "empireRankImage";
-            this.empireRankImage.Size = new System.Drawing.Size(137, 120);
-            this.empireRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.empireRankImage.TabIndex = 18;
-            this.empireRankImage.TabStop = false;
+            this.empireRankName.Click += new System.EventHandler(this.tradeRankName_Click);
             // 
             // fedRankProgress
             // 
@@ -364,21 +381,7 @@
             this.fedRankName.TabIndex = 16;
             this.fedRankName.Text = "None";
             this.fedRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // federationRankImage
-            // 
-            this.federationRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.federationRankImage.BackColor = System.Drawing.SystemColors.Control;
-            this.federationRankImage.Image = global::EliteMonitor.Properties.Resources.federation;
-            this.federationRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.federationRankImage.Location = new System.Drawing.Point(513, 47);
-            this.federationRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.federationRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.federationRankImage.Name = "federationRankImage";
-            this.federationRankImage.Size = new System.Drawing.Size(137, 120);
-            this.federationRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.federationRankImage.TabIndex = 15;
-            this.federationRankImage.TabStop = false;
+            this.fedRankName.Click += new System.EventHandler(this.tradeRankName_Click);
             // 
             // cqcRankProgress
             // 
@@ -399,22 +402,9 @@
             this.cqcRankName.Name = "cqcRankName";
             this.cqcRankName.Size = new System.Drawing.Size(137, 13);
             this.cqcRankName.TabIndex = 13;
-            this.cqcRankName.Text = "cqc";
+            this.cqcRankName.Text = "Helpless";
             this.cqcRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // cqcRankImage
-            // 
-            this.cqcRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cqcRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_cqc;
-            this.cqcRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.cqcRankImage.Location = new System.Drawing.Point(799, 47);
-            this.cqcRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.cqcRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.cqcRankImage.Name = "cqcRankImage";
-            this.cqcRankImage.Size = new System.Drawing.Size(137, 120);
-            this.cqcRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.cqcRankImage.TabIndex = 12;
-            this.cqcRankImage.TabStop = false;
+            this.cqcRankName.Click += new System.EventHandler(this.tradeRankName_Click);
             // 
             // exploreRankProgress
             // 
@@ -433,21 +423,9 @@
             this.exploreRankName.Name = "exploreRankName";
             this.exploreRankName.Size = new System.Drawing.Size(137, 13);
             this.exploreRankName.TabIndex = 10;
-            this.exploreRankName.Text = "????";
+            this.exploreRankName.Text = "Aimless";
             this.exploreRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // exploreRankImage
-            // 
-            this.exploreRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1;
-            this.exploreRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.exploreRankImage.Location = new System.Drawing.Point(292, 47);
-            this.exploreRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.exploreRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.exploreRankImage.Name = "exploreRankImage";
-            this.exploreRankImage.Size = new System.Drawing.Size(137, 120);
-            this.exploreRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.exploreRankImage.TabIndex = 9;
-            this.exploreRankImage.TabStop = false;
+            this.exploreRankName.Click += new System.EventHandler(this.tradeRankName_Click);
             // 
             // tradeRankProgress
             // 
@@ -469,20 +447,7 @@
             this.tradeRankName.TabIndex = 7;
             this.tradeRankName.Text = "Penniless";
             this.tradeRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // tradeRankImage
-            // 
-            this.tradeRankImage.BackColor = System.Drawing.SystemColors.Control;
-            this.tradeRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_trading;
-            this.tradeRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.tradeRankImage.Location = new System.Drawing.Point(149, 47);
-            this.tradeRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.tradeRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.tradeRankImage.Name = "tradeRankImage";
-            this.tradeRankImage.Size = new System.Drawing.Size(137, 120);
-            this.tradeRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.tradeRankImage.TabIndex = 6;
-            this.tradeRankImage.TabStop = false;
+            this.tradeRankName.Click += new System.EventHandler(this.tradeRankName_Click);
             // 
             // combatProgress
             // 
@@ -503,11 +468,13 @@
             this.combatRankName.TabIndex = 4;
             this.combatRankName.Text = "Harmless";
             this.combatRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.combatRankName.Click += new System.EventHandler(this.tradeRankName_Click);
             // 
             // creditsLabel
             // 
             this.creditsLabel.AutoSize = true;
             this.creditsLabel.Dock = System.Windows.Forms.DockStyle.Right;
+            this.creditsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.creditsLabel.Location = new System.Drawing.Point(589, 16);
             this.creditsLabel.MaximumSize = new System.Drawing.Size(350, 13);
             this.creditsLabel.MinimumSize = new System.Drawing.Size(350, 13);
@@ -533,23 +500,11 @@
             this.label1.Dock = System.Windows.Forms.DockStyle.Left;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(3, 16);
+            this.label1.Margin = new System.Windows.Forms.Padding(0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(43, 13);
             this.label1.TabIndex = 0;
             this.label1.Text = "CMDR";
-            // 
-            // combatRankImage
-            // 
-            this.combatRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.combatRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.combatRankImage.Location = new System.Drawing.Point(6, 47);
-            this.combatRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.combatRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.combatRankImage.Name = "combatRankImage";
-            this.combatRankImage.Size = new System.Drawing.Size(137, 120);
-            this.combatRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.combatRankImage.TabIndex = 3;
-            this.combatRankImage.TabStop = false;
             // 
             // eventList
             // 
@@ -640,17 +595,95 @@
             this.rankInfoTooltip.InitialDelay = 500;
             this.rankInfoTooltip.ReshowDelay = 100;
             // 
-            // toolStripTailingFailed
+            // empireRankImage
             // 
-            this.toolStripTailingFailed.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.toolStripTailingFailed.ForeColor = System.Drawing.Color.Red;
-            this.toolStripTailingFailed.Name = "toolStripTailingFailed";
-            this.toolStripTailingFailed.Size = new System.Drawing.Size(113, 17);
-            this.toolStripTailingFailed.Text = "TAILING DISABLED";
-            this.toolStripTailingFailed.ToolTipText = "Automatic updating (tailing) is currently disabled because EliteMonitor came acro" +
-    "ss an error while attempting to retrieve data from the Journal files. If this pe" +
-    "rsists, please file a bug report.";
-            this.toolStripTailingFailed.Visible = false;
+            this.empireRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.empireRankImage.Image = global::EliteMonitor.Properties.Resources.empire;
+            this.empireRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.empireRankImage.Location = new System.Drawing.Point(656, 47);
+            this.empireRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.empireRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.empireRankImage.Name = "empireRankImage";
+            this.empireRankImage.Size = new System.Drawing.Size(137, 120);
+            this.empireRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.empireRankImage.TabIndex = 18;
+            this.empireRankImage.TabStop = false;
+            // 
+            // federationRankImage
+            // 
+            this.federationRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.federationRankImage.BackColor = System.Drawing.SystemColors.Control;
+            this.federationRankImage.Image = global::EliteMonitor.Properties.Resources.federation;
+            this.federationRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.federationRankImage.Location = new System.Drawing.Point(513, 47);
+            this.federationRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.federationRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.federationRankImage.Name = "federationRankImage";
+            this.federationRankImage.Size = new System.Drawing.Size(137, 120);
+            this.federationRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.federationRankImage.TabIndex = 15;
+            this.federationRankImage.TabStop = false;
+            // 
+            // cqcRankImage
+            // 
+            this.cqcRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cqcRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_cqc;
+            this.cqcRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.cqcRankImage.Location = new System.Drawing.Point(799, 47);
+            this.cqcRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.cqcRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.cqcRankImage.Name = "cqcRankImage";
+            this.cqcRankImage.Size = new System.Drawing.Size(137, 120);
+            this.cqcRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.cqcRankImage.TabIndex = 12;
+            this.cqcRankImage.TabStop = false;
+            // 
+            // exploreRankImage
+            // 
+            this.exploreRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1;
+            this.exploreRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.exploreRankImage.Location = new System.Drawing.Point(292, 47);
+            this.exploreRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.exploreRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.exploreRankImage.Name = "exploreRankImage";
+            this.exploreRankImage.Size = new System.Drawing.Size(137, 120);
+            this.exploreRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.exploreRankImage.TabIndex = 9;
+            this.exploreRankImage.TabStop = false;
+            // 
+            // tradeRankImage
+            // 
+            this.tradeRankImage.BackColor = System.Drawing.SystemColors.Control;
+            this.tradeRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_trading;
+            this.tradeRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.tradeRankImage.Location = new System.Drawing.Point(149, 47);
+            this.tradeRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.tradeRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.tradeRankImage.Name = "tradeRankImage";
+            this.tradeRankImage.Size = new System.Drawing.Size(137, 120);
+            this.tradeRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.tradeRankImage.TabIndex = 6;
+            this.tradeRankImage.TabStop = false;
+            // 
+            // combatRankImage
+            // 
+            this.combatRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.combatRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.combatRankImage.Location = new System.Drawing.Point(6, 47);
+            this.combatRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.combatRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.combatRankImage.Name = "combatRankImage";
+            this.combatRankImage.Size = new System.Drawing.Size(137, 120);
+            this.combatRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.combatRankImage.TabIndex = 3;
+            this.combatRankImage.TabStop = false;
+            // 
+            // saveUncompressedCommanderDataToolStripMenuItem
+            // 
+            this.saveUncompressedCommanderDataToolStripMenuItem.Name = "saveUncompressedCommanderDataToolStripMenuItem";
+            this.saveUncompressedCommanderDataToolStripMenuItem.Size = new System.Drawing.Size(288, 22);
+            this.saveUncompressedCommanderDataToolStripMenuItem.Text = "Saved uncompressed commander cache";
+            this.saveUncompressedCommanderDataToolStripMenuItem.Click += new System.EventHandler(this.saveUncompressedCommanderDataToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -748,6 +781,8 @@
         public System.Windows.Forms.ToolTip toolTip;
         public System.Windows.Forms.ToolTip rankInfoTooltip;
         public System.Windows.Forms.ToolStripStatusLabel toolStripTailingFailed;
+        public System.Windows.Forms.Label labelCreditsChange;
+        private System.Windows.Forms.ToolStripMenuItem saveUncompressedCommanderDataToolStripMenuItem;
     }
 }
 

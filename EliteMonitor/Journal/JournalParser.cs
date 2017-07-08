@@ -130,6 +130,7 @@ namespace EliteMonitor.Journal
                     _commander.SetShip(commanderShip, shipID, shipName);
                     commander = activeCommander = _commander;
                     string commanderShipFormatted = commander.ShipData.getFormattedShipString();
+                    _commander.isInMulticrew = false;
                     return new JournalEntry(timestamp, @event, $"Commander {commanderString} | {commanderShipFormatted} | Credit balance: {String.Format("{0:n0}", commanderCredits)}", j);
                 case "Rank":
 
@@ -360,18 +361,18 @@ namespace EliteMonitor.Journal
 
                     long totalCost = buyModulePrice - soldModulePrice;
 
-                    if (totalCost < 0L)
-                        commander.deductCredits(Math.Abs(totalCost));
-                    else
-                        commander.addCredits(totalCost);
+                    if (!isReparse)
+                    {
+                        if (totalCost < 0L || !partExchange)
+                            commander.deductCredits(Math.Abs(totalCost));
+                        else
+                            commander.addCredits(totalCost);
+                    }
 
                     if (partExchange)
                         eText = string.Format("Traded in '{0}' for '{1}'. {3}: {2:n0}", soldModuleFull, buyModuleFull, Math.Abs(totalCost), totalCost < 0L ? "Gain" : "Loss");
                     else
                         eText = string.Format("Purchased '{0}' for {1:n0} credits", buyModuleFull, totalCost);
-
-                    if (!isReparse)
-                        commander.adjustCredits(totalCost);
 
                     return new JournalEntry(timestamp, @event, eText, j);
                 case "EjectCargo":
@@ -460,7 +461,30 @@ namespace EliteMonitor.Journal
                         int commanderShipID = (int)j["ShipID"];
                         commander.UpdateShipLoadout(commanderShipID, mainForm.Database.getShipNameFromInternalName(ship), shipID, shipName.Equals(ship) ? "" : shipName, j["Modules"].ToString());
                     }
-                    return new JournalEntry(timestamp, @event, "--PLACEHOLDER--", "KNOWN-ISH EVENT", j, false); // TODO
+                    return new JournalEntry(timestamp, @event, "Updated vessel loadout(s)", j);
+                case "CommunityGoalJoin":
+                    string name = (string)j["Name"];
+                    return new JournalEntry(timestamp, @event, string.Format("Signed up for community goal '{0}'", name), j);
+                case "CommunityGoalReward":
+                    name = (string)j["Name"];
+                    credits = (long)j["Reward"];
+                    eventText = string.Format("Completed community goal '{0}', awarded {1:n0} credits", name, credits);
+                    if (commander != null && !isReparse)
+                        commander.addCredits(credits);
+                    return new JournalEntry(timestamp, @event, eventText, j);
+                case "JoinACrew":
+                    name = (string)j["Captain"];
+                    if (!isReparse)
+                    {
+                        commander.isInMulticrew = true;
+                        commander.MultiCrewCommanderName = name;
+                    }
+                    return new JournalEntry(timestamp, @event, $"Joined {name}'s ship in multicrew", j);
+                case "QuitACrew":
+                    name = (string)j["Captain"];
+                    if (!isReparse)
+                        commander.isInMulticrew = false;
+                    return new JournalEntry(timestamp, @event, $"Left {name}'s ship", j);
                 default:
                     return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
             }
