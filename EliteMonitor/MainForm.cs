@@ -120,10 +120,12 @@ namespace EliteMonitor
                 {
                     journalParser.parseAllJournals();
                 }
-                catch
+                catch (Exception e)
                 {
                     journalParser.stopTailing();
                     MessageBox.Show("Unfortunately, an error occurred while attempting to load data from the journal files. Please try loading it again by restarting EliteMonitor.\nIf this issue persists, please report it as a bug so it can be fixed!", "Journal parsing error", MessageBoxButtons.OK);
+                    this.InvokeIfRequired(() => this.eventList.EndUpdate()); // Force end update otherwise the list becomes blank after load failure of new data
+                    this.logger.Log("{0}", e.ToString(), LogLevel.ERROR);
                 }
                 cacheController.saveAllCaches();
                 onCacheLoadComplete();
@@ -145,11 +147,12 @@ namespace EliteMonitor
                     try {
                         cacheController.verifyFileLengths();
                     }
-                    catch
+                    catch (Exception e)
                     {
                         journalParser.stopTailing();
                         MessageBox.Show("Unfortunately, an error occurred while attempting to load new data from the journal files. Old, existing data will still be available to view, but new data will not be added until the issue is resolved.\nIf this issue persists, please report it as a bug so it can be fixed!", "Journal parsing error", MessageBoxButtons.OK);
                         this.InvokeIfRequired(() => this.eventList.EndUpdate()); // Force end update otherwise the list becomes blank after load failure of new data
+                        this.logger.Log("{0}", e.ToString(), LogLevel.ERROR);
                     }
                     journalParser.switchViewedCommander(cacheController.switchOnLoad);
                     cacheController.switchOnLoad = null;
@@ -686,6 +689,29 @@ namespace EliteMonitor
         private void saveUncompressedCommanderDataToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.journalParser.viewedCommander.saveData(true);
+        }
+
+        private void displayCommanderCountDataToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.AppendLineFormatted("Commander count: {0}", journalParser.commanders.Count);
+            foreach (KeyValuePair<string, Commander> kvp in journalParser.commanders)
+            {
+                msg.AppendLine();
+                Commander c = kvp.Value;
+                msg.AppendLineFormatted("{0}", c.Name);
+                msg.AppendLine("-------------");
+                msg.AppendLineFormatted("Journal entries: {0}", c.JournalEntries.Count);
+                msg.AppendLineFormatted("Fleet size: {0}", c.Fleet.Count);
+                foreach (KeyValuePair<int, CommanderShipLoadout> _kvp in c.Fleet)
+                {
+                    CommanderShipLoadout csl = _kvp.Value;
+                    msg.AppendLineFormatted("\t{0}: {1}", _kvp.Key, csl.ShipData.getFormattedShipString());
+                }
+                msg.AppendLineFormatted("Material list size: {0}", c.Materials.Count);
+                msg.AppendLineFormatted("Session history size: {0}", c.Sessions.Count);
+            }
+            MessageBox.Show(msg.ToString());
         }
     }
 }

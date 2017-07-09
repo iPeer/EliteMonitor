@@ -461,7 +461,7 @@ namespace EliteMonitor.Journal
                         int commanderShipID = (int)j["ShipID"];
                         commander.UpdateShipLoadout(commanderShipID, mainForm.Database.getShipNameFromInternalName(ship), shipID, shipName.Equals(ship) ? "" : shipName, j["Modules"].ToString());
                     }
-                    return new JournalEntry(timestamp, @event, "Updated vessel loadout(s)", j);
+                    return new JournalEntry(timestamp, @event, "Updated vessel loadout", j);
                 case "CommunityGoalJoin":
                     string name = (string)j["Name"];
                     return new JournalEntry(timestamp, @event, string.Format("Signed up for community goal '{0}'", name), j);

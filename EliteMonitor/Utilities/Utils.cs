@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -69,6 +70,80 @@ namespace EliteMonitor.Utilities
             }
             
             return t+(t.Length == 2 ? "s" : "");
+        }
+
+        public static long saveGZip(string fileName, string filePath, string data, string fileExtension = ".emj") => writeGZip(fileName, filePath, data, fileExtension);
+        public static long writeGZip(string fileName, string filePath, string data, string fileExtension = ".emj")
+        {
+            if (new string[] { ".eml", "eml" }.Contains(fileExtension))
+            {
+                throw new InvalidOperationException("Files cannot use the \"eml\" extension as it is reserved for length data for GZipped files.");
+            }
+            string fp = Path.Combine(filePath, string.Format("{0}{1}", fileName, fileExtension.StartsWith(".") ? fileExtension : "."+fileExtension));
+            string bp = Path.Combine(filePath, string.Format("{0}.eml", fileName));
+
+            byte[] bytes = Encoding.UTF8.GetBytes(data);
+
+            using (FileStream fs = new FileStream(fp, FileMode.Create))
+            {
+                using (GZipStream gz = new GZipStream(fs, CompressionLevel.Optimal))
+                {
+                    gz.Write(bytes, 0, bytes.Length);
+                }
+            }
+
+            using (StreamWriter sw = new StreamWriter(bp, false, Encoding.UTF8))
+            {
+                sw.WriteLine(bytes.LongLength);
+            }
+
+            return bytes.LongLength;
+
+        }
+
+        public static string loadGZip(string filePath, bool noErrorIfNotFound = false) => readGZip(filePath, noErrorIfNotFound);
+        public static string readGZip(string filePath, bool noErrorIfNotFound = false)
+        {
+            if (!File.Exists(filePath))
+            {
+                if (noErrorIfNotFound)
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    throw new FileNotFoundException("File '" + filePath + "' was not found.");
+                }
+            }
+            FileInfo fi = new FileInfo(filePath);
+            string byteCountFile = fi.FullName.Replace(fi.Extension, ".eml");
+            if (!File.Exists(byteCountFile))
+            {
+                throw new FileNotFoundException("No matching byte count file was found for file '" + filePath + "'");
+            }
+            long byteCount = 0L;
+            using (StreamReader sr = new StreamReader(byteCountFile, Encoding.UTF8))
+            {
+                string byteData = sr.ReadToEnd();
+                byteCount = Convert.ToInt64(byteData);
+            }
+
+            string output = string.Empty;
+
+            using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+
+                byte[] bytes = new byte[byteCount];
+                using (GZipStream gz = new GZipStream(fs, CompressionMode.Decompress))
+                {
+                    gz.Read(bytes, 0, (int)byteCount);
+                    output = Encoding.UTF8.GetString(bytes);
+                }
+
+            }
+
+            return output;
+
         }
 
         //http://stackoverflow.com/a/5427121

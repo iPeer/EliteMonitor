@@ -13,6 +13,8 @@ using System.IO.Compression;
 namespace EliteMonitor.Elite
 {
 
+    public class CommanderSession { } // TODO
+
     public class CommanderShipLoadout
     {
         public CommanderShip ShipData { get; set; }
@@ -63,9 +65,16 @@ namespace EliteMonitor.Elite
         public List<string> Journal { get; set; } = new List<string>();
         [JsonIgnore]
         public long lastCreditsChange = 0L;
+        [JsonIgnore]
         public Dictionary<string, int> Materials { get; set; } = new Dictionary<string, int>();
+        [JsonIgnore]
         public Dictionary<int, CommanderShipLoadout> Fleet = new Dictionary<int, CommanderShipLoadout>();
         public int cacheVersion = Utils.getBuildNumber();
+        public bool newSaveMethod = false;
+        [JsonIgnore]
+        public string saveDirectory = string.Empty;
+        [JsonIgnore]
+        public List<CommanderSession> Sessions = new List<CommanderSession>();
         public long nextId = 0;
         [JsonIgnore]
         public bool isActive
@@ -161,6 +170,15 @@ namespace EliteMonitor.Elite
         public Commander(string name)
         {
             this.Name = name;
+            this.setSaveDirectory();
+        }
+
+        public Commander setSaveDirectory()
+        {
+
+            this.saveDirectory = Path.Combine(MainForm.Instance.cacheController.cachePath, this.Name);
+
+            return this;
         }
 
         public Commander SetShip (string nV, string sI, string sN)
@@ -208,7 +226,8 @@ namespace EliteMonitor.Elite
         public long saveData(bool uncompressed = false)
         {
             this.OnSave();
-            string commanderSavePath = Path.Combine(MainForm.Instance.cacheController.cachePath, MainForm.Instance.cacheController.commanderCaches.ContainsKey(this.Name) ? MainForm.Instance.cacheController.commanderCaches[this.Name].Item1 : $"{this.Name}.emj");
+            return Utils.saveGZip("journal", this.saveDirectory, JsonConvert.SerializeObject(this));
+            /*string commanderSavePath = Path.Combine(MainForm.Instance.cacheController.cachePath, MainForm.Instance.cacheController.commanderCaches.ContainsKey(this.Name) ? MainForm.Instance.cacheController.commanderCaches[this.Name].Item1 : $"./{this.Name}/journal.emj");
             if (uncompressed)
             {
                 string theString = JsonConvert.SerializeObject(this, Formatting.Indented);
@@ -229,7 +248,7 @@ namespace EliteMonitor.Elite
                     }
                 }
                 return bytes.LongLength;
-            }
+            }*/
         }
 
         public Commander adjustCredits(long amount)
@@ -251,6 +270,13 @@ namespace EliteMonitor.Elite
             this.Credits += credits;
             this.lastCreditsChange = credits;
             return this;
+        }
+
+        public DirectoryInfo CreateSaveDirectory()
+        {
+            string mainCacheDir = MainForm.Instance.cacheController.cachePath;
+            string fullCommanderPath = Path.Combine(mainCacheDir, $"./{this.Name}/");
+            return Directory.CreateDirectory(fullCommanderPath);
         }
 
         public Commander removeMaterial(string material, int count)
@@ -391,15 +417,16 @@ namespace EliteMonitor.Elite
             {
                 m.tradeRankName.Text = tradeRank;
                 long[] rankData = Ranks.calculateRankCredits(Ranks.RankType.TRADE, this.tradeRank, this.tradeProgress);
-                StringBuilder sb = new StringBuilder("Rank progression based on approximate values:\n");
+                StringBuilder sb = new StringBuilder();
                 if (this.tradeRank < 8)
                 {
+                    sb.AppendLine("Rank progression based on approximate values:");
                     sb.AppendLineFormatted("Credits past {0}: {1:n0}", this.tradeRankName, rankData[0]);
                     sb.AppendLineFormatted("Credits to {0}: {1:n0}", Ranks.rankNames["trade"][this.tradeRank + 1], rankData[1]);
-                }
-                sb.AppendLineFormatted("Credits past {0}: {1:n0}", Ranks.rankNames["trade"][0], rankData[2]);
+                    sb.AppendLineFormatted("Credits past {0}: {1:n0}", Ranks.rankNames["trade"][0], rankData[2]);
 
-                sb.AppendLine();
+                    sb.AppendLine();
+                }
                 sb.AppendLine("Left or right click to manually update rank progression.");
 #if DEBUG
                 Console.WriteLine("DEBUG TRADE RANK DATA:");
@@ -411,15 +438,16 @@ namespace EliteMonitor.Elite
             {
                 m.exploreRankName.Text = explorationRank;
                 long[] rankData = Ranks.calculateRankCredits(Ranks.RankType.EXPLORATION, this.explorationRank, this.explorationProgress);
-                StringBuilder sb = new StringBuilder("Rank progression based on approximate values:\n");
+                StringBuilder sb = new StringBuilder();
                 if (this.explorationRank < 8)
                 {
+                    sb.AppendLine("Rank progression based on approximate values:");
                     sb.AppendLineFormatted("Credits past {0}: {1:n0}", this.explorationRankName, rankData[0]);
                     sb.AppendLineFormatted("Credits to {0}: {1:n0}", Ranks.rankNames["explore"][this.explorationRank + 1], rankData[1]);
-                }
-                sb.AppendLineFormatted("Credits past {0}: {1:n0}", Ranks.rankNames["explore"][0], rankData[2]);
+                    sb.AppendLineFormatted("Credits past {0}: {1:n0}", Ranks.rankNames["explore"][0], rankData[2]);
 
-                sb.AppendLine();
+                    sb.AppendLine();
+                }
                 sb.AppendLine("Left or right click to manually update rank progression.");
 #if DEBUG
                 Console.WriteLine("DEBUG EXPLORATION RANK DATA:");
@@ -484,6 +512,9 @@ namespace EliteMonitor.Elite
 
         public void UpdateShipLoadout(int shipID, string shipNoneVanityName, string shipIdent, string shipName, string modules)
         {
+#if DEBUG
+            MainForm.Instance.logger.Log("SHIP DATA: {0}/{1} - {2}/{3} - {4}/{5} - {6}/{7}", false, shipID, shipNoneVanityName == null, shipNoneVanityName == null ? "NULL" : shipNoneVanityName, shipIdent == null, shipIdent == null ? "NULL" : shipIdent, shipName == null, shipName == null ? "NULL" : shipName);
+#endif
             CommanderShipLoadout sl = new CommanderShipLoadout();
             sl.ShipData = new CommanderShip(shipNoneVanityName, shipIdent, shipName);
             sl.LoadoutJson = modules;
@@ -498,7 +529,29 @@ namespace EliteMonitor.Elite
         /// </summary>
         public void OnSave()
         {
+
+            MainForm m = MainForm.Instance;
+
             this.cacheVersion = Utils.getBuildNumber();
+
+            string messageText = "[" + this.Name + "] Saving fleet data...";
+            m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+            m.journalParser.logger.Log(messageText);
+
+            Utils.saveGZip("fleet", this.saveDirectory, JsonConvert.SerializeObject(this.Fleet));
+
+            messageText = "[" + this.Name + "] Saving materials data...";
+            m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+            m.journalParser.logger.Log(messageText);
+
+            Utils.saveGZip("materials", this.saveDirectory, JsonConvert.SerializeObject(this.Materials));
+
+            messageText = "[" + this.Name + "] Saving session history data...";
+            m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+            m.journalParser.logger.Log(messageText);
+
+            Utils.saveGZip("sessions", this.saveDirectory, JsonConvert.SerializeObject(this.Sessions));
+
         }
 
         /// <summary>
@@ -508,10 +561,30 @@ namespace EliteMonitor.Elite
         {
 
             MainForm m = MainForm.Instance;
-            string messageText = String.Format("Applying post-load Journal entry patched for commander '{0}'", this.Name);
-            m.InvokeIfRequired(() => m.appStatus.Text = messageText);
-            m.journalParser.logger.Log(messageText);
+            this.setSaveDirectory();
+            if (this.cacheVersion >= 979)
+            {
+                string messageText = "[" + this.Name + "] Loading fleet data...";
+                m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+                m.journalParser.logger.Log(messageText);
 
+                this.Fleet = JsonConvert.DeserializeObject<Dictionary<int, CommanderShipLoadout>>(Utils.loadGZip(Path.Combine(this.saveDirectory, "fleet.emj"), true));
+
+                messageText = "[" + this.Name + "] Loading materials data...";
+                m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+                m.journalParser.logger.Log(messageText);
+
+                this.Materials = JsonConvert.DeserializeObject<Dictionary<string, int>>(Utils.loadGZip(Path.Combine(this.saveDirectory, "materials.emj"), true));
+
+                messageText = "[" + this.Name + "] Loading session history data...";
+                m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+                m.journalParser.logger.Log(messageText);
+                this.Sessions = JsonConvert.DeserializeObject<List<CommanderSession>>(Utils.loadGZip(Path.Combine(this.saveDirectory, "sessions.emj"), true));
+
+                messageText = String.Format("Applying post-load Journal entry patched for commander '{0}'", this.Name);
+                m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+                m.journalParser.logger.Log(messageText);
+            }
             int patchVer = 0;
 
             if (this.cacheVersion < (patchVer = 680)) // Update MaterialCollected, MaterialDiscovered and MaterialDiscarded

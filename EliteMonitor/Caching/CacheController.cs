@@ -71,7 +71,7 @@ namespace EliteMonitor.Caching
 
         public bool cacheExists()
         {
-            return File.Exists(this.commandersPath) && File.Exists(this.journalLengthCache);
+            return /*File.Exists(this.commandersPath) && */File.Exists(this.journalLengthCache);
         }
 
         public void addJournalEntryToCache(string journalEntry)
@@ -86,6 +86,7 @@ namespace EliteMonitor.Caching
             try
             {
                 this.logger.Log("Verifying Journal file lengths...");
+                mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Verifying Journal file lengths...");
                 string journalPath = EliteUtils.JOURNAL_PATH;
                 journalPath = Environment.ExpandEnvironmentVariables(journalPath);
                 DirectoryInfo di = new DirectoryInfo(journalPath);
@@ -139,6 +140,7 @@ namespace EliteMonitor.Caching
             catch (Exception e)
             {
                 newJournalLengthCache.Clear();
+                this.logger.Log("{0}", LogLevel.ERROR, e.ToString());
                 throw e;
             }
         }
@@ -168,17 +170,17 @@ namespace EliteMonitor.Caching
         }*/
         public void saveAllCaches()
         {
-            string journalPath = Path.Combine(this.cachePath, "commanders.emc");
+            //string journalPath = Path.Combine(this.cachePath, "commanders.emc");
             Dictionary<string, Tuple<string, long>> commanderData = new Dictionary<string, Tuple<string, long>>();
             foreach (Commander c in mainForm.journalParser.commanders.Values)
             {
+                c.CreateSaveDirectory();
                 long saveBytes = c.saveData();
-                commanderData.Add(c.Name, Tuple.Create<string, long>((this.commanderCaches.ContainsKey(c.Name) ? this.commanderCaches[c.Name].Item1 : $"{c.Name}.emj"), saveBytes));
             }
-            using (StreamWriter sw = new StreamWriter(journalPath, false, Encoding.UTF8))
+            /*using (StreamWriter sw = new StreamWriter(journalPath, false, Encoding.UTF8))
             {
                 sw.WriteLine(JsonConvert.SerializeObject(commanderData, Formatting.Indented));
-            }
+            }*/
             using (StreamWriter sw = new StreamWriter(this.journalLengthCache, false, Encoding.UTF8))
             {
                 sw.WriteLine(JsonConvert.SerializeObject(this._journalLengthCache, Formatting.Indented));
@@ -231,80 +233,137 @@ namespace EliteMonitor.Caching
         public bool loadCaches()
         {
 
-            this.logger.Log("Loading commander cache list...");
-            this.commanderCaches.Clear();
-            try
-            {
-                using (StreamReader sr = new StreamReader(this.commandersPath, Encoding.UTF8))
-                {
-                    this.commanderCaches = JsonConvert.DeserializeObject<Dictionary<string, Tuple<string, long>>>(sr.ReadToEnd());
-                }
-            }
-            catch (JsonSerializationException)
-            {
-                using (StreamReader sr = new StreamReader(this.commandersPath, Encoding.UTF8))
-                {
-                    Dictionary<string, string> tmp = new Dictionary<string, string>();
-                    tmp = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
-                    foreach (KeyValuePair<string, string> kvp in tmp)
-                    {
-                        this.commanderCaches.Add(kvp.Key, Tuple.Create<string, long>(kvp.Value, 0L));
-                    }
-                }
-            }
-
-
-            this.logger.Log("Loading commander data...");
-            foreach (KeyValuePair<string, Tuple<string, long>> kvp in this.commanderCaches)
-            {
-                string commanderPath = Path.Combine(this.cachePath, kvp.Value.Item1);
-                if (!File.Exists(commanderPath))
-                {
-                    this.logger.Log("Commander cache file '{0}' doesn't exist. Treating caches as invalid.", LogLevel.ERR, commanderPath);
-                    return false;
-                }
-                Commander c = loadCommanderFromFile(commanderPath, kvp.Value.Item2);
-                this.logger.Log("Checking for unknown events and updating them where necessary...");
-                int updated = 0;
-                List<JournalEntry> needsUpdating = c.JournalEntries.FindAll(j => !j.isKnown);
-                foreach (JournalEntry je in needsUpdating)
-                {
-                    Commander __ = c;
-                    JournalEntry nje = mainForm.journalParser.parseEvent(je.Json, out __, true);
-                    if (nje.isKnown)
-                    {
-                        updated++;
-                        if (je.Notes.Equals("UNKNOWN EVENT"))
-                            je.Notes = null;
-                        je.Data = nje.Data;
-                        je.isKnown = true;
-                        /*List<JournalEntry> tmp = c.JournalEntries;
-                        tmp.Reverse();
-                        int listIndex = tmp.IndexOf(je);
-                        mainForm.eventList.InvokeIfRequired(() =>
-                        {
-                            ListViewItem lvi = mainForm.eventList.Items[listIndex];
-                            lvi.SubItems[2].Text = je.Data;
-                        });*/
-                    }
-                }
-                this.logger.Log("{0}/{1} entries have been updated.", updated, needsUpdating.Count);
-                this.logger.Log("{0}: {1}", LogLevel.DEBUG, c.Name, c.isViewed);
-                if (c.isViewed)
-                    this.switchOnLoad = c;
-                mainForm.journalParser.commanders.Add(c.Name, c);
-                if (!mainForm.comboCommanderList.Items.Contains(c.Name))
-                    mainForm.comboCommanderList.InvokeIfRequired(() => mainForm.comboCommanderList.Items.Add(c.Name));
-            }
-            if (switchOnLoad == null)
-            {
-                switchOnLoad = mainForm.journalParser.commanders.Values.First();
-            }
             this.logger.Log("Loading Journal length data...");
             this._journalLengthCache.Clear();
             using (StreamReader sr = new StreamReader(this.journalLengthCache, Encoding.UTF8))
             {
                 this._journalLengthCache = JsonConvert.DeserializeObject<Dictionary<string, long>>(sr.ReadToEnd());
+            }
+
+            DirectoryInfo di = new DirectoryInfo(this.cachePath);
+            if (di.GetDirectories().Length > 0)
+            {
+                MainForm m = MainForm.Instance;
+                this.logger.Log("Loading commanders...");
+                foreach (DirectoryInfo d in di.GetDirectories())
+                {
+                    string currentDirectory = d.Name;
+                    m.InvokeIfRequired(() => m.appStatus.Text = "Loading commander data for CMDR "+currentDirectory);
+                    Commander c = JsonConvert.DeserializeObject<Commander>(Utils.loadGZip(Path.Combine(d.FullName, "journal.emj")));
+                    c.OnLoad();
+                    m.journalParser.commanders.Add(c.Name, c);
+                    /* New loading is done now (isn't it so much simpler?! - Now we do the same checks we did on the old loading */
+                    List<JournalEntry> unknownEvents = c.JournalEntries.FindAll(j => !j.isKnown);
+                    this.logger.Log("Number of entries requiring update: {0}", unknownEvents.Count);
+                    long updated = 0;
+                    foreach (JournalEntry j in unknownEvents)
+                    {
+                        Commander __ = c;
+                        JournalEntry je = m.journalParser.parseEvent(j.Json, out __, true);
+                        if (je.isKnown)
+                        {
+                            updated++;
+                            j.isKnown = true;
+                            j.Data = je.Data;
+                            if (j.Notes.Equals("UNKNOWN EVENT") || j.Notes.Equals("KNOWN-ISH EVENT"))
+                                j.Notes = null;
+                        }
+                    }
+                    this.logger.Log("Number of unknown journal events updated: {0}/{1}", updated, unknownEvents.Count);
+                    if (!m.comboCommanderList.Items.Contains(c.Name))
+                        m.comboCommanderList.InvokeIfRequired(() => m.comboCommanderList.Items.Add(c.Name));
+                    if (c.isViewed)
+                        this.switchOnLoad = c;
+                }
+
+            }
+            else {
+                this.logger.Log("Loading commander cache list...");
+                this.commanderCaches.Clear();
+                try
+                {
+                    using (StreamReader sr = new StreamReader(this.commandersPath, Encoding.UTF8))
+                    {
+                        this.commanderCaches = JsonConvert.DeserializeObject<Dictionary<string, Tuple<string, long>>>(sr.ReadToEnd());
+                    }
+                }
+                catch (JsonSerializationException)
+                {
+                    using (StreamReader sr = new StreamReader(this.commandersPath, Encoding.UTF8))
+                    {
+                        Dictionary<string, string> tmp = new Dictionary<string, string>();
+                        tmp = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
+                        foreach (KeyValuePair<string, string> kvp in tmp)
+                        {
+                            this.commanderCaches.Add(kvp.Key, Tuple.Create<string, long>(kvp.Value, 0L));
+                        }
+                    }
+                }
+
+
+                this.logger.Log("Loading commander data...");
+                foreach (KeyValuePair<string, Tuple<string, long>> kvp in new Dictionary<string, Tuple<string, long>>(this.commanderCaches))
+                {
+                    string commanderPath = Path.Combine(this.cachePath, kvp.Value.Item1);
+                    if (!File.Exists(commanderPath))
+                    {
+                        this.logger.Log("Commander cache file '{0}' doesn't exist. Treating caches as invalid.", LogLevel.ERR, commanderPath);
+                        return false;
+                    }
+                    Commander c = loadCommanderFromFile(commanderPath, kvp.Value.Item2);
+                    if (!c.newSaveMethod)
+                    {
+                        this.logger.Log("Updating Commander save path to new version...");
+                        this.logger.Log("Creating commander data directory...");
+                        c.CreateSaveDirectory();
+                        this.logger.Log("Moving existing cache data for this commander to new path...");
+                        string currentPath = string.Format("./cache/{0}", kvp.Value.Item1);
+                        string newPath = string.Format("./cache/{0}/journal.emj", c.Name);
+                        this.logger.Log("{0} -> {1}", LogLevel.DEBUG, currentPath, newPath);
+                        File.Move(currentPath, newPath);
+                        this.logger.Log("Updating commander registry to new path...");
+                        Tuple<string, long> cTuple = this.commanderCaches[c.Name];
+                        cTuple = new Tuple<string, long>(string.Format("./{0}/journal.emj", c.Name), cTuple.Item2);
+                        this.commanderCaches[c.Name] = cTuple;
+                        c.newSaveMethod = true;
+                    }
+                    this.logger.Log("Checking for unknown events and updating them where necessary...");
+                    int updated = 0;
+                    List<JournalEntry> needsUpdating = c.JournalEntries.FindAll(j => !j.isKnown);
+                    foreach (JournalEntry je in needsUpdating)
+                    {
+                        Commander __ = c;
+                        JournalEntry nje = mainForm.journalParser.parseEvent(je.Json, out __, true);
+                        if (nje.isKnown)
+                        {
+                            updated++;
+                            if (je.Notes.Equals("UNKNOWN EVENT"))
+                                je.Notes = null;
+                            je.Data = nje.Data;
+                            je.isKnown = true;
+                            /*List<JournalEntry> tmp = c.JournalEntries;
+                            tmp.Reverse();
+                            int listIndex = tmp.IndexOf(je);
+                            mainForm.eventList.InvokeIfRequired(() =>
+                            {
+                                ListViewItem lvi = mainForm.eventList.Items[listIndex];
+                                lvi.SubItems[2].Text = je.Data;
+                            });*/
+                        }
+                    }
+                    this.logger.Log("{0}/{1} entries have been updated.", updated, needsUpdating.Count);
+                    this.logger.Log("{0}: {1}", LogLevel.DEBUG, c.Name, c.isViewed);
+                    if (c.isViewed)
+                        this.switchOnLoad = c;
+                    mainForm.journalParser.commanders.Add(c.Name, c);
+                    if (!mainForm.comboCommanderList.Items.Contains(c.Name))
+                        mainForm.comboCommanderList.InvokeIfRequired(() => mainForm.comboCommanderList.Items.Add(c.Name));
+                }
+            }
+
+            if (switchOnLoad == null)
+            {
+                switchOnLoad = mainForm.journalParser.commanders.Values.First();
             }
 
             return true;
@@ -315,6 +374,8 @@ namespace EliteMonitor.Caching
             string[] files = Directory.GetFiles(this.cachePath);
             foreach (string f in files)
                 File.Delete(f);
+            foreach (string d in Directory.GetDirectories(this.cachePath))
+                Directory.Delete(d, true);
             mainForm.journalParser.commanders.Clear();
             mainForm.eventList.Items.Clear();
             mainForm.comboCommanderList.Items.Clear();
