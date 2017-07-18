@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO.Compression;
+using System.Windows.Forms;
 
 namespace EliteMonitor.Elite
 {
@@ -91,6 +92,8 @@ namespace EliteMonitor.Elite
         public string Ship { get; set; }
         [JsonIgnore] // We don't need to save this because it's kind of irrelevant
         public string PrivateGroup { get; set; } = string.Empty;
+        public bool HasHomeSystem { get; set; } = false;
+        public BasicSystem HomeSystem { get; set; } = null;
 
         public int combatRank { get; set; }
         public int tradeRank { get; set; }
@@ -101,6 +104,7 @@ namespace EliteMonitor.Elite
         public bool isDocked { get; set; }
         public bool isLanded { get; set; }
         public string CurrentSystem { get; set; }
+        public SystemCoordinate CurrentSystemCoordinates { get; set; }
         public string CurrentLocation { get; set; }
         public bool isInMulticrew { get; set; } = false;
         [JsonIgnore]
@@ -367,15 +371,38 @@ namespace EliteMonitor.Elite
 
         public void updateDialogDisplays(MainForm m)
         {
+
+            // Home system tooltip
+
+            m.InvokeIfRequired(() =>
+            {
+                m.homeSystemTooltip.SetToolTip(m.commanderLabel, "Click to set or change home system.");
+                m.homeSystemTooltip.SetToolTip(m.commanderLocationLabel, "Click to set or change home system.");
+            });
+
+
             // Commander data
 
             m.commanderLabel.InvokeIfRequired(() => {
-                string format = "{0} {1} | {2} | {3}{4}in {5}";
+                /*string format = "{0} {1} | {2}";
                 if (isInMulticrew)
-                    format = "{0} {1} | {2} | {5}";
-                if (string.IsNullOrEmpty(this.CurrentLocation) && string.IsNullOrEmpty(this.CurrentSystem))
                     format = "{0} {1} | {2}";
-                m.commanderLabel.Text = string.Format(format, this.Name, (this.isInMulticrew ? this.MultiCrewCommanderName : (string.IsNullOrEmpty(this.PrivateGroup) ? "" : $"({this.PrivateGroup})")), (this.ShipData != null ? this.ShipData.getFormattedShipString() : this.Ship), this.isDocked || this.isLanded ? this.isLanded ? "Landed at " : "Docked at " : "", String.Format("{0} ", this.CurrentLocation), this.CurrentSystem);
+                if (string.IsNullOrEmpty(this.CurrentLocation) && string.IsNullOrEmpty(this.CurrentSystem))
+                    format = "{0} {1} | {2}";*/
+
+                m.commanderLabel.Text = string.Format("{0}{1} | {2}", this.Name, (this.isInMulticrew ? string.Format(" ({0})", this.MultiCrewCommanderName) : (string.IsNullOrEmpty(this.PrivateGroup) ? "" : string.Format(" ({0})", this.PrivateGroup))), (this.ShipData != null ? this.ShipData.getFormattedShipString() : this.Ship));
+                if (!(string.IsNullOrEmpty(this.CurrentLocation) && string.IsNullOrEmpty(this.CurrentSystem)))
+                {
+                    m.commanderLocationLabel.Text = string.Format("{0}{1}{2}", this.isDocked || this.isLanded ? this.isDocked ? "Docked at " : "Landed on " : "", String.Format("{0} | ", this.CurrentLocation), this.CurrentSystem);
+                    if (this.HasHomeSystem && this.CurrentSystemCoordinates != null)
+                    {
+                        m.commanderLocationLabel.Text += string.Format(" ({0} ly from {1})", Utils.CalculateLyDistance(to: this.CurrentSystemCoordinates, from: this.HomeSystem.Coordinates).ToString("0,0.00"), this.HomeSystem.Name);
+                    }
+                }
+                else
+                {
+                    m.commanderLocationLabel.Text = string.Empty;
+                }
             });
             //m.commanderLabel.InvokeIfRequired(() => m.commanderLabel.Text = String.Format("{0} | {1} {2}", this.Name, this.Ship, !this.PrivateGroup.Equals(string.Empty) && this.PrivateGroup != null ? $"/ {this.PrivateGroup}" : ""));
 
@@ -510,11 +537,18 @@ namespace EliteMonitor.Elite
             return this;
         }
 
+        public void UpdateCurrentShip(int shipID, string shipIdent, string shipName)
+        {
+            if (this.Fleet.ContainsKey(shipID))
+            {
+                this.Fleet[shipID].ShipData.ShipID = this.ShipData.ShipID = shipIdent;
+                this.Fleet[shipID].ShipData.ShipName = this.ShipData.ShipName = shipName;
+                //this.updateDialogDisplays();
+            }
+        }
+
         public void UpdateShipLoadout(int shipID, string shipNoneVanityName, string shipIdent, string shipName, string modules)
         {
-#if DEBUG
-            MainForm.Instance.logger.Log("SHIP DATA: {0}/{1} - {2}/{3} - {4}/{5} - {6}/{7}", false, shipID, shipNoneVanityName == null, shipNoneVanityName == null ? "NULL" : shipNoneVanityName, shipIdent == null, shipIdent == null ? "NULL" : shipIdent, shipName == null, shipName == null ? "NULL" : shipName);
-#endif
             CommanderShipLoadout sl = new CommanderShipLoadout();
             sl.ShipData = new CommanderShip(shipNoneVanityName, shipIdent, shipName);
             sl.LoadoutJson = modules;
@@ -590,34 +624,46 @@ namespace EliteMonitor.Elite
             if (this.cacheVersion < (patchVer = 680)) // Update MaterialCollected, MaterialDiscovered and MaterialDiscarded
             {
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("MaterialDiscovered") || a.Event.Equals("MaterialCollected") || a.Event.Equals("MaterialDiscarded"));
-                updateJournalEntries(toUpdate, m, patchVer);
+                updateJournalEntries(toUpdate, m, patchVer, this);
             }
             if (this.cacheVersion < (patchVer = 770))
             {
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("ModuleRetrieve"));
-                updateJournalEntries(toUpdate, m, patchVer);
+                updateJournalEntries(toUpdate, m, patchVer, this);
             }
 
             if (this.cacheVersion < (patchVer = 879))
             {
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("ReceiveText"));
-                updateJournalEntries(toUpdate, m, patchVer);
+                updateJournalEntries(toUpdate, m, patchVer, this);
             }
 
             if (this.cacheVersion < (patchVer = 920))
             {
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("CommunityGoalReward") || a.Event.Equals("CommunityGoalJoin"));
-                updateJournalEntries(toUpdate, m, patchVer);
+                updateJournalEntries(toUpdate, m, patchVer, this);
             }
 
             if (this.cacheVersion < (patchVer = 941))
             {
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("JoinACrew") || a.Event.Equals("QuitACrew") || a.Event.Equals("Loadout"));
-                updateJournalEntries(toUpdate, m, patchVer);
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
+
+            if (this.cacheVersion < (patchVer = 1009))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("Touchdown") || a.Event.Equals("Liftoff"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
+
+            if (this.cacheVersion < (patchVer = 1026))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("SetUserShipName"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
             }
         }
 
-        private void updateJournalEntries(List<JournalEntry> toUpdate, MainForm m, int patchVer)
+        private void updateJournalEntries(List<JournalEntry> toUpdate, MainForm m, int patchVer, Commander c)
         {
             m.journalParser.logger.Log("{0} entries need updating to version {1} for commander '{2}'", toUpdate.Count, patchVer, this.Name);
 
@@ -638,10 +684,25 @@ namespace EliteMonitor.Elite
                     m.InvokeIfRequired(() => m.appStatus.Text = String.Format("Updating Journal entries... ({0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft)));
                 }
                 Commander __;
-                JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true);
+                JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true, forcedCommander: c);
                 j.Data = nje.Data;
             }
             m.journalParser.logger.Log("{0} entries have been updated to version {1} for commander '{2}'", cEntry, patchVer, this.Name);
+        }
+
+        public Commander setHomeSystem(BasicSystem system)
+        {
+#if DEBUG
+            StringBuilder text = new StringBuilder();
+            text.AppendLineFormatted("Name: {0}", system.Name);
+            text.AppendLineFormatted("ID: {0}", system.ID);
+            text.AppendLineFormatted("Coordinates (X, Y, Z): {0}", system.Coordinates.ToString());
+            MessageBox.Show(text.ToString());
+#endif
+            this.HasHomeSystem = true;
+            this.HomeSystem = system;
+            this.updateDialogDisplays();
+            return this;
         }
     }
 }

@@ -331,6 +331,7 @@ namespace EliteMonitor
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            this.Hide();
             cacheController.saveAllCaches();
         }
 
@@ -712,6 +713,12 @@ namespace EliteMonitor
                 msg.AppendLineFormatted("Session history size: {0}", c.Sessions.Count);
             }
             MessageBox.Show(msg.ToString());
+        }
+
+        private void commanderLabel_Click(object sender, EventArgs e)
+        {
+            HomeSystemChooser hsc = new HomeSystemChooser();
+            hsc.Show(this);
         }
     }
 }

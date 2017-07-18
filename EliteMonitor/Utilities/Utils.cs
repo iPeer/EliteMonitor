@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using EliteMonitor.Elite;
 
 namespace EliteMonitor.Utilities
 {
@@ -168,6 +169,11 @@ namespace EliteMonitor.Utilities
             prompt.AcceptButton = confirmation;
 
             return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
+        }
+
+        public static double CalculateLyDistance(SystemCoordinate to, SystemCoordinate from)
+        {
+            return Math.Sqrt(Math.Pow((from.X - to.X), 2) + Math.Pow((from.Y - to.Y), 2) + Math.Pow((from.Z - to.Z), 2));
         }
     }
 }

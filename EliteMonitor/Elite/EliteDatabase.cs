@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Net;
+using Newtonsoft.Json.Linq;
 
 namespace EliteMonitor.Elite
 {
@@ -18,6 +19,12 @@ namespace EliteMonitor.Elite
 
     public class EliteDatabase
     {
+
+#if DEBUG
+        public const string EDSM_API_URL = "http://beta.edsm.net:8080/api-v1/";
+#else
+        public const string EDSM_API_URL = "https://www.edsm.net/api-v1/";
+#endif
 
         public List<Material> Materials;
         public Dictionary<string, string> Ships;
@@ -176,6 +183,42 @@ namespace EliteMonitor.Elite
         {
             try { return this.Ships.First(a => a.Value.Equals(realName)).Key; }
             catch { return realName; }
+        }
+
+        public BasicSystem getSystemDataFromEDSMAPI(string text)
+        {
+            string apiURL = string.Format("{0}system", EDSM_API_URL);
+            string urlWithParams = string.Format("{0}?systemName={1}&showCoordinates=1&showInformation=1", apiURL, text.Replace(" ", "%20"));
+
+            WebClient wc = new WebClient();
+            string _json = wc.DownloadString(urlWithParams);
+#if DEBUG
+            this.logger.Log("EDSM SYSTEM API RESPONSE: {0}", _json);
+#endif
+            if (_json.Equals("[]"))
+            {
+                throw new ArgumentException();
+            }
+            JObject json = JObject.Parse(_json);
+            string name = json.GetValue("name").ToString();
+            Dictionary<string, float> systemCoords = JsonConvert.DeserializeObject<Dictionary<string, float>>(json.GetValue("coords").ToString());
+            Dictionary<string, object> systemInfo = JsonConvert.DeserializeObject<Dictionary<string, object>>(json.GetValue("information").ToString());
+
+            float x = systemCoords["x"];
+            float y = systemCoords["y"];
+            float z = systemCoords["z"];
+
+            long systemID = 0;
+            try
+            {
+                systemID = Convert.ToInt64(systemInfo["eddbId"]);
+            }
+            catch { }
+
+            SystemCoordinate sc = new SystemCoordinate(x, y, z);
+            BasicSystem bs = new BasicSystem(name, systemID, sc);
+            return bs;
+
         }
 
     }

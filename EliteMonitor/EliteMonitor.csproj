@@ -129,6 +129,12 @@
     <Compile Include="Extensions\ListViewExtensions.cs" />
     <Compile Include="Extensions\StringBuilderExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="HomeSystemChooser.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HomeSystemChooser.Designer.cs">
+      <DependentUpon>HomeSystemChooser.cs</DependentUpon>
+    </Compile>
     <Compile Include="HUDEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -152,9 +158,13 @@
     <Compile Include="RankEditor.Designer.cs">
       <DependentUpon>RankEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="Sessions\SessionManager.cs" />
     <Compile Include="Utilities\DownloadableDataItem.cs" />
     <Compile Include="Utilities\FileDownloadHandler.cs" />
     <Compile Include="Utilities\Utils.cs" />
+    <EmbeddedResource Include="HomeSystemChooser.resx">
+      <DependentUpon>HomeSystemChooser.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="HUDEditor.resx">
       <DependentUpon>HUDEditor.cs</DependentUpon>
     </EmbeddedResource>

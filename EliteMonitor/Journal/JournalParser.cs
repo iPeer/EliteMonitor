@@ -64,7 +64,7 @@ namespace EliteMonitor.Journal
             }
         }
 
-        public JournalEntry parseEvent(string json, out Commander commander, bool isReparse = false)
+        public JournalEntry parseEvent(string json, out Commander commander, bool isReparse = false, Commander forcedCommander = null)
         {
             /*
             { "timestamp":"2017-01-26T21:23:18Z", "event":"Fileheader", "part":1, "language":"English\\UK", "gameversion":"2.2", "build":"r131487/r0 " }
@@ -75,7 +75,10 @@ namespace EliteMonitor.Journal
             { "timestamp":"2017-02-03T04:33:23Z", "event":"MarketSell", "Type":"superconductors", "Count":728, "SellPrice":7265, "TotalSale":5288920, "AvgPricePaid":6883 }
             */
             mainForm.cacheController.addJournalEntryToCache(json);
-            commander = activeCommander ?? viewedCommander; // Under normal operating procedures, activeCommander will NEVER be null. It can be null during testing due to "hot inserting" of events (because we don't parse the full log properly), so if it's null, we default the the currently viewed commander.
+            if (forcedCommander == null)
+                commander = activeCommander ?? viewedCommander; // Under normal operating procedures, activeCommander will NEVER be null. It can be null during testing due to "hot inserting" of events (because we don't parse the full log properly), so if it's null, we default the the currently viewed commander.
+            else
+                commander = forcedCommander;
             JObject j;
             try
             {
@@ -236,6 +239,15 @@ namespace EliteMonitor.Journal
                     {
                         commander.CurrentSystem = (string)j["StarSystem"];
                         commander.CurrentLocation = string.Empty;
+                        List<JToken> coords = j["StarPos"].ToList();
+                        float X = coords[0].ToObject<float>();
+                        float Y = coords[1].ToObject<float>();
+                        float Z = coords[2].ToObject<float>();
+
+                        SystemCoordinate sc = new SystemCoordinate(X, Y, Z);
+
+                        commander.CurrentSystemCoordinates = sc;
+
                     }
                     return new JournalEntry(timestamp, @event, $"Jumped to {(string)j["StarSystem"]} ({String.Format("{0:f2}", (float)j["JumpDist"])}Ly)", j);
                 case "RepairPartial": // Legacy
@@ -485,6 +497,54 @@ namespace EliteMonitor.Journal
                     if (!isReparse)
                         commander.isInMulticrew = false;
                     return new JournalEntry(timestamp, @event, $"Left {name}'s ship", j);
+                case "Touchdown":
+                    bool player = true;
+                    try
+                    {
+                        player = (bool)j["PlayerControlled"];
+                    }
+                    catch { }
+                    if (player && !isReparse)
+                        commander.isLanded = true;
+                    return new JournalEntry(timestamp, @event, "Touchdown!", j);
+                case "Liftoff":
+                    player = true;
+                    try
+                    {
+                        player = (bool)j["PlayerControlled"];
+                    }
+                    catch { }
+                    if (player && !isReparse)
+                        commander.isLanded = true;
+                    return new JournalEntry(timestamp, @event, "Liftoff!", j);
+                case "Location":
+                    // { "timestamp":"2017-07-17T15:53:35Z", "event":"Location", "Docked":true, "StationName":"Ising Vision", "StationType":"Coriolis", "StarSystem":"Neto", "StarPos":[-41.188,7.656,36.313], "SystemAllegiance":"Independent", "SystemEconomy":"$economy_HighTech;", "SystemEconomy_Localised":"High Tech", "SystemGovernment":"$government_Democracy;", "SystemGovernment_Localised":"Democracy", "SystemSecurity":"$SYSTEM_SECURITY_high;", "SystemSecurity_Localised":"High Security", "Body":"Ising Vision", "BodyType":"Station", "Factions":[ { "Name":"Neto Blue Power Limited", "FactionState":"Boom", "Government":"Corporate", "Influence":0.060000, "Allegiance":"Federation", "PendingStates":[ { "State":"Outbreak", "Trend":0 } ] }, { "Name":"72 Herculis Free", "FactionState":"Boom", "Government":"Democracy", "Influence":0.049000, "Allegiance":"Federation", "RecoveringStates":[ { "State":"Outbreak", "Trend":0 } ] }, { "Name":"Wolf 1509 Blue Power Inc", "FactionState":"Boom", "Government":"Corporate", "Influence":0.051000, "Allegiance":"Federation" }, { "Name":"G 139-50 Electronics Partners", "FactionState":"Boom", "Government":"Corporate", "Influence":0.057000, "Allegiance":"Federation" }, { "Name":"Alliance of V816 Herculis", "FactionState":"None", "Government":"Confederacy", "Influence":0.075000, "Allegiance":"Federation", "RecoveringStates":[ { "State":"Boom", "Trend":0 } ] }, { "Name":"Neto Regulatory State", "FactionState":"Boom", "Government":"Dictatorship", "Influence":0.047000, "Allegiance":"Independent" }, { "Name":"Workers of Neto Progressive Party", "FactionState":"Boom", "Government":"Democracy", "Influence":0.098000, "Allegiance":"Federation" }, { "Name":"Neto Mob", "FactionState":"Boom", "Government":"Anarchy", "Influence":0.018000, "Allegiance":"Independent" }, { "Name":"Pixel Bandits Security Force", "FactionState":"Expansion", "Government":"Democracy", "Influence":0.545000, "Allegiance":"Independent", "PendingStates":[ { "State":"Boom", "Trend":1 } ] } ], "SystemFaction":"Pixel Bandits Security Force", "FactionState":"Expansion" }
+                    // { "timestamp":"2017-07-16T21:33:00Z", "event":"Location", "Docked":false, "StarSystem":"Wolf 918", "StarPos":[-19.000,-23.906,25.344], "SystemAllegiance":"Independent", "SystemEconomy":"$economy_Colony;", "SystemEconomy_Localised":"Colony", "SystemGovernment":"$government_Feudal;", "SystemGovernment_Localised":"Feudal", "SystemSecurity":"$SYSTEM_SECURITY_medium;", "SystemSecurity_Localised":"Medium Security", "Body":"Wolf 918", "BodyType":"Star", "Factions":[ { "Name":"Wolf 918 Gold Bridge Network", "FactionState":"Boom", "Government":"Corporate", "Influence":0.224224, "Allegiance":"Federation" }, { "Name":"LHS 4058 Confederacy", "FactionState":"Retreat", "Government":"Confederacy", "Influence":0.039039, "Allegiance":"Federation", "RecoveringStates":[ { "State":"Boom", "Trend":0 } ] }, { "Name":"Barons of Wolf 918", "FactionState":"None", "Government":"Feudal", "Influence":0.297297, "Allegiance":"Independent", "PendingStates":[ { "State":"Boom", "Trend":1 } ], "RecoveringStates":[ { "State":"Famine", "Trend":0 } ] }, { "Name":"Youming Solutions", "FactionState":"None", "Government":"Corporate", "Influence":0.186186, "Allegiance":"Federation", "RecoveringStates":[ { "State":"Boom", "Trend":1 } ] }, { "Name":"Confederation of Wolf 918", "FactionState":"CivilWar", "Government":"Confederacy", "Influence":0.079079, "Allegiance":"Federation", "RecoveringStates":[ { "State":"Boom", "Trend":0 } ] }, { "Name":"Wolf 918 PLC", "FactionState":"Boom", "Government":"Corporate", "Influence":0.095095, "Allegiance":"Independent", "PendingStates":[ { "State":"Outbreak", "Trend":0 } ] }, { "Name":"Pirates of Wolf 918", "FactionState":"CivilWar", "Government":"Anarchy", "Influence":0.079079, "Allegiance":"Independent", "RecoveringStates":[ { "State":"Boom", "Trend":0 } ] } ], "SystemFaction":"Barons of Wolf 918" }
+                    if (!isReparse)
+                    {
+                        commander.CurrentSystem = (string)j["StarSystem"];
+                        commander.CurrentLocation = (string)j["Body"];
+                        commander.isDocked = (bool)j["Docked"];
+                        List<JToken> coords = j["StarPos"].ToList();
+                        float X = coords[0].ToObject<float>();
+                        float Y = coords[1].ToObject<float>();
+                        float Z = coords[2].ToObject<float>();
+
+                        SystemCoordinate sc = new SystemCoordinate(X, Y, Z);
+
+                        commander.CurrentSystemCoordinates = sc;
+                    }
+                    return new JournalEntry(timestamp, @event, "Location data updated", j);
+                case "SetUserShipName":
+                    // { "timestamp":"2017-07-17T18:07:27Z", "event":"SetUserShipName", "Ship":"anaconda", "ShipID":36, "UserShipName":"IEV Roxanne", "UserShipId":"IP-22A" }
+                    string newShipName = (string)j["UserShipName"];
+                    string newShipId = (string)j["UserShipId"];
+                    int fleetID = (int)j["ShipID"];
+                    if (!isReparse)
+                    {
+                        commander.UpdateCurrentShip(fleetID, newShipId, newShipName);
+                    }
+                    return new JournalEntry(timestamp, @event, string.Format("Updated ship naming: [{0}] {1}", newShipId, newShipName), j);
                 default:
                     return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
             }
