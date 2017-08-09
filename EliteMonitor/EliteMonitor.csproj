@@ -114,6 +114,12 @@
     <Compile Include="Controls\CustomProgressBar.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Exploration\DiscoveredBodyList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Exploration\DiscoveredBodyList.Designer.cs">
+      <DependentUpon>DiscoveredBodyList.cs</DependentUpon>
+    </Compile>
     <Compile Include="Elite\BasicSystem.cs" />
     <Compile Include="Elite\Body.cs" />
     <Compile Include="Elite\Commander.cs" />
@@ -124,11 +130,25 @@
     <Compile Include="Elite\PlanetaryMaterialData.cs" />
     <Compile Include="Elite\Ranks.cs" />
     <Compile Include="Elite\EliteUtils.cs" />
+    <Compile Include="Exploration\Expedition.cs" />
+    <Compile Include="Exploration\ExpeditionViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Exploration\ExpeditionViewer.Designer.cs">
+      <DependentUpon>ExpeditionViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Exploration\ScanJournalDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Exploration\ScanJournalDialog.Designer.cs">
+      <DependentUpon>ScanJournalDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\ControlExtensions.cs" />
     <Compile Include="Extensions\JsonExtensions.cs" />
     <Compile Include="Extensions\ListViewExtensions.cs" />
     <Compile Include="Extensions\StringBuilderExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="HomeSystemChooser.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -159,9 +179,24 @@
       <DependentUpon>RankEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="Sessions\SessionManager.cs" />
+    <Compile Include="Exploration\StartExpedition.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Exploration\StartExpedition.Designer.cs">
+      <DependentUpon>StartExpedition.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utilities\DownloadableDataItem.cs" />
     <Compile Include="Utilities\FileDownloadHandler.cs" />
     <Compile Include="Utilities\Utils.cs" />
+    <EmbeddedResource Include="Exploration\DiscoveredBodyList.resx">
+      <DependentUpon>DiscoveredBodyList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Exploration\ExpeditionViewer.resx">
+      <DependentUpon>ExpeditionViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Exploration\ScanJournalDialog.resx">
+      <DependentUpon>ScanJournalDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="HomeSystemChooser.resx">
       <DependentUpon>HomeSystemChooser.cs</DependentUpon>
     </EmbeddedResource>
@@ -183,6 +218,9 @@
     </Compile>
     <EmbeddedResource Include="RankEditor.resx">
       <DependentUpon>RankEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Exploration\StartExpedition.resx">
+      <DependentUpon>StartExpedition.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="EliteMonitor_TemporaryKey.pfx" />
     <None Include="packages.config" />
@@ -267,8 +305,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>set textTemplatingPath="%25CommonProgramFiles(x86)%25\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe"
-if %25textTemplatingPath%25=="\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe" set textTemplatingPath="%25CommonProgramFiles%25\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe"
+    <PreBuildEvent>set textTemplatingPath="$(DevEnvDir)\texttransform.exe"
 %25textTemplatingPath%25 "$(ProjectDir)\AssemblyFileData.tt</PreBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.104.0\build\net451\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.104.0\build\net451\System.Data.SQLite.Core.targets')" />

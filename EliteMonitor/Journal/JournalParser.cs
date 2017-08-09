@@ -88,6 +88,14 @@ namespace EliteMonitor.Journal
             {
                 throw e;
             }
+
+            // FIXME: Expedition entries are doubled when updating from journals that are ahead of our cache
+            if (commander != null && !isReparse && commander.HasActiveExpedition)
+                if (commander.Expeditions == null) // Commander's expedition file cannot be loaded after previously being present
+                    commander.HasActiveExpedition = false;
+                else
+                    commander.Expeditions[commander.ActiveExpeditionGuid].parseJournalEntry(json);
+
             string @event = (string)j["event"];
             DateTime tsData = (DateTime)j["timestamp"];
             string timestamp = tsData.ToString("G");
@@ -247,7 +255,7 @@ namespace EliteMonitor.Journal
                         SystemCoordinate sc = new SystemCoordinate(X, Y, Z);
 
                         commander.CurrentSystemCoordinates = sc;
-
+                        commander.isLanded = commander.isDocked = false;
                     }
                     return new JournalEntry(timestamp, @event, $"Jumped to {(string)j["StarSystem"]} ({String.Format("{0:f2}", (float)j["JumpDist"])}Ly)", j);
                 case "RepairPartial": // Legacy
@@ -515,7 +523,7 @@ namespace EliteMonitor.Journal
                     }
                     catch { }
                     if (player && !isReparse)
-                        commander.isLanded = true;
+                        commander.isLanded = false;
                     return new JournalEntry(timestamp, @event, "Liftoff!", j);
                 case "Location":
                     // { "timestamp":"2017-07-17T15:53:35Z", "event":"Location", "Docked":true, "StationName":"Ising Vision", "StationType":"Coriolis", "StarSystem":"Neto", "StarPos":[-41.188,7.656,36.313], "SystemAllegiance":"Independent", "SystemEconomy":"$economy_HighTech;", "SystemEconomy_Localised":"High Tech", "SystemGovernment":"$government_Democracy;", "SystemGovernment_Localised":"Democracy", "SystemSecurity":"$SYSTEM_SECURITY_high;", "SystemSecurity_Localised":"High Security", "Body":"Ising Vision", "BodyType":"Station", "Factions":[ { "Name":"Neto Blue Power Limited", "FactionState":"Boom", "Government":"Corporate", "Influence":0.060000, "Allegiance":"Federation", "PendingStates":[ { "State":"Outbreak", "Trend":0 } ] }, { "Name":"72 Herculis Free", "FactionState":"Boom", "Government":"Democracy", "Influence":0.049000, "Allegiance":"Federation", "RecoveringStates":[ { "State":"Outbreak", "Trend":0 } ] }, { "Name":"Wolf 1509 Blue Power Inc", "FactionState":"Boom", "Government":"Corporate", "Influence":0.051000, "Allegiance":"Federation" }, { "Name":"G 139-50 Electronics Partners", "FactionState":"Boom", "Government":"Corporate", "Influence":0.057000, "Allegiance":"Federation" }, { "Name":"Alliance of V816 Herculis", "FactionState":"None", "Government":"Confederacy", "Influence":0.075000, "Allegiance":"Federation", "RecoveringStates":[ { "State":"Boom", "Trend":0 } ] }, { "Name":"Neto Regulatory State", "FactionState":"Boom", "Government":"Dictatorship", "Influence":0.047000, "Allegiance":"Independent" }, { "Name":"Workers of Neto Progressive Party", "FactionState":"Boom", "Government":"Democracy", "Influence":0.098000, "Allegiance":"Federation" }, { "Name":"Neto Mob", "FactionState":"Boom", "Government":"Anarchy", "Influence":0.018000, "Allegiance":"Independent" }, { "Name":"Pixel Bandits Security Force", "FactionState":"Expansion", "Government":"Democracy", "Influence":0.545000, "Allegiance":"Independent", "PendingStates":[ { "State":"Boom", "Trend":1 } ] } ], "SystemFaction":"Pixel Bandits Security Force", "FactionState":"Expansion" }
@@ -545,6 +553,21 @@ namespace EliteMonitor.Journal
                         commander.UpdateCurrentShip(fleetID, newShipId, newShipName);
                     }
                     return new JournalEntry(timestamp, @event, string.Format("Updated ship naming: [{0}] {1}", newShipId, newShipName), j);
+                case "SellExplorationData":
+                    List<string> systems = j.GetValue("Systems").ToObject<List<string>>();
+                    int systemCount = systems.Count;
+                    List<string> discovered = j.GetValue("Discovered").ToObject<List<string>>();
+                    if (discovered.Count > 0 && commander != null)
+                        foreach (string sys in discovered)
+                            commander.registerFirstDiscovery(sys, timestamp);
+                    long baseReward = (long)j["BaseValue"];
+                    long bonusReward = (long)j["Bonus"];
+                    long totalCredits = baseReward + bonusReward;
+                    if (!isReparse)
+                        commander.addCredits(totalCredits);
+                    eventText = string.Format("Turned in exploration data for {0:n0} systems totalling {1:n0} credits", systemCount, totalCredits);
+                    return new JournalEntry(timestamp, @event, eventText, j);
+                //{ "timestamp":"2017-07-18T23:09:40Z", "event":"SellExplorationData", "Systems":[ "Byua Euq ES-W b1-14", "Byua Euq DF-H b10-16", "Traikaae QD-T b58-16", "Trifid Sector NI-S b4-17", "Trifid Sector DH-K a9-3", "Drojia MA-P a115-3", "Lagoon Sector WW-H a11-4", "Trifid Sector RD-R a5-7", "Trifid Sector TL-B a14-11" ], "Discovered":[  ], "BaseValue":32871, "Bonus":0 }
                 default:
                     return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
             }
@@ -668,7 +691,8 @@ namespace EliteMonitor.Journal
 
         public void switchViewedCommander(Commander c)
         {
-
+            mainForm.buttonDiscoveredBodies.InvokeIfRequired(() => mainForm.buttonDiscoveredBodies.Enabled = false);
+            mainForm.buttonExpeditions.InvokeIfRequired(() => mainForm.buttonExpeditions.Enabled = false);
             Stopwatch sw = new Stopwatch();
             sw.Start();
             mainForm.setAppStatusText(String.Format("Loading commander data for '{0}'", c.Name));
@@ -734,6 +758,8 @@ namespace EliteMonitor.Journal
                 _c.saveData();
             }*/
             mainForm.setAppStatusText("Ready.");
+            mainForm.buttonDiscoveredBodies.InvokeIfRequired(() => mainForm.buttonDiscoveredBodies.Enabled = true);
+            mainForm.buttonExpeditions.InvokeIfRequired(() => mainForm.buttonExpeditions.Enabled = true);
         }
 
         public ListViewItem getListViewEntryForEntry(JournalEntry j)

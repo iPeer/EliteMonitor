@@ -73,6 +73,21 @@ namespace EliteMonitor.Utilities
             return t+(t.Length == 2 ? "s" : "");
         }
 
+        public static long saveDataFile(string fileName, string filePath, string data, string fileExtension = ".emj", bool compressed = true)
+        {
+            if (compressed)
+                return writeGZip(fileName, filePath, data, fileExtension);
+            else
+            {
+                string fp = Path.Combine(filePath, string.Format("{0}{1}.uncompressed", fileName, fileExtension.StartsWith(".") ? fileExtension : "." + fileExtension));
+                using (StreamWriter sw = new StreamWriter(fp))
+                {
+                    sw.WriteLine(data);
+                }
+                return 0;
+            }
+        }
+
         public static long saveGZip(string fileName, string filePath, string data, string fileExtension = ".emj") => writeGZip(fileName, filePath, data, fileExtension);
         public static long writeGZip(string fileName, string filePath, string data, string fileExtension = ".emj")
         {

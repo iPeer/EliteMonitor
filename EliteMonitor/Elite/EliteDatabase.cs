@@ -202,18 +202,26 @@ namespace EliteMonitor.Elite
             JObject json = JObject.Parse(_json);
             string name = json.GetValue("name").ToString();
             Dictionary<string, float> systemCoords = JsonConvert.DeserializeObject<Dictionary<string, float>>(json.GetValue("coords").ToString());
-            Dictionary<string, object> systemInfo = JsonConvert.DeserializeObject<Dictionary<string, object>>(json.GetValue("information").ToString());
+            Dictionary<string, object> systemInfo = new Dictionary<string, object>();
+            try
+            {
+                systemInfo = JsonConvert.DeserializeObject<Dictionary<string, object>>(json.GetValue("information").ToString());
+            }
+            catch { }
 
             float x = systemCoords["x"];
             float y = systemCoords["y"];
             float z = systemCoords["z"];
 
             long systemID = 0;
-            try
+            if (systemInfo.Keys.Count > 0)
             {
-                systemID = Convert.ToInt64(systemInfo["eddbId"]);
+                try
+                {
+                    systemID = Convert.ToInt64(systemInfo["eddbId"]);
+                }
+                catch { }
             }
-            catch { }
 
             SystemCoordinate sc = new SystemCoordinate(x, y, z);
             BasicSystem bs = new BasicSystem(name, systemID, sc);

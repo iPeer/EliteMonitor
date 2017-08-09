@@ -10,11 +10,27 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO.Compression;
 using System.Windows.Forms;
+using EliteMonitor.Exploration;
 
 namespace EliteMonitor.Elite
 {
 
     public class CommanderSession { } // TODO
+
+    public class BodyDiscovery
+    {
+
+        public string BodyName { get; set; }
+        public DateTime DiscoveredTime { get; set; } = DateTime.UtcNow;
+
+        public BodyDiscovery() { }
+
+        public BodyDiscovery(string bodyName, string gameTimestamp)
+        {
+            this.BodyName = bodyName;
+            this.DiscoveredTime = DateTime.Parse(gameTimestamp, null, System.Globalization.DateTimeStyles.RoundtripKind);
+        }
+    }
 
     public class CommanderShipLoadout
     {
@@ -76,6 +92,12 @@ namespace EliteMonitor.Elite
         public string saveDirectory = string.Empty;
         [JsonIgnore]
         public List<CommanderSession> Sessions = new List<CommanderSession>();
+        [JsonIgnore]
+        public List<BodyDiscovery> DiscoveredBodies = new List<BodyDiscovery>();
+        [JsonIgnore]
+        public Dictionary<Guid, Expedition> Expeditions = new Dictionary<Guid, Expedition>();
+        public bool HasActiveExpedition { get; set; } = false;
+        public Guid ActiveExpeditionGuid { get; set; }
         public long nextId = 0;
         [JsonIgnore]
         public bool isActive
@@ -227,10 +249,26 @@ namespace EliteMonitor.Elite
             return this;
         }
 
+        public Commander registerFirstDiscovery(string bodyName, string gameTimestamp)
+        {
+            if (this.DiscoveredBodies == null)
+                this.DiscoveredBodies = new List<BodyDiscovery>();
+            if (!this.DiscoveredBodies.Any(b => b.BodyName.Equals(bodyName))) {
+                this.DiscoveredBodies.Add(new BodyDiscovery(bodyName, gameTimestamp));
+            }
+            return this;
+        }
+
         public long saveData(bool uncompressed = false)
         {
             this.OnSave();
+
+#if DEBUG
+            Utils.saveDataFile("journal", this.saveDirectory, JsonConvert.SerializeObject(this, Formatting.Indented), compressed: false);
+#endif
+
             return Utils.saveGZip("journal", this.saveDirectory, JsonConvert.SerializeObject(this));
+
             /*string commanderSavePath = Path.Combine(MainForm.Instance.cacheController.cachePath, MainForm.Instance.cacheController.commanderCaches.ContainsKey(this.Name) ? MainForm.Instance.cacheController.commanderCaches[this.Name].Item1 : $"./{this.Name}/journal.emj");
             if (uncompressed)
             {
@@ -393,7 +431,14 @@ namespace EliteMonitor.Elite
                 m.commanderLabel.Text = string.Format("{0}{1} | {2}", this.Name, (this.isInMulticrew ? string.Format(" ({0})", this.MultiCrewCommanderName) : (string.IsNullOrEmpty(this.PrivateGroup) ? "" : string.Format(" ({0})", this.PrivateGroup))), (this.ShipData != null ? this.ShipData.getFormattedShipString() : this.Ship));
                 if (!(string.IsNullOrEmpty(this.CurrentLocation) && string.IsNullOrEmpty(this.CurrentSystem)))
                 {
-                    m.commanderLocationLabel.Text = string.Format("{0}{1}{2}", this.isDocked || this.isLanded ? this.isDocked ? "Docked at " : "Landed on " : "", String.Format("{0} | ", this.CurrentLocation), this.CurrentSystem);
+                    //m.commanderLocationLabel.Text = string.Format("{0}{1}{2}", this.isDocked || this.isLanded ? this.isDocked ? "Docked at " : "Landed on " : "", String.Format("{0} | ", this.CurrentLocation), this.CurrentSystem);
+                    string cmdrLocString = string.Empty;
+                    if (this.isLanded || this.isDocked)
+                        cmdrLocString = string.Format("{0}", this.isLanded ? "Landed on " : "Docked at ");
+                    if (!string.IsNullOrEmpty(this.CurrentLocation))
+                        cmdrLocString += this.CurrentLocation+" | ";
+                    cmdrLocString += this.CurrentSystem;
+                    m.commanderLocationLabel.Text = cmdrLocString;
                     if (this.HasHomeSystem && this.CurrentSystemCoordinates != null)
                     {
                         m.commanderLocationLabel.Text += string.Format(" ({0} ly from {1})", Utils.CalculateLyDistance(to: this.CurrentSystemCoordinates, from: this.HomeSystem.Coordinates).ToString("0,0.00"), this.HomeSystem.Name);
@@ -573,18 +618,47 @@ namespace EliteMonitor.Elite
             m.journalParser.logger.Log(messageText);
 
             Utils.saveGZip("fleet", this.saveDirectory, JsonConvert.SerializeObject(this.Fleet));
+#if DEBUG
+            Utils.saveDataFile("fleet", this.saveDirectory, JsonConvert.SerializeObject(this.Fleet, Formatting.Indented), compressed: false);
+#endif
 
             messageText = "[" + this.Name + "] Saving materials data...";
             m.InvokeIfRequired(() => m.appStatus.Text = messageText);
             m.journalParser.logger.Log(messageText);
 
             Utils.saveGZip("materials", this.saveDirectory, JsonConvert.SerializeObject(this.Materials));
+#if DEBUG
+            Utils.saveDataFile("materials", this.saveDirectory, JsonConvert.SerializeObject(this.Materials, Formatting.Indented), compressed: false);
+#endif
 
             messageText = "[" + this.Name + "] Saving session history data...";
             m.InvokeIfRequired(() => m.appStatus.Text = messageText);
             m.journalParser.logger.Log(messageText);
 
             Utils.saveGZip("sessions", this.saveDirectory, JsonConvert.SerializeObject(this.Sessions));
+
+#if DEBUG
+            Utils.saveDataFile("sessions", this.saveDirectory, JsonConvert.SerializeObject(this.Sessions, Formatting.Indented), compressed: false);
+#endif
+
+            messageText = "[" + this.Name + "] Saving discoveries data...";
+            m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+            m.journalParser.logger.Log(messageText);
+
+            Utils.saveGZip("discoveries", this.saveDirectory, JsonConvert.SerializeObject(this.DiscoveredBodies));
+
+#if DEBUG
+            Utils.saveDataFile("discoveries", this.saveDirectory, JsonConvert.SerializeObject(this.DiscoveredBodies, Formatting.Indented), compressed: false);
+#endif
+
+            messageText = "[" + this.Name + "] Saving expedition data...";
+            m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+            m.journalParser.logger.Log(messageText);
+
+            Utils.saveGZip("expeditions", this.saveDirectory, JsonConvert.SerializeObject(this.Expeditions));
+#if DEBUG
+            Utils.saveDataFile("expeditions", this.saveDirectory, JsonConvert.SerializeObject(this.Expeditions, Formatting.Indented), compressed: false);
+#endif
 
         }
 
@@ -614,6 +688,16 @@ namespace EliteMonitor.Elite
                 m.InvokeIfRequired(() => m.appStatus.Text = messageText);
                 m.journalParser.logger.Log(messageText);
                 this.Sessions = JsonConvert.DeserializeObject<List<CommanderSession>>(Utils.loadGZip(Path.Combine(this.saveDirectory, "sessions.emj"), true));
+
+                messageText = "[" + this.Name + "] Loading discoveries data...";
+                m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+                m.journalParser.logger.Log(messageText);
+                this.DiscoveredBodies = JsonConvert.DeserializeObject<List<BodyDiscovery>>(Utils.loadGZip(Path.Combine(this.saveDirectory, "discoveries.emj"), true));
+
+                messageText = "[" + this.Name + "] Loading expedition data...";
+                m.InvokeIfRequired(() => m.appStatus.Text = messageText);
+                m.journalParser.logger.Log(messageText);
+                this.Expeditions = JsonConvert.DeserializeObject<Dictionary<Guid, Expedition>>(Utils.loadGZip(Path.Combine(this.saveDirectory, "expeditions.emj"), true));
 
                 messageText = String.Format("Applying post-load Journal entry patched for commander '{0}'", this.Name);
                 m.InvokeIfRequired(() => m.appStatus.Text = messageText);
@@ -659,6 +743,11 @@ namespace EliteMonitor.Elite
             if (this.cacheVersion < (patchVer = 1026))
             {
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("SetUserShipName"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
+            if (this.cacheVersion < (patchVer = 1034))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("SellExplorationData"));
                 updateJournalEntries(toUpdate, m, patchVer, this);
             }
         }

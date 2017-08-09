@@ -1,5 +1,6 @@
 ﻿using EliteMonitor.Caching;
 using EliteMonitor.Elite;
+using EliteMonitor.Exploration;
 using EliteMonitor.Extensions;
 using EliteMonitor.Journal;
 using EliteMonitor.Logging;
@@ -39,11 +40,13 @@ namespace EliteMonitor
         private const int PRELOAD_BODY_DATA_LIMIT = 100000;
         private string lastHighlight = "";
         public EliteDatabase Database;
+        ToolStripButton ExpeditionButton = new ToolStripButton("Start exploration expedition here");
 
         public MainForm()
         {
             this.logger = new Logger("Main");
             InitializeComponent();
+            ExpeditionButton.Click += startExpedition_Click;
 #if !DEBUG
             dEBUGToolStripMenuItem.Visible = false;
 #endif
@@ -719,6 +722,113 @@ namespace EliteMonitor
         {
             HomeSystemChooser hsc = new HomeSystemChooser();
             hsc.Show(this);
+        }
+
+        private void listViewedCommanderFirstDiscoveriesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (BodyDiscovery b in journalParser.viewedCommander.DiscoveredBodies)
+                sb.AppendLineFormatted("{0}: {1}", b.BodyName, b.DiscoveredTime);
+            MessageBox.Show(sb.ToString());
+        }
+
+        private void buttonDiscoveredBodies_Click(object sender, EventArgs e)
+        {
+            DiscoveredBodyList b = new DiscoveredBodyList();
+            b.Show(this);
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e) // Copy timestamp
+        {
+            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
+            Clipboard.SetText(lvi.SubItems[0].Text);
+        }
+
+        private void toolStripMenuItem2_Click(object sender, EventArgs e) // Copy event
+        {
+            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
+            Clipboard.SetText(lvi.SubItems[1].Text);
+        }
+
+        private void toolStripMenuItem3_Click(object sender, EventArgs e) // Copy data
+        {
+            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
+            Clipboard.SetText(lvi.SubItems[2].Text);
+        }
+
+        private void toolStripMenuItem4_Click(object sender, EventArgs e) // Copy notes
+        {
+            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
+            Clipboard.SetText(lvi.SubItems[3].Text);
+        }
+
+        private void toolStripMenuItem5_Click(object sender, EventArgs e) // Copy JSON
+        {
+            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
+            int itemIndex = lvi.Index + 1;
+            JournalEntry je = this.journalParser.viewedCommander.JournalEntries[this.journalParser.viewedCommander.JournalEntries.Count - itemIndex];
+            Clipboard.SetText(je.Json);
+        }
+
+        private void journalContextMenu_Opening(object sender, CancelEventArgs e)
+        {
+            if (this.eventList.Items.Count == 0) { e.Cancel = true; return; } // Fix for crash if user right clicks event list before it's initialized (or if the commander has no journal entries)
+            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
+            if ((new string[] { "FSDJump", /*"Scan", */"Location", "Docked" }).Contains(lvi.SubItems[1].Text))
+            {
+                if (/*!this.journalParser.viewedCommander.HasActiveExpedition && */!this.journalContextMenu.Items.Contains(ExpeditionButton))
+                {
+                    Console.WriteLine("Boop");
+                    this.journalContextMenu.Items.Insert(0, new ToolStripSeparator());
+                    //ExpeditionButton.Click += startExpedition_Click;
+                    this.journalContextMenu.Items.Insert(0, ExpeditionButton);
+                    this.journalContextMenu.PerformLayout();
+                }
+            }
+            /*else
+            {
+                if (this.journalContextMenu.Items.Contains(ExpeditionButton))
+                {
+                    ExpeditionButton.Click -= startExpedition_Click;
+                    this.journalContextMenu.Items.Remove(ExpeditionButton);
+                    this.journalContextMenu.Items.RemoveAt(0); // Remove the separator
+                    this.journalContextMenu.PerformLayout();
+                }
+            }*/
+        }
+
+        private void journalContextMenu_Closed(object sender, ToolStripDropDownClosedEventArgs e)
+        {
+            if (this.journalContextMenu.Items.Contains(ExpeditionButton))
+            {
+                Console.WriteLine("Boop!");
+                this.journalContextMenu.Items.Remove(ExpeditionButton);
+                this.journalContextMenu.Items.RemoveAt(0); // Remove the separator
+                this.journalContextMenu.PerformLayout();
+                //ExpeditionButton.Click -= startExpedition_Click;
+            }
+        }
+
+        private void startExpedition_Click(object s, EventArgs _e/*, ListViewItem lvi*/)
+        {
+            ListViewItem lvi = this.eventList.SelectedItems[0];
+            Console.WriteLine(string.Format("---!> {0}", lvi.Index));
+            JournalEntry je = this.journalParser.viewedCommander.JournalEntries[this.journalParser.viewedCommander.JournalEntries.Count - (lvi.Index + 1)];
+            JObject json = JObject.Parse(je.Json);
+            if (!(new string[] { "FSDJump", "Location", "Docked" }).Contains(json.GetValue("event").ToString())) { return; } // Failsafe
+            StartExpedition se = new StartExpedition();
+            se.StartingJournalEntry = je;
+            se.SetUpData();
+            se.Show();
+        }
+
+        private void buttonExpeditions_Click(object sender, EventArgs e)
+        {
+            if (this.journalParser.viewedCommander.Expeditions == null || this.journalParser.viewedCommander.Expeditions.Count == 0) { MessageBox.Show("There are no expeditions attached to this commander. You'll need to make some first."); return; }
+            ExpeditionViewer ev = new ExpeditionViewer();
+            if (this.journalParser.viewedCommander.HasActiveExpedition)
+                ev.SetActiveExpedition(this.journalParser.viewedCommander.ActiveExpeditionGuid);
+            ev.Show();
         }
     }
 }
