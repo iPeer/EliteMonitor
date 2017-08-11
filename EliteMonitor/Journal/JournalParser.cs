@@ -89,13 +89,6 @@ namespace EliteMonitor.Journal
                 throw e;
             }
 
-            // FIXME: Expedition entries are doubled when updating from journals that are ahead of our cache
-            if (commander != null && !isReparse && commander.HasActiveExpedition)
-                if (commander.Expeditions == null) // Commander's expedition file cannot be loaded after previously being present
-                    commander.HasActiveExpedition = false;
-                else
-                    commander.Expeditions[commander.ActiveExpeditionGuid].parseJournalEntry(json);
-
             string @event = (string)j["event"];
             DateTime tsData = (DateTime)j["timestamp"];
             string timestamp = tsData.ToString("G");
@@ -639,11 +632,16 @@ namespace EliteMonitor.Journal
                 //Console.WriteLine(percent + " / " + lastPercent);
                 if (!dontUpdatePercentage && ((int)percent > lastPercent || DateTime.Now.Subtract(lastETAUpdate).TotalSeconds >= 1.00))
                 {
-                    TimeSpan ts = (DateTime.Now - timeStarted);
-                    double timeLeft = (ts.TotalSeconds / cEntry) * (entries.Count - cEntry);
+                    //TimeSpan ts = (DateTime.Now - timeStarted);
+                    //double timeLeft = (ts.TotalSeconds / cEntry) * (entries.Count - cEntry);
                     lastETAUpdate = DateTime.Now;
                     lastPercent = (int)percent;
-                    mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = String.Format("Generating Journal entries... ({0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft)));
+                }
+                if (!dontUpdatePercentage)
+                {
+                    TimeSpan ts = (DateTime.Now - timeStarted);
+                    double timeLeft = (ts.TotalSeconds / cEntry) * (entries.Count - cEntry);
+                    mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = String.Format("Generating Journal entries... ({2}/{3}, {0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft), cEntry, entries.Count));
                 }
                 JournalEntry je = parseEvent(s, out commander);
                 if (je.Event.Equals("Fileheader"))
@@ -664,6 +662,12 @@ namespace EliteMonitor.Journal
                     commander.JournalEntries = new List<JournalEntry>(entries.Count);
                 }
                 commander.addJournalEntry(je, checkDuplicates, dontUpdateDisplays);
+
+                if (commander != null /*&& !isReparse */&& commander.HasActiveExpedition)
+                    if (commander.Expeditions == null) // Commander's expedition file cannot be loaded after previously being present
+                        commander.HasActiveExpedition = false;
+                    else
+                        commander.Expeditions[commander.ActiveExpeditionGuid].parseJournalEntry(je);
             }
             mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.EndUpdate());
             if (viewedCommander != null && activeCommander != null && commander != null && !fullParseInProgress && Properties.Settings.Default.autoSwitchActiveCommander && !viewedCommander.Name.Equals(activeCommander.Name))
@@ -743,6 +747,8 @@ namespace EliteMonitor.Journal
                 mainForm.eventList.EndUpdate();
             });
             c.updateDialogDisplays(this.mainForm);
+            if (!c.isViewed)
+                c.setSaveRequired();
             c.isViewed = true;
             foreach (Commander _c in this.commanders.Values)
             {

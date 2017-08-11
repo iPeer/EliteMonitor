@@ -35,6 +35,38 @@ namespace EliteMonitor.Elite
             { "CombatBond", "Combat Bond" },
             { "settlement", "Intel Package" }
         };
+        public Dictionary<string, string> StarClassNames = new Dictionary<string, string>()
+        {
+            { "N", "Neutron star" },
+            { "AeBe", "Herbig Ae/Be star" },
+            { "DA", "White Dwarf" },
+            { "DAV", "Pulsating White Dwarf" },
+            { "DB", "White Dwarf" },
+            { "DBV", "Pulsating White Dwarf" },
+            { "DAB", "White Dwarf" },
+            { "DC", "White Dwarf" },
+            { "DCV", "Pulsating White Dwarf" },
+            { "DQ", "White Dwarf" },
+            { "DAZ", "White Dwarf" },
+            { "TTS", "T Tauri star" },
+            { "SupermassiveBlackHole", "Supermassive Black Hole" },
+            { "W", "Wolf-Rayet star" },
+            { "WC", "Wolf-Rayet C star" }, // I don't advise using these as a bathoom.
+            { "WO", "Wolf-Rayet O star" },
+            { "WNC", "Wolf-Rayet NC star" },
+            { "WN", "Wolf-Rayet N star" },
+            { "C", "Carbon star" },
+            { "C-N", "Carbon star" },
+            { "CN", "Carbon star" },
+            { "C-J", "Carbon star" },
+            { "CJ", "Carbon star" },
+            { "A_BlueWhiteSuperGiant", "Class A supergiant" },
+            { "F_WhiteSuperGiant", "Class F supergiant" },
+            { "M_RedSuperGiant", "Class M supergiant" },
+            { "M_RedGiant", "Class M red giant" },
+            { "K_OrangeGiant", "Class K orange giant" },
+
+        };
         public static EliteDatabase Instance;
         public Logger logger;
         private MainForm mainForm;
@@ -183,6 +215,16 @@ namespace EliteMonitor.Elite
         {
             try { return this.Ships.First(a => a.Value.Equals(realName)).Key; }
             catch { return realName; }
+        }
+
+        public string GetCorrectStarClassName(string starClass)
+        {
+            if (this.StarClassNames.ContainsKey(starClass))
+            {
+                return this.StarClassNames[starClass];
+            }
+            else
+                return string.Format("Class {0} star", starClass);
         }
 
         public BasicSystem getSystemDataFromEDSMAPI(string text)

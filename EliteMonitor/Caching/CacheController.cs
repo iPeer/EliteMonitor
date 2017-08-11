@@ -171,9 +171,14 @@ namespace EliteMonitor.Caching
         public void saveAllCaches()
         {
             //string journalPath = Path.Combine(this.cachePath, "commanders.emc");
-            Dictionary<string, Tuple<string, long>> commanderData = new Dictionary<string, Tuple<string, long>>();
+            //Dictionary<string, Tuple<string, long>> commanderData = new Dictionary<string, Tuple<string, long>>();
             foreach (Commander c in mainForm.journalParser.commanders.Values)
             {
+                if (!c.NeedsSaving) // Don't save commander that has no changes
+                {
+                    this.logger.Log("CMDR {0} has no changes and doesn't require saving", c.Name);
+                    continue;
+                } 
                 c.CreateSaveDirectory();
                 long saveBytes = c.saveData();
             }
@@ -376,10 +381,13 @@ namespace EliteMonitor.Caching
                 File.Delete(f);
             foreach (string d in Directory.GetDirectories(this.cachePath))
                 Directory.Delete(d, true);
-            mainForm.journalParser.commanders.Clear();
-            mainForm.eventList.Items.Clear();
-            mainForm.comboCommanderList.Items.Clear();
-            mainForm.eventFilterDropdown.Items.Clear();
+            mainForm.InvokeIfRequired(() =>
+            {
+                mainForm.journalParser.commanders.Clear();
+                mainForm.eventList.Items.Clear();
+                mainForm.comboCommanderList.Items.Clear();
+                mainForm.eventFilterDropdown.Items.Clear();
+            });
             this.commanderCaches.Clear();
         }
     }

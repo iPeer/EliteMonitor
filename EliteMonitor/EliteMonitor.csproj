@@ -187,6 +187,7 @@
     </Compile>
     <Compile Include="Utilities\DownloadableDataItem.cs" />
     <Compile Include="Utilities\FileDownloadHandler.cs" />
+    <Compile Include="Utilities\ISavable.cs" />
     <Compile Include="Utilities\Utils.cs" />
     <EmbeddedResource Include="Exploration\DiscoveredBodyList.resx">
       <DependentUpon>DiscoveredBodyList.cs</DependentUpon>

@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using EliteMonitor.Elite;
+using EliteMonitor.Logging;
+using EliteMonitor.Utilities;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -21,9 +24,12 @@ namespace EliteMonitor.Exploration
         }
     }
 
-    public class Expedition
+    public class Expedition : ISavable
     {
 
+        public static int ExpeditionVersion = 2;
+
+        public int Version { get; set; } = 1;
         public Guid ExpeditionID { get; set; }
         public string ExpeditionName { get; set; } = "New Expedition";
 
@@ -36,6 +42,7 @@ namespace EliteMonitor.Exploration
         public Dictionary<string, long> ScanCounts = new Dictionary<string, long>();
         public Int64 BodyScanCount { get; set; }
         public Int64 TotalJournalEntries { get; set; }
+        public Int64 LastJournalEntryId { get; set; } = 0;
 
         public bool AutoComplete { get; set; }
         public string AutoCompleteSystemName { get; set; }
@@ -50,14 +57,15 @@ namespace EliteMonitor.Exploration
             this.ExpeditionID = Guid.NewGuid();
         }
 
-        public bool parseJournalEntry(Elite.JournalEntry je) => parseJournalEntry(je.Json);
-        public bool parseJournalEntry(string entry)
+        //public bool parseJournalEntry(Elite.JournalEntry je) => parseJournalEntry(je.Json);
+        public bool parseJournalEntry(JournalEntry entry)
         {
-            JObject json = JObject.Parse(entry);
-            string timestamp = json.GetValue("timestamp").ToString();
+            JObject json = JObject.Parse(entry.Json);
             this.TotalJournalEntries++;
             string eventName = json.GetValue("event").ToString();
+            this.LastJournalEntryId = entry.ID;
             if (!(new string[] { "FSDJump", "Scan" }).Contains(eventName)) { return false; }
+            string timestamp = json.GetValue("timestamp").ToString();
             switch (eventName)
             {
                 case "FSDJump":
@@ -67,9 +75,11 @@ namespace EliteMonitor.Exploration
                     this.FuelUsed += fuel;
                     this.TotalDistance += jumpDist;
                     this.AverageJumpDistance = (this.TotalDistance / (float)this.JumpCount);
-                    this.JumpCount++;
                     if (!this.SystemNames.Any(a => a.Timestamp.Equals(timestamp) && a.SystemName.Equals(systemName)))
+                    {
                         this.SystemNames.Add(new ExpeditionSystemData(timestamp, systemName));
+                        this.JumpCount++;
+                    }
                     if (this.IsExpeditionLoaded)
                     {
                         ExpeditionViewer.Instance.updateData();
@@ -90,18 +100,56 @@ namespace EliteMonitor.Exploration
                         bodyType = (terraformable ? "Terraformable " : "") + json.GetValue("PlanetClass").ToString().Replace("Sudarsky class", "Class");
 
                     }
-                    catch { bodyType = string.Format("Class {0} star", json.GetValue("StarType").ToString()); }
+                    catch { bodyType = MainForm.Instance.Database.GetCorrectStarClassName(json.GetValue("StarType").ToString()); }
                     BodyScanCount++;
                     if (ScanCounts.ContainsKey(bodyType))
                         ScanCounts[bodyType]++;
                     else
                         ScanCounts.Add(bodyType, 1);
                     if (this.IsExpeditionLoaded)
+                    {
                         ExpeditionViewer.Instance.updateScans();
+                        ExpeditionViewer.Instance.updateData();
+                    }
                     return false;
             }
             return true;
         }
 
+        public void OnSave()
+        {
+            this.Version = ExpeditionVersion;
+        }
+
+        public void OnLoad()
+        {
+            if (this.JumpCount > this.SystemNames.Count)
+            {
+                this.JumpCount = this.SystemNames.Count;
+            }
+
+            int version = 1;
+            if (this.Version < (version = 2))
+            {
+                Logger l = MainForm.Instance.journalParser.logger.createSubLogger("Expedition");
+                foreach (KeyValuePair<string, long> kvp in new Dictionary<string, long>(this.ScanCounts))
+                {
+                    if (!kvp.Key.Contains("star")) continue;
+                    string comp = MainForm.Instance.Database.GetCorrectStarClassName(kvp.Key.Split(' ')[1]);
+                    if (!comp.Equals(kvp.Key))
+                    {
+                        l.Log("Updating entry '{0}' in Expedition '{1}' [{2}] to '{3}'", kvp.Key, this.ExpeditionName, this.ExpeditionID.ToString(), comp);
+                        this.ScanCounts.Add(comp, kvp.Value);
+                        this.ScanCounts.Remove(kvp.Key);
+                    }
+                }
+            }
+            if (this.IsExpeditionLoaded)
+            {
+                ExpeditionViewer.Instance.updateData();
+                ExpeditionViewer.Instance.updateScans();
+                ExpeditionViewer.Instance.updateSystems();
+            }
+        }
     }
 }

@@ -1,9 +1,12 @@
 ﻿using EliteMonitor.Extensions;
+using EliteMonitor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +20,13 @@ namespace EliteMonitor.Exploration
         public static ExpeditionViewer Instance;
         public Expedition LoadedExpedition { get; private set; }
         private bool DontUpdateOnChangedEvent = false;
+        public List<string> landmarkSystems = new List<string>()
+        {
+            "Sagittarius A*",
+            "Colonia",
+            "Beagle Point",
+            "Great Annihilator"
+        };
 
         public ExpeditionViewer()
         {
@@ -39,6 +49,7 @@ namespace EliteMonitor.Exploration
             if (this.LoadedExpedition != null)
                 this.LoadedExpedition.IsExpeditionLoaded = false;
             this.LoadedExpedition = MainForm.Instance.journalParser.viewedCommander.Expeditions[guid];
+            this.LoadedExpedition.OnLoad();
             this.DontUpdateOnChangedEvent = true;
             this.comboBoxExpeditionPicker.SelectedIndex = this.comboBoxExpeditionPicker.Items.IndexOf(this.LoadedExpedition.ExpeditionName);
             this.DontUpdateOnChangedEvent = false;
@@ -75,9 +86,16 @@ namespace EliteMonitor.Exploration
             {
                 this.listViewSystemList.BeginUpdate();
                 this.listViewSystemList.Items.Clear();
-                List<string> systemNames = this.LoadedExpedition.SystemNames.Select(a => a.SystemName).ToList<string>();
+                /*List<string> systemNames = this.LoadedExpedition.SystemNames.Select(a => a.SystemName).ToList<string>();
                 foreach (string s in systemNames)
-                    this.listViewSystemList.Items.Add(s);
+                    this.listViewSystemList.Items.Add(s);*/
+                foreach (ExpeditionSystemData s in this.LoadedExpedition.SystemNames)
+                {
+                    ListViewItem lvi = new ListViewItem(new string[] { s.SystemName, s.Timestamp });
+                    if (this.landmarkSystems.Contains(s.SystemName) || this.LoadedExpedition.AutoCompleteSystemName.Equals(s.SystemName))
+                        lvi.BackColor = Color.LightGreen;
+                    this.listViewSystemList.Items.Add(lvi);
+                }
                 foreach (ColumnHeader column in this.listViewSystemList.Columns)
                     column.Width = -2;
                 this.listViewSystemList.EndUpdate();
@@ -98,7 +116,8 @@ namespace EliteMonitor.Exploration
                 this.listViewExpeditionStats.Items.Add(new ListViewItem(new string[] { "Fuel Used (t)", this.LoadedExpedition.FuelUsed.ToString("0,0.00") }));
                 this.listViewExpeditionStats.Items.Add(new ListViewItem());
                 this.listViewExpeditionStats.Items.Add(new ListViewItem(new string[] { "Scanned Body Count", string.Format("{0:n0}", this.LoadedExpedition.BodyScanCount) }));
-                this.listViewExpeditionStats.Items.Add(new ListViewItem(new string[] { "Total Journal Entry Count", string.Format("{0:n0}", this.LoadedExpedition.TotalJournalEntries) }));
+                Int64 totalJournalEntries = (this.LoadedExpedition.LastJournalEntryId > 0 ? this.LoadedExpedition.LastJournalEntryId - this.LoadedExpedition.ExpeditionStartingJournalEntryId : this.LoadedExpedition.TotalJournalEntries);
+                this.listViewExpeditionStats.Items.Add(new ListViewItem(new string[] { "Total Journal Entry Count", string.Format("{0:n0}", totalJournalEntries) }));
                 int icolumn = 0;
                 foreach (ColumnHeader column in this.listViewExpeditionStats.Columns)
                 {
@@ -123,7 +142,26 @@ namespace EliteMonitor.Exploration
 
         private void ExpeditionViewer_FormClosing(object sender, FormClosingEventArgs e)
         {
+            this.LoadedExpedition.OnSave();
             this.LoadedExpedition.IsExpeditionLoaded = false;
+        }
+
+        private void buttonExportSystems_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.DefaultExt = ".txt";
+            sfd.InitialDirectory = Utils.getApplicationEXEFolderPath();
+            sfd.FileName = Utils.CreateSafeFilename(string.Format("{0} Systems.txt", this.LoadedExpedition.ExpeditionName));
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = sfd.FileName;
+                Console.WriteLine(filePath);
+                using (StreamWriter sr = new StreamWriter(filePath))
+                    foreach (string s in this.LoadedExpedition.SystemNames.Select(a => a.SystemName))
+                        sr.WriteLine(s);
+                if (MessageBox.Show(string.Format("Would you like to open this file now?", filePath), "Export complete", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    Process.Start(filePath);
+            }
         }
     }
 }

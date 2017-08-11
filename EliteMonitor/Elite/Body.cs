@@ -9,11 +9,11 @@ namespace EliteMonitor.Elite
 {
     public class SystemCoordinate
     {
-        public float X { get; set; }
-        public float Y { get; set; }
-        public float Z { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Z { get; set; }
 
-        public SystemCoordinate(float X, float Y, float Z)
+        public SystemCoordinate(double X, double Y, double Z)
         {
             this.X = X;
             this.Y = Y;

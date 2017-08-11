@@ -60,7 +60,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.buttonClose = new System.Windows.Forms.Button();
             this.listViewSystemList = new System.Windows.Forms.ListView();
-            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnSystemName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.listViewScanCounts = new System.Windows.Forms.ListView();
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -68,6 +68,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.buttonDelete = new System.Windows.Forms.Button();
             this.buttonRename = new System.Windows.Forms.Button();
+            this.buttonExportSystems = new System.Windows.Forms.Button();
+            this.columnTimestamp = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -87,6 +89,8 @@
             this.listViewExpeditionStats.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2});
+            this.listViewExpeditionStats.Enabled = false;
+            this.listViewExpeditionStats.FullRowSelect = true;
             this.listViewExpeditionStats.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listViewExpeditionStats.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem1,
@@ -136,9 +140,14 @@
             // 
             // listViewSystemList
             // 
+            this.listViewSystemList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.listViewSystemList.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listViewSystemList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader3});
+            this.columnSystemName,
+            this.columnTimestamp});
+            this.listViewSystemList.FullRowSelect = true;
             this.listViewSystemList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listViewSystemList.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem9,
@@ -151,17 +160,21 @@
             listViewItem16});
             this.listViewSystemList.Location = new System.Drawing.Point(394, 31);
             this.listViewSystemList.Name = "listViewSystemList";
-            this.listViewSystemList.Size = new System.Drawing.Size(260, 582);
+            this.listViewSystemList.Size = new System.Drawing.Size(260, 553);
             this.listViewSystemList.TabIndex = 1;
             this.listViewSystemList.UseCompatibleStateImageBehavior = false;
             this.listViewSystemList.View = System.Windows.Forms.View.Details;
             // 
             // listViewScanCounts
             // 
+            this.listViewScanCounts.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.listViewScanCounts.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listViewScanCounts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader4,
             this.columnHeader5});
+            this.listViewScanCounts.FullRowSelect = true;
+            this.listViewScanCounts.GridLines = true;
             this.listViewScanCounts.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewScanCounts.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem17,
@@ -175,6 +188,7 @@
             this.listViewScanCounts.Location = new System.Drawing.Point(12, 249);
             this.listViewScanCounts.MultiSelect = false;
             this.listViewScanCounts.Name = "listViewScanCounts";
+            this.listViewScanCounts.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.listViewScanCounts.Size = new System.Drawing.Size(376, 364);
             this.listViewScanCounts.TabIndex = 1;
             this.listViewScanCounts.UseCompatibleStateImageBehavior = false;
@@ -184,6 +198,7 @@
             // 
             this.columnHeader4.DisplayIndex = 1;
             this.columnHeader4.Text = "Scan Count";
+            this.columnHeader4.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
             // columnHeader5
             // 
@@ -210,6 +225,7 @@
             // 
             // buttonDelete
             // 
+            this.buttonDelete.Enabled = false;
             this.buttonDelete.Location = new System.Drawing.Point(106, 39);
             this.buttonDelete.Name = "buttonDelete";
             this.buttonDelete.Size = new System.Drawing.Size(105, 23);
@@ -219,6 +235,7 @@
             // 
             // buttonRename
             // 
+            this.buttonRename.Enabled = false;
             this.buttonRename.Location = new System.Drawing.Point(267, 39);
             this.buttonRename.Name = "buttonRename";
             this.buttonRename.Size = new System.Drawing.Size(121, 23);
@@ -226,11 +243,24 @@
             this.buttonRename.Text = "Rename Expedition";
             this.buttonRename.UseVisualStyleBackColor = true;
             // 
+            // buttonExportSystems
+            // 
+            this.buttonExportSystems.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonExportSystems.Location = new System.Drawing.Point(394, 590);
+            this.buttonExportSystems.Name = "buttonExportSystems";
+            this.buttonExportSystems.Size = new System.Drawing.Size(260, 23);
+            this.buttonExportSystems.TabIndex = 8;
+            this.buttonExportSystems.Text = "Save System list to file";
+            this.buttonExportSystems.UseVisualStyleBackColor = true;
+            this.buttonExportSystems.Click += new System.EventHandler(this.buttonExportSystems_Click);
+            // 
             // ExpeditionViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(666, 642);
+            this.Controls.Add(this.buttonExportSystems);
             this.Controls.Add(this.buttonRename);
             this.Controls.Add(this.buttonDelete);
             this.Controls.Add(this.label3);
@@ -242,7 +272,8 @@
             this.Controls.Add(this.comboBoxExpeditionPicker);
             this.Controls.Add(this.groupBox1);
             this.Name = "ExpeditionViewer";
-            this.Text = "ExpeditionViewer";
+            this.ShowIcon = false;
+            this.Text = "Expedition Viewer";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExpeditionViewer_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -260,7 +291,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.Button buttonClose;
         private System.Windows.Forms.ListView listViewSystemList;
-        private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.ColumnHeader columnSystemName;
         private System.Windows.Forms.ListView listViewScanCounts;
         private System.Windows.Forms.ColumnHeader columnHeader4;
         private System.Windows.Forms.ColumnHeader columnHeader5;
@@ -268,5 +299,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button buttonDelete;
         private System.Windows.Forms.Button buttonRename;
+        private System.Windows.Forms.Button buttonExportSystems;
+        private System.Windows.Forms.ColumnHeader columnTimestamp;
     }
 }

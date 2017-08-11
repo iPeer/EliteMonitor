@@ -135,6 +135,11 @@ namespace EliteMonitor.Utilities
             string byteCountFile = fi.FullName.Replace(fi.Extension, ".eml");
             if (!File.Exists(byteCountFile))
             {
+                if (MessageBox.Show("There was an error while attempting to load commander data. EliteMonitor will need to generate the cache again from scratch.\nNote: If you have deleted or lost Journal files since the cache was generated, this will result in lost entries") == DialogResult.OK)
+                {
+                    MainForm.Instance.cacheController.clearCaches();
+                    MainForm.Instance.startNoCacheLoadThread();
+                }
                 throw new FileNotFoundException("No matching byte count file was found for file '" + filePath + "'");
             }
             long byteCount = 0L;
@@ -186,9 +191,40 @@ namespace EliteMonitor.Utilities
             return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
         }
 
+        public static string CreateSafeFilename(string v)
+        {
+            foreach (char c in Path.GetInvalidFileNameChars())
+                v.Replace(c, '_');
+            return v;
+        }
+
         public static double CalculateLyDistance(SystemCoordinate to, SystemCoordinate from)
         {
             return Math.Sqrt(Math.Pow((from.X - to.X), 2) + Math.Pow((from.Y - to.Y), 2) + Math.Pow((from.Z - to.Z), 2));
+        }
+
+        public static string GetLandmarkDistancesString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            Dictionary<string, SystemCoordinate> landmarkSystems = new Dictionary<string, SystemCoordinate>()
+            {
+                { "Sol", new SystemCoordinate(0, 0, 0) },
+                { "Great Annihilator", new SystemCoordinate(354.84375, -42.4375, 22997.21875) },
+                { "Sagittarius A*", new SystemCoordinate(25.21875, -20.90625, 25899.96875) },
+                { "Beagle Point", new SystemCoordinate(-1111.5625, -134.21875, 65269.75) },
+            };
+
+            foreach (KeyValuePair<string, SystemCoordinate> kvp in landmarkSystems)
+            {
+                Commander commander = MainForm.Instance.journalParser.viewedCommander;
+                if (commander == null) break;
+                if (commander.HasHomeSystem && kvp.Key.Equals(commander.HomeSystem.Name)) continue;
+                sb.AppendFormat("Distance from {0}: {1:n2} Ly\n", kvp.Key, CalculateLyDistance(kvp.Value, commander.CurrentSystemCoordinates));
+            }
+
+
+            return sb.ToString().TrimEnd();
         }
     }
 }

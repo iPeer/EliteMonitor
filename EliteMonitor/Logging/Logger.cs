@@ -119,7 +119,7 @@ namespace EliteMonitor.Logging
 
                 string @string = string.Empty;
                 if (this.alwaysPrefix)
-                    @string = String.Format("[{0}] {1}: [{3}] {4}", time, type, _msg, this.Name.ToUpper());
+                    @string = String.Format("[{0}] {1}: [{3}] {2}", time, type, _msg, this.Name.ToUpper());
                 else
                     @string = String.Format("[{0}] {1}: {2}", time, type, _msg);
 

@@ -71,7 +71,7 @@ namespace EliteMonitor.Elite
         }
     }
 
-    public class Commander
+    public class Commander : ISavable
     {
 
         //[JsonIgnore]
@@ -108,6 +108,8 @@ namespace EliteMonitor.Elite
             }
         }
         public bool isViewed { get; set; } = false;
+        [JsonIgnore]
+        public bool NeedsSaving { get; set; } = false;
         public string Name { get; set; }
         public long Credits { get; set; }
         public CommanderShip ShipData { get; set; }
@@ -207,15 +209,17 @@ namespace EliteMonitor.Elite
             return this;
         }
 
-        public Commander SetShip (string nV, string sI, string sN)
+        public Commander SetShip(string nV, string sI, string sN)
         {
             this.ShipData = new CommanderShip(nV, sI, sN);
+            this.setSaveRequired();
             return this;
         }
 
         public Commander SetShip(CommanderShip ship)
         {
             this.ShipData = ship;
+            this.setSaveRequired();
             return this;
         }
 
@@ -256,6 +260,7 @@ namespace EliteMonitor.Elite
             if (!this.DiscoveredBodies.Any(b => b.BodyName.Equals(bodyName))) {
                 this.DiscoveredBodies.Add(new BodyDiscovery(bodyName, gameTimestamp));
             }
+            this.setSaveRequired();
             return this;
         }
 
@@ -304,6 +309,7 @@ namespace EliteMonitor.Elite
         {
             this.Credits -= credits;
             this.lastCreditsChange = -credits;
+            this.setSaveRequired();
             return this;
         }
 
@@ -311,6 +317,7 @@ namespace EliteMonitor.Elite
         {
             this.Credits += credits;
             this.lastCreditsChange = credits;
+            this.setSaveRequired();
             return this;
         }
 
@@ -329,6 +336,7 @@ namespace EliteMonitor.Elite
                 this.Materials.Add(material, 0);
             if (this.Materials[material] < 0)
                 this.Materials[material] = 0;
+            this.setSaveRequired();
             return this;
         }
 
@@ -338,6 +346,7 @@ namespace EliteMonitor.Elite
                 this.Materials[material] += count;
             else
                 this.Materials.Add(material, count);
+            this.setSaveRequired();
             return this;
         }
 
@@ -404,6 +413,7 @@ namespace EliteMonitor.Elite
                     this.imperialProgress = 0;
                 }
             }
+            this.setSaveRequired();
             return this;
         }
 
@@ -414,8 +424,8 @@ namespace EliteMonitor.Elite
 
             m.InvokeIfRequired(() =>
             {
-                m.homeSystemTooltip.SetToolTip(m.commanderLabel, "Click to set or change home system.");
-                m.homeSystemTooltip.SetToolTip(m.commanderLocationLabel, "Click to set or change home system.");
+                //m.homeSystemTooltip.SetToolTip(m.commanderLabel, "Click to set or change home system.");
+                m.homeSystemTooltip.SetToolTip(m.commanderLocationLabel, /*"Click to set or change home system."*/Utils.GetLandmarkDistancesString());
             });
 
 
@@ -575,8 +585,14 @@ namespace EliteMonitor.Elite
                     if (!dontUpdateDialogDisplays)
                         this.updateDialogDisplays();
                     MainForm m = MainForm.Instance;
-                    m.eventList.InvokeIfRequired(() => m.eventList.Items.Insert(0, m.journalParser.getListViewEntryForEntry(je)));
+                    m.eventList.InvokeIfRequired(() =>
+                    {
+                        m.eventList.BeginUpdate();
+                        m.eventList.Items.Insert(0, m.journalParser.getListViewEntryForEntry(je));
+                        m.eventList.EndUpdate();
+                    });
                 }
+                this.setSaveRequired();
             }
 
             return this;
@@ -589,6 +605,7 @@ namespace EliteMonitor.Elite
                 this.Fleet[shipID].ShipData.ShipID = this.ShipData.ShipID = shipIdent;
                 this.Fleet[shipID].ShipData.ShipName = this.ShipData.ShipName = shipName;
                 //this.updateDialogDisplays();
+                this.setSaveRequired();
             }
         }
 
@@ -601,6 +618,7 @@ namespace EliteMonitor.Elite
                 this.Fleet[shipID] = sl;
             else
                 this.Fleet.Add(shipID, sl);
+            this.setSaveRequired();
         }
 
         /// <summary>
@@ -608,6 +626,7 @@ namespace EliteMonitor.Elite
         /// </summary>
         public void OnSave()
         {
+            this.NeedsSaving = false;
 
             MainForm m = MainForm.Instance;
 
@@ -699,7 +718,7 @@ namespace EliteMonitor.Elite
                 m.journalParser.logger.Log(messageText);
                 this.Expeditions = JsonConvert.DeserializeObject<Dictionary<Guid, Expedition>>(Utils.loadGZip(Path.Combine(this.saveDirectory, "expeditions.emj"), true));
 
-                messageText = String.Format("Applying post-load Journal entry patched for commander '{0}'", this.Name);
+                messageText = String.Format("Applying post-load Journal entry patches for commander '{0}'", this.Name);
                 m.InvokeIfRequired(() => m.appStatus.Text = messageText);
                 m.journalParser.logger.Log(messageText);
             }
@@ -776,6 +795,8 @@ namespace EliteMonitor.Elite
                 JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true, forcedCommander: c);
                 j.Data = nje.Data;
             }
+            if (cEntry > 0)
+                this.setSaveRequired();
             m.journalParser.logger.Log("{0} entries have been updated to version {1} for commander '{2}'", cEntry, patchVer, this.Name);
         }
 
@@ -791,7 +812,13 @@ namespace EliteMonitor.Elite
             this.HasHomeSystem = true;
             this.HomeSystem = system;
             this.updateDialogDisplays();
+            this.setSaveRequired();
             return this;
+        }
+
+        public void setSaveRequired()
+        {
+            this.NeedsSaving = true;
         }
     }
 }
