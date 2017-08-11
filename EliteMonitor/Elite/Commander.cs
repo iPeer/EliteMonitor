@@ -204,7 +204,7 @@ namespace EliteMonitor.Elite
         public Commander setSaveDirectory()
         {
 
-            this.saveDirectory = Path.Combine(MainForm.Instance.cacheController.cachePath, this.Name);
+            this.saveDirectory = Path.Combine(MainForm.Instance.cacheController.commanderDataPath, this.Name);
 
             return this;
         }
@@ -323,7 +323,7 @@ namespace EliteMonitor.Elite
 
         public DirectoryInfo CreateSaveDirectory()
         {
-            string mainCacheDir = MainForm.Instance.cacheController.cachePath;
+            string mainCacheDir = MainForm.Instance.cacheController.commanderDataPath;
             string fullCommanderPath = Path.Combine(mainCacheDir, $"./{this.Name}/");
             return Directory.CreateDirectory(fullCommanderPath);
         }

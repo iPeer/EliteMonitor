@@ -21,6 +21,8 @@ namespace EliteMonitor.Caching
         /// <summary>
         /// The path for the directory in which caches are saved.
         /// </summary>
+        public string commanderDataPath { get; private set; }
+        [Obsolete]
         public string cachePath { get; private set; }
         /// <summary>
         /// The path for the directory in which HUD presets are saved
@@ -48,21 +50,28 @@ namespace EliteMonitor.Caching
 
         public CacheController(MainForm main)
         {
+#pragma warning disable CS0612 // Type or member is obsolete
             this.mainForm = main;
             this.logger = new Logging.Logger("CacheController");
+            this.commanderDataPath = Path.Combine(Utils.getApplicationEXEFolderPath(), "Commander_Data");
             this.cachePath = Path.Combine(Utils.getApplicationEXEFolderPath(), "cache");
             this.dataPath = Path.Combine(Utils.getApplicationEXEFolderPath(), "data");
             this.hudPresetPath = Path.Combine(Utils.getApplicationEXEFolderPath(), "huds");
-            this.journalLengthCache = Path.Combine(this.cachePath, "journal.emc");
+            this.journalLengthCache = Path.Combine(this.commanderDataPath, "journal.emc");
             this.bodyDataCache = Path.Combine(this.dataPath, "bodies.sqlite");
             this.systemDataCache = Path.Combine(this.dataPath, "systems.sqlite");
             this.rawSystemDataCache = Path.Combine(this.dataPath, "raw_systems.csv");
             this.rawBodyDataCache = Path.Combine(this.dataPath, "raw_bodies.jsonl");
             //this.journalEntryCache = Path.Combine(this.cachePath, "journal_entries.emc");
             //this.materialCache = Path.Combine(this.cachePath, "material.emc");
-            this.commandersPath = Path.Combine(this.cachePath, "commanders.emc");
-            if (!Directory.Exists(this.cachePath))
-                Directory.CreateDirectory(this.cachePath);
+            this.commandersPath = Path.Combine(this.commanderDataPath, "commanders.emc");
+            if (Directory.Exists(this.cachePath))
+            {
+                Directory.Move(this.cachePath, this.commanderDataPath);
+            }
+#pragma warning restore CS0612 // Type or member is obsolete
+            if (!Directory.Exists(this.commanderDataPath))
+                Directory.CreateDirectory(this.commanderDataPath);
             if (!Directory.Exists(this.dataPath))
                 Directory.CreateDirectory(this.dataPath);
             if (!Directory.Exists(this.hudPresetPath))
@@ -245,7 +254,7 @@ namespace EliteMonitor.Caching
                 this._journalLengthCache = JsonConvert.DeserializeObject<Dictionary<string, long>>(sr.ReadToEnd());
             }
 
-            DirectoryInfo di = new DirectoryInfo(this.cachePath);
+            DirectoryInfo di = new DirectoryInfo(this.commanderDataPath);
             if (di.GetDirectories().Length > 0)
             {
                 MainForm m = MainForm.Instance;
@@ -309,7 +318,7 @@ namespace EliteMonitor.Caching
                 this.logger.Log("Loading commander data...");
                 foreach (KeyValuePair<string, Tuple<string, long>> kvp in new Dictionary<string, Tuple<string, long>>(this.commanderCaches))
                 {
-                    string commanderPath = Path.Combine(this.cachePath, kvp.Value.Item1);
+                    string commanderPath = Path.Combine(this.commanderDataPath, kvp.Value.Item1);
                     if (!File.Exists(commanderPath))
                     {
                         this.logger.Log("Commander cache file '{0}' doesn't exist. Treating caches as invalid.", LogLevel.ERR, commanderPath);
@@ -376,10 +385,10 @@ namespace EliteMonitor.Caching
 
         internal void clearCaches()
         {
-            string[] files = Directory.GetFiles(this.cachePath);
+            string[] files = Directory.GetFiles(this.commanderDataPath);
             foreach (string f in files)
                 File.Delete(f);
-            foreach (string d in Directory.GetDirectories(this.cachePath))
+            foreach (string d in Directory.GetDirectories(this.commanderDataPath))
                 Directory.Delete(d, true);
             mainForm.InvokeIfRequired(() =>
             {
