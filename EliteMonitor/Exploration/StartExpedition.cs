@@ -41,9 +41,11 @@ namespace EliteMonitor
             if (string.IsNullOrEmpty(eName) || string.IsNullOrWhiteSpace(eName)) { MessageBox.Show("You must enter a valid name for this expedition.", "Name Required"); return; }
             Expedition x = new Expedition();
             x.ExpeditionStartingJournalEntryId = this.StartingJournalEntry.ID;
+            x.SystemNames.Add(new ExpeditionSystemData(this.StartingJournalEntry.Timestamp, JObject.Parse(this.StartingJournalEntry.Json).GetValue("StarSystem").ToString()));
             x.ExpeditionName = eName;
             x.AutoComplete = this.checkBoxAutoComplete.Checked;
             x.AutoCompleteSystemName = this.textBoxStartPoint.Text;
+            MainForm.Instance.journalParser.viewedCommander.setSaveRequired();
 
             this.Close();
             ScanJournalDialog sjd = new ScanJournalDialog();

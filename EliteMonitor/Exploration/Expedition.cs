@@ -27,9 +27,9 @@ namespace EliteMonitor.Exploration
     public class Expedition : ISavable
     {
 
-        public static int ExpeditionVersion = 2;
+        public static int ExpeditionVersion = 3;
 
-        public int Version { get; set; } = 1;
+        public int Version { get; set; } = ExpeditionVersion;
         public Guid ExpeditionID { get; set; }
         public string ExpeditionName { get; set; } = "New Expedition";
 
@@ -123,13 +123,12 @@ namespace EliteMonitor.Exploration
 
         public void OnLoad()
         {
-            if (this.JumpCount > this.SystemNames.Count)
+            if (this.JumpCount > this.SystemNames.Count - 1)
             {
-                this.JumpCount = this.SystemNames.Count;
+                this.JumpCount = this.SystemNames.Count - 1;
             }
 
-            int version = 1;
-            if (this.Version < (version = 2))
+            if (this.Version < 2) // Update star class names
             {
                 Logger l = MainForm.Instance.journalParser.logger.createSubLogger("Expedition");
                 foreach (KeyValuePair<string, long> kvp in new Dictionary<string, long>(this.ScanCounts))
@@ -143,7 +142,26 @@ namespace EliteMonitor.Exploration
                         this.ScanCounts.Remove(kvp.Key);
                     }
                 }
+                MainForm.Instance.journalParser.viewedCommander.NeedsSaving = true;
             }
+
+            if (this.Version < 3) // Insert expedition start point
+            {
+                JournalEntry je = MainForm.Instance.journalParser.viewedCommander.JournalEntries.Find(a => a.ID == this.ExpeditionStartingJournalEntryId);
+                if (je != null)
+                {
+                    JObject json = JObject.Parse(je.Json);
+                    string ts = json.GetValue("timestamp").ToString();
+                    string ss = json.GetValue("StarSystem").ToString();
+                    //if (!this.SystemNames[0].SystemName.Equals(ss) && this.SystemNames[0].Timestamp.Equals(ts))
+                    //{
+                        ExpeditionSystemData esd = new ExpeditionSystemData(ts, ss);
+                        this.SystemNames.Insert(0, esd);
+                        MainForm.Instance.journalParser.viewedCommander.NeedsSaving = true;
+                    //}
+                }
+            }
+
             if (this.IsExpeditionLoaded)
             {
                 ExpeditionViewer.Instance.updateData();

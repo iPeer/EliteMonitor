@@ -828,6 +828,8 @@ namespace EliteMonitor
             ExpeditionViewer ev = new ExpeditionViewer();
             if (this.journalParser.viewedCommander.HasActiveExpedition)
                 ev.SetActiveExpedition(this.journalParser.viewedCommander.ActiveExpeditionGuid);
+            else
+                ev.SetActiveExpedition(this.journalParser.viewedCommander.Expeditions.Last().Key);
             ev.Show();
         }
     }
