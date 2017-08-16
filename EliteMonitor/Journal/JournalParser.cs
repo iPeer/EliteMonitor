@@ -15,6 +15,7 @@ using EliteMonitor.Elite;
 using System.Windows.Forms;
 using System.Diagnostics;
 using EliteMonitor.Logging;
+using System.Media;
 
 namespace EliteMonitor.Journal
 {
@@ -561,6 +562,108 @@ namespace EliteMonitor.Journal
                     eventText = string.Format("Turned in exploration data for {0:n0} systems totalling {1:n0} credits", systemCount, totalCredits);
                     return new JournalEntry(timestamp, @event, eventText, j);
                 //{ "timestamp":"2017-07-18T23:09:40Z", "event":"SellExplorationData", "Systems":[ "Byua Euq ES-W b1-14", "Byua Euq DF-H b10-16", "Traikaae QD-T b58-16", "Trifid Sector NI-S b4-17", "Trifid Sector DH-K a9-3", "Drojia MA-P a115-3", "Lagoon Sector WW-H a11-4", "Trifid Sector RD-R a5-7", "Trifid Sector TL-B a14-11" ], "Discovered":[  ], "BaseValue":32871, "Bonus":0 }
+                case "Scan": // We have multi-line journal entries now, let's abuse the heck out of them!
+                             // Planet: { "timestamp":"2017-08-11T17:46:06Z", "event":"Scan", "BodyName":"Synookio OP-K b10-2 A 6", "DistanceFromArrivalLS":107.124298, "TidalLock":false, "TerraformState":"", "PlanetClass":"Water world", "Atmosphere":"thick argon rich atmosphere", "AtmosphereType":"ArgonRich", "AtmosphereComposition":[ { "Name":"Nitrogen", "Percent":96.575706 }, { "Name":"Argon", "Percent":2.764786 }, { "Name":"CarbonDioxide", "Percent":0.626221 } ], "Volcanism":"major water magma volcanism", "MassEM":1.340439, "Radius":8274225.000000, "SurfaceGravity":7.803720, "SurfaceTemperature":353.210022, "SurfacePressure":80850008.000000, "Landable":false, "SemiMajorAxis":32115288064.000000, "Eccentricity":0.000016, "OrbitalInclination":-0.000502, "Periapsis":229.444931, "OrbitalPeriod":5383803.500000, "RotationPeriod":-5384022.000000, "AxialTilt":-1.736953 }
+                             // Star: { "timestamp":"2017-08-11T17:46:29Z", "event":"Scan", "BodyName":"Synookio OP-K b10-2 A", "DistanceFromArrivalLS":0.000000, "StarType":"M", "StellarMass":0.339844, "Radius":329793632.000000, "AbsoluteMagnitude":9.631912, "Age_MY":12912, "SurfaceTemperature":2778.000000, "SemiMajorAxis":1099630116864.000000, "Eccentricity":0.045134, "OrbitalInclination":34.794361, "Periapsis":77.388535, "OrbitalPeriod":4289333248.000000, "RotationPeriod":142939.281250, "AxialTilt":0.000000, "Rings":[ { "Name":"Synookio OP-K b10-2 A A Belt", "RingClass":"eRingClass_MetalRich", "MassMT":6.794e+09, "InnerRad":6.0099e+08, "OuterRad":1.684e+09 } ] }
+                    string bodyName = j.GetValue("BodyName").ToString();
+                    long orbitalPeriod = 0;
+                    try
+                    {
+                        orbitalPeriod = j.GetValue("OrbitalPeriod").ToObject<long>();
+                    }
+                    catch { }
+                    long rotationPeriod = j.GetValue("RotationPeriod").ToObject<long>();
+                    bool retroRotate = false;
+                    bool retroOrbit = false;
+                    if (rotationPeriod < 0)
+                        retroRotate = true;
+                    if (orbitalPeriod < 0)
+                        retroOrbit = true;
+                    double distanceFromArrival = j.GetValue("DistanceFromArrivalLS").ToObject<double>();
+                    bool isStar = false;
+                    string bodyClass = string.Empty;
+                    try
+                    {
+                        bodyClass = j.GetValue("PlanetClass").ToString().Replace("Sudarsky class", "Class");
+                    }
+                    catch
+                    {
+                        bodyClass = mainForm.Database.GetCorrectStarClassName(j.GetValue("StarType").ToString());
+                        isStar = true;
+                    }
+                    Dictionary<string, double> materials = new Dictionary<string, double>();
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLineFormatted("Body: {0}", bodyName);
+                    sb.AppendLineFormatted("Type: {0}", bodyClass);
+                    sb.AppendLineFormatted("Distance from arrival: {0:n2}", distanceFromArrival);
+                    List<string> orbitCriteria = new List<string>();
+                    List<string> rotationCriteria = new List<string>();
+                    if (retroOrbit)
+                        orbitCriteria.Add("retrograde");
+                    if (retroRotate)
+                        rotationCriteria.Add("retrograde");
+                    if (!isStar)
+                    {
+                        if (Properties.Settings.Default.SoundsEnabled)
+                        {
+                            string soundFile = string.Empty;
+                            switch (bodyClass)
+                            {
+                                case "Earthlike world":
+                                    soundFile = "elw_scanned.wav";
+                                    break;
+                            }
+                            Utils.PlaySound(soundFile);
+                        }
+                        bool tidallyLocked = j.GetValue("TidalLock").ToObject<bool>();
+                        if (tidallyLocked)
+                            rotationCriteria.Add("tidally locked");
+                        bool landable = j.GetValue("Landable").ToObject<bool>();
+                        sb.AppendLineFormatted("Is Landable: {0}", landable ? "yes" : "no");
+                        if (landable)
+                        {
+                            try // Who the actual fuck decides it's a good idea to change the format of something randomly IN A GOD DAMNED API?!
+                            {
+                                foreach (JProperty jp in j.GetValue("Materials"))
+                                {
+                                    materials.Add(jp.Name, jp.Value.ToObject<double>());
+                                }
+                            }
+                            catch
+                            {
+                                List<DSSScanBodyMaterialsData> frontier = j.GetValue("Materials").ToObject<List<DSSScanBodyMaterialsData>>();
+                                foreach (DSSScanBodyMaterialsData fuck in frontier) // Fuckin' Frontier, man.
+                                    materials.Add(fuck.Name, fuck.Percent);
+                            }
+                        }
+                        bool terraformable = j.GetValue("TerraformState").ToString().Equals("Terraformable");
+                        sb.AppendLineFormatted("Terraformable: {0}", terraformable ? "yes" : "no");
+                        sb.AppendLineFormatted("Earth masses: {0:n3}", j.GetValue("MassEM").ToObject<double>());
+                        sb.AppendLineFormatted("Gravity: {0:n2} g", j.GetValue("SurfaceGravity").ToObject<double>());
+                    }
+                    if (orbitalPeriod > 0)
+                        sb.AppendLineFormatted("Orbital period: {0}{1}", Utils.formatTimeFromGalacticSeconds(Math.Abs(orbitalPeriod)), orbitCriteria.Count > 0 ? string.Format(" ({0})", string.Join(", ", orbitCriteria.ToArray())) : "");
+                    sb.AppendLineFormatted("Rotational period: {0}{1}", Utils.formatTimeFromGalacticSeconds(Math.Abs(rotationPeriod)), rotationCriteria.Count > 0 ? string.Format(" ({0})", string.Join(", ", rotationCriteria.ToArray())) : "");
+                    int tempKelvin = j.GetValue("SurfaceTemperature").ToObject<int>();
+                    double tempCelsius = tempKelvin - 273.15;
+                    double tempFahrenheit = (tempKelvin * 9 / 5) - 459.67;
+                    sb.AppendLineFormatted("Surface temperature: {0} K ({1:n2} C / {2:n2} F)", tempKelvin, tempCelsius, tempFahrenheit);
+                    sb.AppendLineFormatted("Radius: {0:n3} km", j.GetValue("Radius").ToObject<double>() / 1000d);
+                    if (isStar)
+                    {
+                        sb.AppendLineFormatted("Solar masses: {0:n5}", j.GetValue("StellarMass").ToObject<double>());
+                        sb.AppendLineFormatted("Age: {0:n0} million years", j.GetValue("Age_MY").ToObject<int>());
+                    }
+                    if (materials.Count > 0)
+                    {
+                        sb.AppendLine();
+                        foreach (KeyValuePair<string, double> kvp in materials)
+                            sb.AppendLineFormatted("{0}: {1:n2}%", kvp.Key.CapitaliseFirst(), kvp.Value);
+                    }
+                    return new JournalEntry(timestamp, @event, sb.ToString().Trim(), j);
+                case "Friends":
+                    string status = j.GetValue("Status").ToString();
+                    return new JournalEntry(timestamp, @event, string.Format("CMDR {0} has {1} {2}.", j.GetValue("Name").ToString(), status.Equals("Offline") ? "gone" : "come", status.Equals("Offline") ? "offline" : "online"), j);
                 default:
                     return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
             }
@@ -708,7 +811,7 @@ namespace EliteMonitor.Journal
             }*/
             this.viewedCommander = c;
             List<JournalEntry> _entries = c.JournalEntries;
-            List<ListViewItem> entries = new List<ListViewItem>();
+            List<DataGridViewRow> entries = new List<DataGridViewRow>();
             int x = 0;
             int lastPercent = 0;
             DateTime timeStarted = DateTime.Now;
@@ -728,7 +831,7 @@ namespace EliteMonitor.Journal
 
                 /*if (Properties.Settings.Default.showJournalUpdateStatus && (x++ == 1 || x % 100 == 0 || x == _entries.Count))
                     mainForm.appStatus.Text = $"Processing Journal entry {String.Format("{0:n0}", x)} of {String.Format("{0:n0}", _entries.Count)}";*/
-                ListViewItem lvi = getListViewEntryForEntry(j);
+                DataGridViewRow lvi = getListViewEntryForEntry(j);
                 entries.Add(lvi);
             }
             mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = String.Format("Finalising commander data for '{0}'", c.Name));
@@ -737,13 +840,23 @@ namespace EliteMonitor.Journal
             mainForm.eventList.InvokeIfRequired(() =>
             {
                 mainForm.eventList.BeginUpdate();
-                mainForm.eventList.Items.Clear();
-                mainForm.eventList.Items.AddRange(entries.ToArray());
-                foreach (ColumnHeader ch in mainForm.eventList.Columns)
+                mainForm.eventList.Rows.Clear();
+                mainForm.eventList.Rows.AddRange(entries.ToArray());
+                /*mainForm.eventList.AutoSize = true;
+                mainForm.eventList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCellsExceptHeader;*/
+                /*mainForm.eventList.DataSource = c.JournalEntries;
+                mainForm.eventList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+                mainForm.eventList.AutoSize = true;*/
+                /*int _x = 0;
+                foreach (DataGridViewRow d in entries)
+                {
+                    if (_x++ >= 1000) break;
+                    mainForm.eventList.Rows.Insert(0, d);
+                }*/
+                /*foreach (DataGridViewColumn ch in mainForm.eventList.Columns)
                 {
                     ch.Width = -2;
-                }
-
+                }*/
                 mainForm.eventList.EndUpdate();
             });
             c.updateDialogDisplays(this.mainForm);
@@ -768,23 +881,40 @@ namespace EliteMonitor.Journal
             mainForm.buttonExpeditions.InvokeIfRequired(() => mainForm.buttonExpeditions.Enabled = true);
         }
 
-        public ListViewItem getListViewEntryForEntry(JournalEntry j)
+        public DataGridViewRow getListViewEntryForEntry(JournalEntry j)
         {
-            ListViewItem lvi = new ListViewItem(new string[] { j.Timestamp, j.Event, j.Data, j.Notes });
-            lvi.ToolTipText = j.Json;
+            /*string dataString = j.Data;
+            if (dataString.Length > Utils.LIST_VIEW_MAX_STRING_LENGTH)
+            {
+                string hoverString = "[HOVER FOR FULL INFO] ";
+                dataString = string.Format("{0}{1}...", hoverString, j.Data.Substring(0, (Utils.LIST_VIEW_MAX_STRING_LENGTH - hoverString.Length) - 3));
+            }*/
+            DataGridViewRow lvi = (DataGridViewRow)mainForm.eventList.RowTemplate.Clone();
+            lvi.CreateCells(mainForm.eventList, j.Timestamp, j.Event, j.Data, j.Notes);
+            //lvi.ToolTipText = j.Json;
             if (!j.isKnown)
             {
-                lvi.BackColor = Color.Pink;
+                lvi.DefaultCellStyle.BackColor = Color.Pink;
+                lvi.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
                 //lvi.SubItems[3].Text = "UNKNOWN EVENT";
+            }
+            else
+            {
+                lvi.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+                int h = TextRenderer.MeasureText(j.Data, lvi.DefaultCellStyle.Font).Height - 22;
+                if (h > 22)
+                    lvi.Height = h;
             }
             if (Properties.Settings.Default.enableEntryHighlighting)
             {
                 if (j.Event.Equals("LoadGame"))
-                    lvi.BackColor = Color.LightGreen;
+                    lvi.DefaultCellStyle.BackColor = Color.LightGreen;
                 else if (j.Event.Equals("SendText") || j.Event.Equals("ReceiveText"))
-                    lvi.BackColor = Color.LightGoldenrodYellow;
+                    lvi.DefaultCellStyle.BackColor = Color.LightGoldenrodYellow;
                 else if (j.Event.Equals("FSDJump") || j.Event.Equals("StartJump"))
-                    lvi.BackColor = Color.LightGray;
+                    lvi.DefaultCellStyle.BackColor = Color.LightGray;
+                else if (j.Event.Equals("Friends"))
+                    lvi.DefaultCellStyle.BackColor = Color.PeachPuff;
             }
             return lvi;
         }

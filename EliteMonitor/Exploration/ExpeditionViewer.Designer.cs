@@ -61,15 +61,18 @@
             this.buttonClose = new System.Windows.Forms.Button();
             this.listViewSystemList = new System.Windows.Forms.ListView();
             this.columnSystemName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnTimestamp = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.listViewScanCounts = new System.Windows.Forms.ListView();
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.buttonDelete = new System.Windows.Forms.Button();
             this.buttonRename = new System.Windows.Forms.Button();
             this.buttonExportSystems = new System.Windows.Forms.Button();
-            this.columnTimestamp = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.label4 = new System.Windows.Forms.Label();
+            this.labelDataWorth = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -130,9 +133,9 @@
             // buttonClose
             // 
             this.buttonClose.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.buttonClose.Location = new System.Drawing.Point(0, 619);
+            this.buttonClose.Location = new System.Drawing.Point(0, 675);
             this.buttonClose.Name = "buttonClose";
-            this.buttonClose.Size = new System.Drawing.Size(666, 23);
+            this.buttonClose.Size = new System.Drawing.Size(732, 23);
             this.buttonClose.TabIndex = 3;
             this.buttonClose.Text = "Close";
             this.buttonClose.UseVisualStyleBackColor = true;
@@ -160,7 +163,7 @@
             listViewItem16});
             this.listViewSystemList.Location = new System.Drawing.Point(394, 31);
             this.listViewSystemList.Name = "listViewSystemList";
-            this.listViewSystemList.Size = new System.Drawing.Size(260, 553);
+            this.listViewSystemList.Size = new System.Drawing.Size(326, 609);
             this.listViewSystemList.TabIndex = 1;
             this.listViewSystemList.UseCompatibleStateImageBehavior = false;
             this.listViewSystemList.View = System.Windows.Forms.View.Details;
@@ -172,7 +175,8 @@
             this.listViewScanCounts.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listViewScanCounts.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader4,
-            this.columnHeader5});
+            this.columnHeader5,
+            this.columnHeader3});
             this.listViewScanCounts.FullRowSelect = true;
             this.listViewScanCounts.GridLines = true;
             this.listViewScanCounts.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
@@ -185,11 +189,11 @@
             listViewItem22,
             listViewItem23,
             listViewItem24});
-            this.listViewScanCounts.Location = new System.Drawing.Point(12, 249);
+            this.listViewScanCounts.Location = new System.Drawing.Point(12, 272);
             this.listViewScanCounts.MultiSelect = false;
             this.listViewScanCounts.Name = "listViewScanCounts";
             this.listViewScanCounts.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.listViewScanCounts.Size = new System.Drawing.Size(376, 364);
+            this.listViewScanCounts.Size = new System.Drawing.Size(376, 397);
             this.listViewScanCounts.TabIndex = 1;
             this.listViewScanCounts.UseCompatibleStateImageBehavior = false;
             this.listViewScanCounts.View = System.Windows.Forms.View.Details;
@@ -205,6 +209,10 @@
             this.columnHeader5.DisplayIndex = 0;
             this.columnHeader5.Text = "Body Type";
             // 
+            // columnHeader3
+            // 
+            this.columnHeader3.Text = "Estimated value";
+            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -217,7 +225,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 233);
+            this.label3.Location = new System.Drawing.Point(9, 256);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(95, 13);
             this.label3.TabIndex = 5;
@@ -247,19 +255,38 @@
             // 
             this.buttonExportSystems.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonExportSystems.Location = new System.Drawing.Point(394, 590);
+            this.buttonExportSystems.Location = new System.Drawing.Point(394, 646);
             this.buttonExportSystems.Name = "buttonExportSystems";
-            this.buttonExportSystems.Size = new System.Drawing.Size(260, 23);
+            this.buttonExportSystems.Size = new System.Drawing.Size(326, 23);
             this.buttonExportSystems.TabIndex = 8;
             this.buttonExportSystems.Text = "Save System list to file";
             this.buttonExportSystems.UseVisualStyleBackColor = true;
             this.buttonExportSystems.Click += new System.EventHandler(this.buttonExportSystems_Click);
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(9, 233);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(85, 13);
+            this.label4.TabIndex = 9;
+            this.label4.Text = "Estimated value:";
+            // 
+            // labelDataWorth
+            // 
+            this.labelDataWorth.Location = new System.Drawing.Point(100, 233);
+            this.labelDataWorth.Name = "labelDataWorth";
+            this.labelDataWorth.Size = new System.Drawing.Size(288, 13);
+            this.labelDataWorth.TabIndex = 10;
+            this.labelDataWorth.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // ExpeditionViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(666, 642);
+            this.ClientSize = new System.Drawing.Size(732, 698);
+            this.Controls.Add(this.labelDataWorth);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.buttonExportSystems);
             this.Controls.Add(this.buttonRename);
             this.Controls.Add(this.buttonDelete);
@@ -271,6 +298,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.comboBoxExpeditionPicker);
             this.Controls.Add(this.groupBox1);
+            this.MinimumSize = new System.Drawing.Size(748, 737);
             this.Name = "ExpeditionViewer";
             this.ShowIcon = false;
             this.Text = "Expedition Viewer";
@@ -301,5 +329,8 @@
         private System.Windows.Forms.Button buttonRename;
         private System.Windows.Forms.Button buttonExportSystems;
         private System.Windows.Forms.ColumnHeader columnTimestamp;
+        private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.Label label4;
+        public System.Windows.Forms.Label labelDataWorth;
     }
 }

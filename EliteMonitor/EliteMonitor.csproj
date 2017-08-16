@@ -144,6 +144,7 @@
       <DependentUpon>ScanJournalDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\ControlExtensions.cs" />
+    <Compile Include="Extensions\DataGridViewExtensions.cs" />
     <Compile Include="Extensions\JsonExtensions.cs" />
     <Compile Include="Extensions\ListViewExtensions.cs" />
     <Compile Include="Extensions\StringBuilderExtensions.cs" />

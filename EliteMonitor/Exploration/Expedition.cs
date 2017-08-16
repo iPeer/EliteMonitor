@@ -27,7 +27,7 @@ namespace EliteMonitor.Exploration
     public class Expedition : ISavable
     {
 
-        public static int ExpeditionVersion = 3;
+        public static int ExpeditionVersion = 4;
 
         public int Version { get; set; } = ExpeditionVersion;
         public Guid ExpeditionID { get; set; }
@@ -88,7 +88,7 @@ namespace EliteMonitor.Exploration
                     if (this.AutoComplete && this.AutoCompleteSystemName.Equals(systemName))
                     {
                         this.IsCompleted = true;
-                        MainForm.Instance.journalParser.viewedCommander.HasActiveExpedition = false;
+                        (MainForm.Instance.journalParser.viewedCommander == null ? MainForm.Instance.journalParser.activeCommander : MainForm.Instance.journalParser.viewedCommander).HasActiveExpedition = false;
                         return true;
                     }
                     return false;
@@ -128,7 +128,7 @@ namespace EliteMonitor.Exploration
                 this.JumpCount = this.SystemNames.Count - 1;
             }
 
-            if (this.Version < 2) // Update star class names
+            if (this.Version < 2 || this.Version < 4) // Update star class names
             {
                 Logger l = MainForm.Instance.journalParser.logger.createSubLogger("Expedition");
                 foreach (KeyValuePair<string, long> kvp in new Dictionary<string, long>(this.ScanCounts))
@@ -161,6 +161,8 @@ namespace EliteMonitor.Exploration
                     //}
                 }
             }
+
+            this.Version = ExpeditionVersion;
 
             if (this.IsExpeditionLoaded)
             {

@@ -588,7 +588,7 @@ namespace EliteMonitor.Elite
                     m.eventList.InvokeIfRequired(() =>
                     {
                         m.eventList.BeginUpdate();
-                        m.eventList.Items.Insert(0, m.journalParser.getListViewEntryForEntry(je));
+                        m.eventList.Rows.Insert(0, m.journalParser.getListViewEntryForEntry(je));
                         m.eventList.EndUpdate();
                     });
                 }

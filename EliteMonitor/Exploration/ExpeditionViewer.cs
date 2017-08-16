@@ -20,6 +20,7 @@ namespace EliteMonitor.Exploration
         public static ExpeditionViewer Instance;
         public Expedition LoadedExpedition { get; private set; }
         private bool DontUpdateOnChangedEvent = false;
+        public long CurrentEstimatedValue = 0;
         public List<string> landmarkSystems = new List<string>()
         {
             "Sagittarius A*",
@@ -46,6 +47,7 @@ namespace EliteMonitor.Exploration
 
         public void SetActiveExpedition(Guid guid)
         {
+            this.CurrentEstimatedValue = 0;
             if (this.LoadedExpedition != null)
                 this.LoadedExpedition.IsExpeditionLoaded = false;
             this.LoadedExpedition = MainForm.Instance.journalParser.viewedCommander.Expeditions[guid];
@@ -67,7 +69,28 @@ namespace EliteMonitor.Exploration
                 this.listViewScanCounts.BeginUpdate();
                 this.listViewScanCounts.Items.Clear();
                 foreach (KeyValuePair<string, long> kvp in ordered)
-                    this.listViewScanCounts.Items.Add(new ListViewItem(new string[] { string.Format("{0:n0}", kvp.Value), kvp.Key }));
+                {
+                    string lookupName = kvp.Key;
+                    bool isStar = false;
+                    if (lookupName.EndsWithIgnoreCase("class star"))
+                    {
+                        lookupName = kvp.Key.Split(' ')[0];
+                        isStar = true;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            lookupName = MainForm.Instance.Database.StarClassNames.First(a => a.Value.Equals(kvp.Key)).Key;
+                            isStar = true;
+                        }
+                        catch { }
+                    }
+                    int initialValue = MainForm.Instance.Database.getBodyPayout(lookupName, isStar);
+                    long finalValue = initialValue * kvp.Value;
+                    this.CurrentEstimatedValue += finalValue;
+                    this.listViewScanCounts.Items.Add(new ListViewItem(new string[] { string.Format("{0:n0}", kvp.Value), kvp.Key, string.Format("{0:n0}", finalValue) }));
+                }
                 //int icolumn = 0;
                 foreach (ColumnHeader column in this.listViewScanCounts.Columns)
                 {
@@ -76,6 +99,7 @@ namespace EliteMonitor.Exploration
                     /*if (icolumn++ == 0)
                         column.TextAlign = HorizontalAlignment.Right;*/
                 }
+                this.labelDataWorth.Text = string.Format("{0:n0} Cr", this.CurrentEstimatedValue);
                 this.listViewScanCounts.EndUpdate();
             });
         }
@@ -162,6 +186,11 @@ namespace EliteMonitor.Exploration
                 if (MessageBox.Show(string.Format("Would you like to open this file now?", filePath), "Export complete", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     Process.Start(filePath);
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(string.Format("{0}, {1}", this.Width, this.Height));
         }
     }
 }

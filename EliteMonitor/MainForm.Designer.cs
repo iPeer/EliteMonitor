@@ -78,11 +78,6 @@
             this.commanderLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.combatRankImage = new System.Windows.Forms.PictureBox();
-            this.eventList = new System.Windows.Forms.ListView();
-            this.TimeStamp = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.EventName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.EventData = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.AdditionalData = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.journalContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
@@ -98,6 +93,18 @@
             this.homeSystemTooltip = new System.Windows.Forms.ToolTip(this.components);
             this.buttonDiscoveredBodies = new System.Windows.Forms.Button();
             this.buttonExpeditions = new System.Windows.Forms.Button();
+            this.eventList = new System.Windows.Forms.DataGridView();
+            this.addTestRowsToDataViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.sOUNDSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.waterWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.terraformableWaterWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.earthlikeWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ammoniaWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tHMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
@@ -108,6 +115,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.tradeRankImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.combatRankImage)).BeginInit();
             this.journalContextMenu.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.eventList)).BeginInit();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -282,7 +290,9 @@
             this.testBodiesDatabaseReadToolStripMenuItem,
             this.showDistanceFromSolToNetoToolStripMenuItem,
             this.displayCommanderCountDataToolStripMenuItem,
-            this.listViewedCommanderFirstDiscoveriesToolStripMenuItem});
+            this.listViewedCommanderFirstDiscoveriesToolStripMenuItem,
+            this.addTestRowsToDataViewToolStripMenuItem,
+            this.sOUNDSToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -630,45 +640,6 @@
             this.combatRankImage.TabIndex = 3;
             this.combatRankImage.TabStop = false;
             // 
-            // eventList
-            // 
-            this.eventList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.eventList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.TimeStamp,
-            this.EventName,
-            this.EventData,
-            this.AdditionalData});
-            this.eventList.ContextMenuStrip = this.journalContextMenu;
-            this.eventList.FullRowSelect = true;
-            this.eventList.GridLines = true;
-            this.eventList.LabelWrap = false;
-            this.eventList.Location = new System.Drawing.Point(12, 277);
-            this.eventList.MultiSelect = false;
-            this.eventList.Name = "eventList";
-            this.eventList.Size = new System.Drawing.Size(942, 361);
-            this.eventList.TabIndex = 3;
-            this.eventList.UseCompatibleStateImageBehavior = false;
-            this.eventList.View = System.Windows.Forms.View.Details;
-            this.eventList.MouseMove += new System.Windows.Forms.MouseEventHandler(this.eventList_MouseMove);
-            // 
-            // TimeStamp
-            // 
-            this.TimeStamp.Text = "Timestamp";
-            // 
-            // EventName
-            // 
-            this.EventName.Text = "Event";
-            // 
-            // EventData
-            // 
-            this.EventData.Text = "Event Data";
-            // 
-            // AdditionalData
-            // 
-            this.AdditionalData.Text = "Additional Data";
-            // 
             // journalContextMenu
             // 
             this.journalContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -776,6 +747,7 @@
             // 
             // buttonDiscoveredBodies
             // 
+            this.buttonDiscoveredBodies.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonDiscoveredBodies.Enabled = false;
             this.buttonDiscoveredBodies.Location = new System.Drawing.Point(811, 248);
             this.buttonDiscoveredBodies.Name = "buttonDiscoveredBodies";
@@ -787,6 +759,7 @@
             // 
             // buttonExpeditions
             // 
+            this.buttonExpeditions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonExpeditions.Enabled = false;
             this.buttonExpeditions.Location = new System.Drawing.Point(668, 248);
             this.buttonExpeditions.Name = "buttonExpeditions";
@@ -796,18 +769,126 @@
             this.buttonExpeditions.UseVisualStyleBackColor = true;
             this.buttonExpeditions.Click += new System.EventHandler(this.buttonExpeditions_Click);
             // 
+            // eventList
+            // 
+            this.eventList.AllowUserToResizeRows = false;
+            this.eventList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.eventList.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.eventList.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.eventList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.eventList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Column1,
+            this.Column2,
+            this.Column3});
+            this.eventList.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
+            this.eventList.Location = new System.Drawing.Point(12, 277);
+            this.eventList.MultiSelect = false;
+            this.eventList.Name = "eventList";
+            this.eventList.RowHeadersVisible = false;
+            this.eventList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.eventList.Size = new System.Drawing.Size(936, 361);
+            this.eventList.TabIndex = 10;
+            this.eventList.MouseClick += new System.Windows.Forms.MouseEventHandler(this.eventList_MouseClick);
+            // 
+            // addTestRowsToDataViewToolStripMenuItem
+            // 
+            this.addTestRowsToDataViewToolStripMenuItem.Name = "addTestRowsToDataViewToolStripMenuItem";
+            this.addTestRowsToDataViewToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.addTestRowsToDataViewToolStripMenuItem.Text = "Add test rows to data view";
+            this.addTestRowsToDataViewToolStripMenuItem.Click += new System.EventHandler(this.addTestRowsToDataViewToolStripMenuItem_Click);
+            // 
+            // Column1
+            // 
+            this.Column1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.Column1.HeaderText = "Timestamp";
+            this.Column1.Name = "Column1";
+            this.Column1.ReadOnly = true;
+            this.Column1.Width = 111;
+            // 
+            // Column2
+            // 
+            this.Column2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.Column2.HeaderText = "Event";
+            this.Column2.Name = "Column2";
+            this.Column2.ReadOnly = true;
+            this.Column2.Width = 129;
+            // 
+            // Column3
+            // 
+            this.Column3.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Column3.HeaderText = "Data";
+            this.Column3.Name = "Column3";
+            this.Column3.ReadOnly = true;
+            // 
+            // sOUNDSToolStripMenuItem
+            // 
+            this.sOUNDSToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.waterWorldToolStripMenuItem,
+            this.terraformableWaterWorldToolStripMenuItem,
+            this.earthlikeWorldToolStripMenuItem,
+            this.ammoniaWorldToolStripMenuItem,
+            this.hMCToolStripMenuItem,
+            this.tHMCToolStripMenuItem});
+            this.sOUNDSToolStripMenuItem.Name = "sOUNDSToolStripMenuItem";
+            this.sOUNDSToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.sOUNDSToolStripMenuItem.Text = "SOUNDS";
+            // 
+            // waterWorldToolStripMenuItem
+            // 
+            this.waterWorldToolStripMenuItem.Name = "waterWorldToolStripMenuItem";
+            this.waterWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.waterWorldToolStripMenuItem.Text = "Water World";
+            this.waterWorldToolStripMenuItem.Click += new System.EventHandler(this.waterWorldToolStripMenuItem_Click);
+            // 
+            // terraformableWaterWorldToolStripMenuItem
+            // 
+            this.terraformableWaterWorldToolStripMenuItem.Name = "terraformableWaterWorldToolStripMenuItem";
+            this.terraformableWaterWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.terraformableWaterWorldToolStripMenuItem.Text = "Terraformable Water World";
+            this.terraformableWaterWorldToolStripMenuItem.Click += new System.EventHandler(this.terraformableWaterWorldToolStripMenuItem_Click);
+            // 
+            // earthlikeWorldToolStripMenuItem
+            // 
+            this.earthlikeWorldToolStripMenuItem.Name = "earthlikeWorldToolStripMenuItem";
+            this.earthlikeWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.earthlikeWorldToolStripMenuItem.Text = "Earthlike World";
+            this.earthlikeWorldToolStripMenuItem.Click += new System.EventHandler(this.earthlikeWorldToolStripMenuItem_Click);
+            // 
+            // ammoniaWorldToolStripMenuItem
+            // 
+            this.ammoniaWorldToolStripMenuItem.Name = "ammoniaWorldToolStripMenuItem";
+            this.ammoniaWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.ammoniaWorldToolStripMenuItem.Text = "Ammonia World";
+            this.ammoniaWorldToolStripMenuItem.Click += new System.EventHandler(this.ammoniaWorldToolStripMenuItem_Click);
+            // 
+            // hMCToolStripMenuItem
+            // 
+            this.hMCToolStripMenuItem.Name = "hMCToolStripMenuItem";
+            this.hMCToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.hMCToolStripMenuItem.Text = "HMC";
+            this.hMCToolStripMenuItem.Click += new System.EventHandler(this.hMCToolStripMenuItem_Click);
+            // 
+            // tHMCToolStripMenuItem
+            // 
+            this.tHMCToolStripMenuItem.Name = "tHMCToolStripMenuItem";
+            this.tHMCToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.tHMCToolStripMenuItem.Text = "THMC";
+            this.tHMCToolStripMenuItem.Click += new System.EventHandler(this.tHMCToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(966, 663);
+            this.Controls.Add(this.eventList);
             this.Controls.Add(this.buttonExpeditions);
             this.Controls.Add(this.buttonDiscoveredBodies);
             this.Controls.Add(this.comboCommanderList);
             this.Controls.Add(this.pickCommanderLabel);
             this.Controls.Add(this.eventFilterDropdown);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.eventList);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.commanderBox);
@@ -832,6 +913,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.tradeRankImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.combatRankImage)).EndInit();
             this.journalContextMenu.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.eventList)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -865,10 +947,6 @@
         public System.Windows.Forms.ProgressBar tradeRankProgress;
         public System.Windows.Forms.Label tradeRankName;
         public System.Windows.Forms.PictureBox tradeRankImage;
-        private System.Windows.Forms.ColumnHeader TimeStamp;
-        private System.Windows.Forms.ColumnHeader EventName;
-        private System.Windows.Forms.ColumnHeader EventData;
-        private System.Windows.Forms.ColumnHeader AdditionalData;
         public System.Windows.Forms.ProgressBar empireRankProgress;
         public System.Windows.Forms.Label empireRankName;
         public System.Windows.Forms.PictureBox empireRankImage;
@@ -876,7 +954,6 @@
         public System.Windows.Forms.Label fedRankName;
         public System.Windows.Forms.PictureBox federationRankImage;
         public System.Windows.Forms.ToolStripStatusLabel appStatus;
-        public System.Windows.Forms.ListView eventList;
         private System.Windows.Forms.Label label2;
         public System.Windows.Forms.ComboBox eventFilterDropdown;
         private System.Windows.Forms.ToolStripMenuItem cachingToolStripMenuItem;
@@ -908,6 +985,18 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
         public System.Windows.Forms.Button buttonExpeditions;
+        public System.Windows.Forms.DataGridView eventList;
+        private System.Windows.Forms.ToolStripMenuItem addTestRowsToDataViewToolStripMenuItem;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
+        private System.Windows.Forms.ToolStripMenuItem sOUNDSToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem waterWorldToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem terraformableWaterWorldToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem earthlikeWorldToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ammoniaWorldToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hMCToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tHMCToolStripMenuItem;
     }
 }
 

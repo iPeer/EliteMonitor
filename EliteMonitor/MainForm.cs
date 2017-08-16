@@ -28,8 +28,9 @@ namespace EliteMonitor
     public partial class MainForm : Form
     {
 
-        private ListViewItem.ListViewSubItem _lastListViewItem;
+        private /*ListViewItem.ListViewSubItem*/int _lastListViewItem;
         private Point _lastToolTipMousePos;
+        private int _lastRightClickedRowIndex = -1;
         public static MainForm Instance { get; private set; }
         private Dictionary<string, Color> defaultColours = new Dictionary<string, Color>();
         public JournalParser journalParser;
@@ -46,6 +47,13 @@ namespace EliteMonitor
         {
             this.logger = new Logger("Main");
             InitializeComponent();
+            this.eventList.DoubleBuffered(true);
+            this.eventList.MouseWheel += eventList_MouseWheel;
+            this.eventList.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            this.eventList.Columns.Cast<DataGridViewColumn>().ToList().ForEach(f => f.SortMode = DataGridViewColumnSortMode.NotSortable);
+
+            this.WindowState = (FormWindowState)Properties.Settings.Default.WindowState;
+
             ExpeditionButton.Click += startExpedition_Click;
 #if !DEBUG
             dEBUGToolStripMenuItem.Visible = false;
@@ -192,7 +200,7 @@ namespace EliteMonitor
                 lvi.ToolTipText = json;
                 this.eventList.InvokeIfRequired(() =>
                 {
-                    eventList.Items.Insert(0, lvi);
+                    eventList.Rows.Insert(0, lvi);
                     foreach (ColumnHeader ch in eventList.Columns)
                     {
 
@@ -205,15 +213,22 @@ namespace EliteMonitor
 
         private void eventList_MouseMove(object sender, MouseEventArgs e)
         {
-            ListViewHitTestInfo ht = eventList.HitTest(e.Location);
+            DataGridView.HitTestInfo ht = eventList.HitTest(e.Location.X, e.Location.Y);
             if (ht != null)
             {
-                if (/*_lastToolTipMousePos != e.Location || */(ht.SubItem != null && ht.SubItem != _lastListViewItem))
+                if (/*_lastToolTipMousePos != e.Location || */ht.RowIndex != _lastListViewItem)
                 {
-                    _lastListViewItem = ht.SubItem;
-                    _lastToolTipMousePos = e.Location;
-                    string tipText = /*ht.Item.SubItems[2].Text;*/ht.Item.ToolTipText;
-                    toolTip.Show(tipText, (ListView)sender, e.Location.X + 10, e.Location.Y + 10, 5000);
+                    if (toolTip.Active)
+                        toolTip.Hide(eventList);
+                    JournalEntry je = journalParser.viewedCommander.JournalEntries[(journalParser.viewedCommander.JournalEntries.Count - 1) - ht.RowIndex];
+                    if (je.Data.Length > Utils.LIST_VIEW_MAX_STRING_LENGTH)
+                    {
+                        toolTip.ReshowDelay = 0;
+                        _lastListViewItem = ht.RowIndex;
+                        _lastToolTipMousePos = e.Location;
+                        string tipText = /*ht.Item.SubItems[2].Text;ht.Item.ToolTipText*/je.Data;
+                        toolTip.Show(tipText, (DataGridView)sender, e.Location.X + 10, e.Location.Y + 10, /*Int32.MaxValue*/5000);
+                    }
                 }
             }
         }
@@ -226,32 +241,35 @@ namespace EliteMonitor
 
         private void eventFilterDropdown_SelectionChangeCommitted(object sender, EventArgs e)
         {
+
             string selected = eventFilterDropdown.SelectedItem.ToString();
 
             if (selected.Equals(this.lastHighlight)) return;
 
-            IEnumerable<ListViewItem> items = this.eventList.Items.Cast<ListViewItem>();
+            IEnumerable<DataGridViewRow> items = this.eventList.Rows.Cast<DataGridViewRow>();
+            Console.WriteLine(string.Format("{0}", items.First().Cells[1].Value.ToString()));
             if (!this.lastHighlight.Equals(string.Empty))
             {
-                List<ListViewItem> toRemove = items.Where(a => a.SubItems[1].Text.Equals(this.lastHighlight)).ToList();
-                foreach (ListViewItem i in toRemove)
+                List<DataGridViewRow> toRemove = items.Where(a => a.Cells[1].Value != null && a.Cells[1].Value.ToString().Equals(this.lastHighlight)).ToList();
+                foreach (DataGridViewRow i in toRemove)
                 {
-                    if (defaultColours.ContainsKey(i.SubItems[1].Text))
-                        i.BackColor = defaultColours[i.SubItems[1].Text];
+                    if (defaultColours.ContainsKey(i.Cells[1].Value.ToString()))
+                        i.DefaultCellStyle.BackColor = defaultColours[i.Cells[1].Value.ToString()];
                 }
                 this.lastHighlight = selected;
             }
 
-            List<ListViewItem> toAdd = items.Where(a => a.SubItems[1].Text.Equals(selected)).ToList();
+            List<DataGridViewRow> toAdd = items.Where(a => a.Cells[1].Value != null && a.Cells[1].Value.ToString().Equals(selected)).ToList();
             if (toAdd.Count > 0)
             {
-                foreach (ListViewItem i in toAdd)
+                foreach (DataGridViewRow i in toAdd)
                 {
-                    if (!defaultColours.ContainsKey(i.SubItems[1].Text))
-                        defaultColours.Add(i.SubItems[1].Text, i.BackColor);
-                    i.BackColor = Color.LightBlue;
+                    if (!defaultColours.ContainsKey(i.Cells[1].Value.ToString()))
+                        defaultColours.Add(i.Cells[1].Value.ToString(), i.DefaultCellStyle.BackColor);
+                    i.DefaultCellStyle.BackColor = Color.LightBlue;
                 }
-                this.eventList.EnsureVisible(this.eventList.Items.IndexOf(toAdd.First()));
+                this.lastHighlight = selected;
+                this.eventList.FirstDisplayedScrollingRowIndex = this.eventList.Rows.IndexOf(toAdd.First());
             }
 
             /*foreach (ListViewItem i in eventList.Items)
@@ -306,7 +324,7 @@ namespace EliteMonitor
         {
             if (MessageBox.Show("Are you sure you want to reload all Journal entries? This might take a while.", "Confirm reload", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                eventList.Items.Clear();
+                eventList.Rows.Clear();
                 cacheController.loadCaches();
             }
         }
@@ -335,6 +353,8 @@ namespace EliteMonitor
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             this.Hide();
+            Properties.Settings.Default.WindowState = (int)this.WindowState;
+            Properties.Settings.Default.Save();
             cacheController.saveAllCaches();
         }
 
@@ -740,41 +760,36 @@ namespace EliteMonitor
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e) // Copy timestamp
         {
-            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
-            Clipboard.SetText(lvi.SubItems[0].Text);
+            Clipboard.SetText(this.eventList.Rows[this._lastRightClickedRowIndex].Cells[0].Value.ToString());
         }
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e) // Copy event
         {
-            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
-            Clipboard.SetText(lvi.SubItems[1].Text);
+            Clipboard.SetText(this.eventList.Rows[this._lastRightClickedRowIndex].Cells[1].Value.ToString());
         }
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e) // Copy data
         {
-            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
-            Clipboard.SetText(lvi.SubItems[2].Text);
+            Clipboard.SetText(this.eventList.Rows[this._lastRightClickedRowIndex].Cells[2].Value.ToString());
         }
 
         private void toolStripMenuItem4_Click(object sender, EventArgs e) // Copy notes
         {
-            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
-            Clipboard.SetText(lvi.SubItems[3].Text);
+            Clipboard.SetText(this.eventList.Rows[this._lastRightClickedRowIndex].Cells[3].Value.ToString());
         }
 
         private void toolStripMenuItem5_Click(object sender, EventArgs e) // Copy JSON
         {
-            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
-            int itemIndex = lvi.Index + 1;
-            JournalEntry je = this.journalParser.viewedCommander.JournalEntries[this.journalParser.viewedCommander.JournalEntries.Count - itemIndex];
+            //Console.WriteLine(string.Format("--> {0} / {1} / {2}", this.journalParser.viewedCommander.JournalEntries.Count - this._lastRightClickedRowIndex, this.journalParser.viewedCommander.JournalEntries.Count, this._lastRightClickedRowIndex));
+            JournalEntry je = this.journalParser.viewedCommander.JournalEntries[this.journalParser.viewedCommander.JournalEntries.Count - this._lastRightClickedRowIndex - 1];
             Clipboard.SetText(je.Json);
         }
 
         private void journalContextMenu_Opening(object sender, CancelEventArgs e)
         {
-            if (this.eventList.Items.Count == 0) { e.Cancel = true; return; } // Fix for crash if user right clicks event list before it's initialized (or if the commander has no journal entries)
-            ListViewItem lvi = this.eventList.SelectedItems[0]; // We can only select one item as per the list view's control properties
-            if ((new string[] { "FSDJump", /*"Scan", */"Location", "Docked" }).Contains(lvi.SubItems[1].Text))
+            if (this.eventList.Rows.Count == 0) { e.Cancel = true; return; } // Fix for crash if user right clicks event list before it's initialized (or if the commander has no journal entries)
+            DataGridViewRow lvi = this.eventList.Rows[this._lastRightClickedRowIndex];
+            if ((new string[] { "FSDJump", /*"Scan", */"Location", "Docked" }).Contains(lvi.Cells[1].Value.ToString()))
             {
                 if (/*!this.journalParser.viewedCommander.HasActiveExpedition && */!this.journalContextMenu.Items.Contains(ExpeditionButton))
                 {
@@ -811,10 +826,10 @@ namespace EliteMonitor
 
         private void startExpedition_Click(object s, EventArgs _e/*, ListViewItem lvi*/)
         {
-            ListViewItem lvi = this.eventList.SelectedItems[0];
-            Console.WriteLine(string.Format("---!> {0}", lvi.Index));
-            JournalEntry je = this.journalParser.viewedCommander.JournalEntries[this.journalParser.viewedCommander.JournalEntries.Count - (lvi.Index + 1)];
+            Console.WriteLine("B");
+            JournalEntry je = this.journalParser.viewedCommander.JournalEntries[this.journalParser.viewedCommander.JournalEntries.Count - (this._lastRightClickedRowIndex + 1)];
             JObject json = JObject.Parse(je.Json);
+            Console.WriteLine(json.GetValue("event"));
             if (!(new string[] { "FSDJump", "Location", "Docked" }).Contains(json.GetValue("event").ToString())) { return; } // Failsafe
             StartExpedition se = new StartExpedition();
             se.StartingJournalEntry = je;
@@ -831,6 +846,85 @@ namespace EliteMonitor
             else
                 ev.SetActiveExpedition(this.journalParser.viewedCommander.Expeditions.Last().Key);
             ev.Show();
+        }
+
+        private void addTestRowsToDataViewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int x = 0;
+            while (x++ < 100)
+            {
+                string rowStr = string.Format("Row {0}", x);
+                this.eventList.Rows.Insert(0, rowStr);
+            }
+        }
+
+        private void eventList_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                int rowIndex = this.eventList.HitTest(e.Location.X, e.Location.Y).RowIndex;
+                this._lastRightClickedRowIndex = rowIndex;
+                this.eventList.Rows[rowIndex].Selected = true;
+                journalContextMenu.Show(this.eventList, e.Location);
+            }
+        }
+
+        private void eventList_MouseWheel(object sender, MouseEventArgs e)
+        {
+            HandledMouseEventArgs _e = (HandledMouseEventArgs)e;
+            _e.Handled = true;
+            int currentTopRow = this.eventList.FirstDisplayedScrollingRowIndex;
+            if (e.Delta < 0) // Scrolled down on wheel
+            {
+                if (this.eventList.Rows[this.eventList.Rows.GetLastRow(DataGridViewElementStates.None)].Displayed)
+                    return;
+                this.eventList.FirstDisplayedScrollingRowIndex = currentTopRow + /*(int)Math.Floor((double)Math.Abs(e.Delta) / 120)*/Properties.Settings.Default.rowsToScroll;
+            }
+            else // Scrolled up
+            {
+                int newIndex = currentTopRow - /*(int)Math.Floor((double)e.Delta / 120)*/Properties.Settings.Default.rowsToScroll;
+                if (newIndex < 0)
+                    return;
+                this.eventList.FirstDisplayedScrollingRowIndex = newIndex;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewColumn d in this.eventList.Columns)
+            {
+                Console.WriteLine(d.Width);
+            }
+        }
+
+        private void waterWorldToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Utils.PlaySound("ww_scanned.wav");
+        }
+
+        private void terraformableWaterWorldToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Utils.PlaySound("tww_scanned.wav");
+        }
+
+        private void earthlikeWorldToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Utils.PlaySound("elw_scanned.wav");
+        }
+
+        private void ammoniaWorldToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Utils.PlaySound("aw_scanned.wav");
+        }
+
+        private void hMCToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Utils.PlaySound("hmc_scanned.wav");
+        }
+
+        private void tHMCToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Utils.PlaySound("thmc_scanned.wav");
         }
     }
 }

@@ -39,6 +39,7 @@ namespace EliteMonitor.Caching
         public string systemDataCache { get; private set; }
         public string rawBodyDataCache { get; private set; }
         public string rawSystemDataCache { get; private set; }
+        public string soundsPath { get; private set; }
         public Logger logger;
         public Dictionary<string, long> _journalLengthCache = new Dictionary<string, long>();
 
@@ -57,6 +58,7 @@ namespace EliteMonitor.Caching
             this.cachePath = Path.Combine(Utils.getApplicationEXEFolderPath(), "cache");
             this.dataPath = Path.Combine(Utils.getApplicationEXEFolderPath(), "data");
             this.hudPresetPath = Path.Combine(Utils.getApplicationEXEFolderPath(), "huds");
+            this.soundsPath = Path.Combine(Utils.getApplicationEXEFolderPath(), "sounds");
             this.journalLengthCache = Path.Combine(this.commanderDataPath, "journal.emc");
             this.bodyDataCache = Path.Combine(this.dataPath, "bodies.sqlite");
             this.systemDataCache = Path.Combine(this.dataPath, "systems.sqlite");
@@ -284,6 +286,8 @@ namespace EliteMonitor.Caching
                         }
                     }
                     this.logger.Log("Number of unknown journal events updated: {0}/{1}", updated, unknownEvents.Count);
+                    if (updated > 0)
+                        c.setSaveRequired();
                     if (!m.comboCommanderList.Items.Contains(c.Name))
                         m.comboCommanderList.InvokeIfRequired(() => m.comboCommanderList.Items.Add(c.Name));
                     if (c.isViewed)
@@ -393,7 +397,7 @@ namespace EliteMonitor.Caching
             mainForm.InvokeIfRequired(() =>
             {
                 mainForm.journalParser.commanders.Clear();
-                mainForm.eventList.Items.Clear();
+                mainForm.eventList.Rows.Clear();
                 mainForm.comboCommanderList.Items.Clear();
                 mainForm.eventFilterDropdown.Items.Clear();
             });

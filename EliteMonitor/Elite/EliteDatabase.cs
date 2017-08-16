@@ -37,6 +37,7 @@ namespace EliteMonitor.Elite
         };
         public Dictionary<string, string> StarClassNames = new Dictionary<string, string>()
         {
+            { "H", "Black hole" },
             { "N", "Neutron star" },
             { "AeBe", "Herbig Ae/Be star" },
             { "DA", "White Dwarf" },
@@ -224,7 +225,7 @@ namespace EliteMonitor.Elite
                 return this.StarClassNames[starClass];
             }
             else
-                return string.Format("Class {0} star", starClass);
+                return string.Format("{0} class star", starClass);
         }
 
         public BasicSystem getSystemDataFromEDSMAPI(string text)
@@ -269,6 +270,125 @@ namespace EliteMonitor.Elite
             BasicSystem bs = new BasicSystem(name, systemID, sc);
             return bs;
 
+        }
+
+        public int getBodyPayout(string bodyType, bool isStar)
+        {
+            if (isStar)
+            {
+                switch (bodyType)
+                {
+                    case "SupermassiveBlackHole": // Sagittarius A*
+                        return 628318;
+                    // White dwarves
+                    case "D":
+                    case "DA":
+                    case "DAB":
+                    case "DAO":
+                    case "DAZ":
+                    case "DAV":
+                    case "DB":
+                    case "DBZ":
+                    case "DBV":
+                    case "DO":
+                    case "DOV":
+                    case "DQ":
+                    case "DC":
+                    case "DCV":
+                    case "DX":
+                        return 35000;
+                    case "N": // Neutron
+                        return 55000;
+                    case "H": // Black hole
+                        return 60000;
+                    case "AeBe": // Herbig Ae/Be
+                        return 3000;
+                    // Carbon stars
+                    case "C":
+                    case "C-N":
+                    case "CN":
+                    case "C-J":
+                    case "CJ":
+                        return 2930;
+                    // Wolf-Rayet
+                    case "W":
+                    case "WC":
+                    case "WO":
+                    case "WNC":
+                    case "WN":
+                        return 2930;
+                    case "L": // Brown Dwarf, episode 1
+                        return 2890;
+                    case "TTS": // T Tauri
+                        return 2900;
+                    case "Y": // Brown dwarf, episode 2
+                        return 2880;
+                    case "O":
+                        return 6140;
+                    case "B":
+                        return 3000;
+                    case "A":
+                        return 2950;
+                    case "F":
+                        return 2930;
+                    case "K":
+                        return 2920;
+                    case "G":
+                        return 2920;
+                    case "M":
+                        return 2900;
+                    default: // Some mystery class we've never seen before :O thargoids.jpg
+                        return 3120;
+                }
+            }
+            else
+            {
+                // hold on to your butts!
+                bodyType = bodyType.Replace("Sudarsky class", "Class");
+                switch (bodyType)
+                {
+                    case "High metal content body":
+                        return 34310;
+                    case "Terraformable High metal content body":
+                        return 412250;
+                    case "Water world":
+                        return 301410;
+                    case "Terraformable Water world":
+                        return 694970;
+                    case "Ammonia world":
+                        return 230200;
+                    case "Earthlike body":
+                        return 627890;
+                    case "Metal rich body":
+                        return 65000;
+                    case "Rocky body":
+                        return 930;
+                    case "Terraformable Rocky body":
+                        return 181100;
+                    case "Icy body":
+                        return 1250;
+                    case "Water giant": // No idea if this is actually their designation.
+                        return 1820;
+                    // Gas giants
+                    case "Class I gas giant":
+                        return 7000;
+                    case "Class II gas giant":
+                        return 53670;
+                    case "Class III gas giant":
+                        return 2690;
+                    case "Class IV gas giant":
+                        return 2800;
+                    case "Class V gas giant":
+                        return 2100;
+                    case "Gas giant with ammonia based life":
+                        return 1720;
+                    case "Helium rich gas giant": // Again, no idea if this is their actual designation
+                        return 2100;
+
+                    default:
+                        return 0;
+                }
+            }
         }
 
     }

@@ -26,6 +26,13 @@ namespace EliteMonitor.Elite
         }
 
     }
+
+    public class DSSScanBodyMaterialsData // What a trainwreck of a name that is
+    {
+        public string Name { get; set; }
+        public double Percent { get; set; }
+    }
+
     public class Body
     {
 

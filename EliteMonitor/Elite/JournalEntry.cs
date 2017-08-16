@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,10 +14,15 @@ namespace EliteMonitor.Elite
 
         public string Timestamp { get; set; }
         public string Event { get; set; }
+        [DisplayName("Event Data")]
         public string Data { get; set; }
+        [Browsable(false)]
         public string Json { get; set; }
+        [DisplayName("Additional Data")]
         public string Notes { get; set; }
+        [Browsable(false)]
         public bool isKnown { get; set; } = true;
+        [Browsable(false)]
         public long ID { get; set; }
 
         [JsonConstructor]

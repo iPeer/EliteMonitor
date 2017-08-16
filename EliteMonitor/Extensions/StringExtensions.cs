@@ -74,5 +74,24 @@ namespace EliteMonitor.Extensions
         {
             return String.Join(separator, strings);
         }
+
+        public static string CapitaliseFirst(this string s)
+        {
+            return char.ToUpper(s[0]) + s.Substring(1);
+        }
+
+        public static string JoinWithDifferingLast(this string[] strings, string deliminator, string lastDeliminator = " and ")
+        {
+            int x = strings.Length;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < strings.Length; i++)
+            {
+                string delim = deliminator;
+                if (i == x - 1)
+                    delim = lastDeliminator;
+                sb.Append(string.Format("{0}{1}", (i > 0 ? delim : ""), strings[i]));
+            }
+            return sb.ToString();
+        }
     }
 }

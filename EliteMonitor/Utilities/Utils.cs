@@ -10,11 +10,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using EliteMonitor.Elite;
+using System.Media;
 
 namespace EliteMonitor.Utilities
 {
     public class Utils
     {
+
+        public const int LIST_VIEW_MAX_STRING_LENGTH = 259;
+
         public static string getAssemblyBuildTime()
         {
             AssemblyBuildTime att = (AssemblyBuildTime)Assembly.GetExecutingAssembly().GetCustomAttribute(typeof(AssemblyBuildTime));
@@ -71,6 +75,37 @@ namespace EliteMonitor.Utilities
             }
             
             return t+(t.Length == 2 ? "s" : "");
+        }
+
+        public static string formatTimeFromGalacticSeconds(double time)
+        {
+            double seconds = Math.Floor(time % 60);
+            double minutes = Math.Floor((time % 3600) / 60);
+            double hours = Math.Floor(time / 3600);
+            double days = Math.Floor(hours / 24);
+            hours -= Math.Floor(days * 24);
+
+            double years = Math.Floor(days / 365);
+            days -= Math.Floor(years * 365);
+
+            double weeks = Math.Floor(days / 7);
+            days -= Math.Floor(weeks * 7);
+
+            List<string> elements = new List<string>();
+
+            if (years > 0)
+                elements.Add(string.Format("{0:n0} {1}", years, years == 1 ? "year" : "years"));
+            if (weeks > 0)
+                elements.Add(string.Format("{0:n0} {1}", weeks, weeks == 1 ? "week" : "weeks"));
+            if (days > 0)
+                elements.Add(string.Format("{0:n0} {1}", days, days == 1 ? "day" : "days"));
+            if (hours > 0)
+                elements.Add(string.Format("{0:n0} {1}", hours, hours == 1 ? "hour" : "hours"));
+            if (minutes > 0)
+                elements.Add(string.Format("{0:n0} {1}", minutes, minutes == 1 ? "minute" : "minutes"));
+            if (seconds > 0)
+                elements.Add(string.Format("{0:n0} {1}", seconds, seconds == 1 ? "second" : "seconds"));
+            return elements.ToArray().JoinWithDifferingLast(", ");
         }
 
         public static long saveDataFile(string fileName, string filePath, string data, string fileExtension = ".emj", bool compressed = true)
@@ -225,6 +260,17 @@ namespace EliteMonitor.Utilities
 
 
             return sb.ToString().TrimEnd();
+        }
+
+        internal static void PlaySound(string soundFile)
+        {
+            SoundPlayer sp = new SoundPlayer();
+            string soundPath = Path.Combine(MainForm.Instance.cacheController.soundsPath, soundFile);
+            if (File.Exists(soundPath))
+            {
+                sp.SoundLocation = Path.Combine(MainForm.Instance.cacheController.soundsPath, soundFile);
+                sp.Play();
+            }
         }
     }
 }
