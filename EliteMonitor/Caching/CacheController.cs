@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.Serialization;
+using EliteMonitor.Journal;
 
 namespace EliteMonitor.Caching
 {
@@ -115,7 +116,9 @@ namespace EliteMonitor.Caching
                 this.logger.Log("{0} file(s) failed verification.", failed);
                 if (failed > 0)
                 {
-                    List<string> newEntries = new List<string>();
+                    //List<string> newEntries = new List<string>();
+                    //List<Tuple<string, bool>> newEntries = new List<Tuple<string, bool>>();
+                    List<ParsableJournalEntry> newEntries = new List<ParsableJournalEntry>();
                     foreach (FileInfo f in failedFiles)
                     {
                         this.logger.Log("Verifying file '{0}'...", f.FullName);
@@ -126,7 +129,8 @@ namespace EliteMonitor.Caching
                                 string l = "";
                                 while ((l = sr.ReadLine()) != null)
                                 {
-                                    newEntries.Add(l);
+                                    newEntries.Add(new ParsableJournalEntry(l, f.Name.StartsWith("JournalBeta")));
+                                    //newEntries.Add(new Tuple<string, bool>(l , f.Name.StartsWith("JournalBeta")));
                                 }
                             }
                         }
@@ -137,7 +141,7 @@ namespace EliteMonitor.Caching
                             this._journalLengthCache.Add(f.Name, f.Length);*/
                     }
                     this.logger.Log("Creating up to {0} new entries from files that failed verification", newEntries.Count);
-                    mainForm.journalParser.createJournalEntries(newEntries, true, true);
+                    mainForm.journalParser.createJournalEntries(newEntries, true, true, dontPlaySounds: true, dontUpdatePercentage: false);
                     foreach (KeyValuePair<string, long> kvp in newJournalLengthCache)
                     {
                         if (this._journalLengthCache.ContainsKey(kvp.Key))
@@ -274,16 +278,20 @@ namespace EliteMonitor.Caching
                     long updated = 0;
                     foreach (JournalEntry j in unknownEvents)
                     {
-                        Commander __ = c;
-                        JournalEntry je = m.journalParser.parseEvent(j.Json, out __, true);
-                        if (je.isKnown)
+                        try
                         {
-                            updated++;
-                            j.isKnown = true;
-                            j.Data = je.Data;
-                            if (j.Notes.Equals("UNKNOWN EVENT") || j.Notes.Equals("KNOWN-ISH EVENT"))
-                                j.Notes = null;
+                            Commander __ = c;
+                            JournalEntry je = m.journalParser.parseEvent(j.Json, out __, true, bypassRegisterCheck: true);
+                            if (je.isKnown)
+                            {
+                                updated++;
+                                j.isKnown = true;
+                                j.Data = je.Data;
+                                if (j.Notes.Equals("UNKNOWN EVENT") || j.Notes.Equals("KNOWN-ISH EVENT"))
+                                    j.Notes = null;
+                            }
                         }
+                        catch (NoRegisteredCommanderException) { }
                     }
                     this.logger.Log("Number of unknown journal events updated: {0}/{1}", updated, unknownEvents.Count);
                     if (updated > 0)
@@ -351,7 +359,7 @@ namespace EliteMonitor.Caching
                     foreach (JournalEntry je in needsUpdating)
                     {
                         Commander __ = c;
-                        JournalEntry nje = mainForm.journalParser.parseEvent(je.Json, out __, true);
+                        JournalEntry nje = mainForm.journalParser.parseEvent(je.Json, out __, true, bypassRegisterCheck: true);
                         if (nje.isKnown)
                         {
                             updated++;

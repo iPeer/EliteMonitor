@@ -168,7 +168,12 @@ namespace EliteMonitor.Elite
 
         public string getMaterialNameFromInternalName(string internalName)
         {
-            Material m = this.Materials.First(a => a.InternalName.Equals(internalName));
+            Material m = new Material();
+            try
+            {
+                m = this.Materials.First(a => a.InternalName.Equals(internalName));
+            }
+            catch { return internalName; }
             if (m == null) return internalName;
             return m.Name;
         }
@@ -365,6 +370,7 @@ namespace EliteMonitor.Elite
                         return 930;
                     case "Terraformable Rocky body":
                         return 181100;
+                    case "Rocky ice body":
                     case "Icy body":
                         return 1250;
                     case "Water giant": // No idea if this is actually their designation.

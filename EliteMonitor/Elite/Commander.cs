@@ -370,7 +370,7 @@ namespace EliteMonitor.Elite
                 if (rank > this.combatRank)
                 {
                     this.combatRank = rank;
-                    this.combatProgress = 0;
+                    this.combatProgress = (rank == 8 ? 100 : 0);
                 }
             }
             else if (type.Equals("trade"))
@@ -378,7 +378,7 @@ namespace EliteMonitor.Elite
                 if (rank > this.tradeRank)
                 {
                     this.tradeRank = rank;
-                    this.tradeProgress = 0;
+                    this.tradeProgress = (rank == 8 ? 100 : 0);
                 }
             }
             else if (type.Equals("explore"))
@@ -386,7 +386,7 @@ namespace EliteMonitor.Elite
                 if (rank > this.explorationRank)
                 {
                     this.explorationRank = rank;
-                    this.explorationProgress = 0;
+                    this.explorationProgress = (rank == 8 ? 100 : 0);
                 }
             }
             else if (type.Equals("cqc"))
@@ -394,7 +394,7 @@ namespace EliteMonitor.Elite
                 if (rank > this.cqcRank)
                 {
                     this.cqcRank = rank;
-                    this.cqcProgress = 0;
+                    this.cqcProgress = (rank == 8 ? 100 : 0);
                 }
             }
             else if (type.Equals("federation"))
@@ -402,7 +402,7 @@ namespace EliteMonitor.Elite
                 if (rank > this.federationRank)
                 {
                     this.federationRank = rank;
-                    this.federationProgress = 0;
+                    this.federationProgress = (rank == 14 ? 100 : 0);
                 }
             }
             else if (type.Equals("empire"))
@@ -410,7 +410,7 @@ namespace EliteMonitor.Elite
                 if (rank > this.imperialRank)
                 {
                     this.imperialRank = rank;
-                    this.imperialProgress = 0;
+                    this.imperialProgress = (rank == 14 ? 100 : 0);
                 }
             }
             this.setSaveRequired();
@@ -510,10 +510,6 @@ namespace EliteMonitor.Elite
                     sb.AppendLine();
                 }
                 sb.AppendLine("Left or right click to manually update rank progression.");
-#if DEBUG
-                Console.WriteLine("DEBUG TRADE RANK DATA:");
-                Console.WriteLine(sb.ToString());
-#endif
                 m.rankInfoTooltip.SetToolTip(m.tradeRankName, sb.ToString());
             });
             m.exploreRankName.InvokeIfRequired(() => 
@@ -531,10 +527,6 @@ namespace EliteMonitor.Elite
                     sb.AppendLine();
                 }
                 sb.AppendLine("Left or right click to manually update rank progression.");
-#if DEBUG
-                Console.WriteLine("DEBUG EXPLORATION RANK DATA:");
-                Console.WriteLine(sb.ToString());
-#endif
                 m.rankInfoTooltip.SetToolTip(m.exploreRankName, sb.ToString());
             });
             m.cqcRankName.InvokeIfRequired(() => { m.cqcRankName.Text = cqcRank; m.rankInfoTooltip.SetToolTip(m.cqcRankName, "Left or right click to manually update rank progression."); });
@@ -585,12 +577,15 @@ namespace EliteMonitor.Elite
                     if (!dontUpdateDialogDisplays)
                         this.updateDialogDisplays();
                     MainForm m = MainForm.Instance;
-                    m.eventList.InvokeIfRequired(() =>
+                    if (!dontUpdateDialogDisplays)
                     {
-                        m.eventList.BeginUpdate();
-                        m.eventList.Rows.Insert(0, m.journalParser.getListViewEntryForEntry(je));
-                        m.eventList.EndUpdate();
-                    });
+                        m.eventList.InvokeIfRequired(() =>
+                        {
+                            m.eventList.BeginUpdate();
+                            m.eventList.Rows.Insert(0, m.journalParser.getListViewEntryForEntry(je));
+                            m.eventList.EndUpdate();
+                        });
+                    }
                 }
                 this.setSaveRequired();
             }
@@ -769,6 +764,11 @@ namespace EliteMonitor.Elite
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("SellExplorationData"));
                 updateJournalEntries(toUpdate, m, patchVer, this);
             }
+            if (this.cacheVersion < (patchVer = 1327))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("StartJump") || a.Event.Equals("FSDJump"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
         }
 
         private void updateJournalEntries(List<JournalEntry> toUpdate, MainForm m, int patchVer, Commander c)
@@ -792,7 +792,7 @@ namespace EliteMonitor.Elite
                     m.InvokeIfRequired(() => m.appStatus.Text = String.Format("Updating Journal entries... ({0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft)));
                 }
                 Commander __;
-                JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true, forcedCommander: c);
+                JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true, forcedCommander: c, bypassRegisterCheck: true);
                 j.Data = nje.Data;
             }
             if (cEntry > 0)

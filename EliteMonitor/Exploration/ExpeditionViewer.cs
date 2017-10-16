@@ -64,6 +64,7 @@ namespace EliteMonitor.Exploration
         public void updateScans()
         {
             var ordered = this.LoadedExpedition.ScanCounts.OrderByDescending(a => a.Value);
+            this.CurrentEstimatedValue = 0;
             this.listViewScanCounts.InvokeIfRequired(() =>
             {
                 this.listViewScanCounts.BeginUpdate();

@@ -308,7 +308,7 @@ namespace EliteMonitor
 
         private void openCacheDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Process.Start(Path.Combine(Utils.getApplicationEXEFolderPath(), "cache/"));
+            Process.Start(Path.Combine(Utils.getApplicationEXEFolderPath(), "Commander_Data/"));
         }
 
         private void clearCachesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -899,32 +899,46 @@ namespace EliteMonitor
 
         private void waterWorldToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Utils.PlaySound("ww_scanned.wav");
+            Utils.PlaySound("ww_scanned.wav", true);
         }
 
         private void terraformableWaterWorldToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Utils.PlaySound("tww_scanned.wav");
+            Utils.PlaySound("tww_scanned.wav", true);
         }
 
         private void earthlikeWorldToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Utils.PlaySound("elw_scanned.wav");
+            Utils.PlaySound("elw_scanned.wav", true);
         }
 
         private void ammoniaWorldToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Utils.PlaySound("aw_scanned.wav");
+            Utils.PlaySound("aw_scanned.wav", true);
         }
 
         private void hMCToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Utils.PlaySound("hmc_scanned.wav");
+            Utils.PlaySound("hmc_scanned.wav", true);
         }
 
         private void tHMCToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Utils.PlaySound("thmc_scanned.wav");
+            Utils.PlaySound("thmc_scanned.wav", true);
+        }
+
+        private void enableSoundsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            enableSoundsToolStripMenuItem.Checked = !enableSoundsToolStripMenuItem.Checked;
+            Properties.Settings.Default.SoundsEnabled = enableSoundsToolStripMenuItem.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void hideMusicEventsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            hideMusicEventsToolStripMenuItem.Checked = !hideMusicEventsToolStripMenuItem.Checked;
+            Properties.Settings.Default.HideMusicEvents = hideMusicEventsToolStripMenuItem.Checked;
+            Properties.Settings.Default.Save();
         }
     }
 }

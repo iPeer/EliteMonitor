@@ -245,6 +245,7 @@ namespace EliteMonitor.Utilities
             Dictionary<string, SystemCoordinate> landmarkSystems = new Dictionary<string, SystemCoordinate>()
             {
                 { "Sol", new SystemCoordinate(0, 0, 0) },
+                { "Colonia", new SystemCoordinate(-9530.5, -910.28125, 19808.125) },
                 { "Great Annihilator", new SystemCoordinate(354.84375, -42.4375, 22997.21875) },
                 { "Sagittarius A*", new SystemCoordinate(25.21875, -20.90625, 25899.96875) },
                 { "Beagle Point", new SystemCoordinate(-1111.5625, -134.21875, 65269.75) },
@@ -262,8 +263,13 @@ namespace EliteMonitor.Utilities
             return sb.ToString().TrimEnd();
         }
 
-        internal static void PlaySound(string soundFile)
+        internal static void PlaySound(string soundFile, bool warnIfSoundsDisabled = false)
         {
+            if (!Properties.Settings.Default.SoundsEnabled && warnIfSoundsDisabled)
+            {
+                MessageBox.Show("Sounds are currently disabled!");
+                return;
+            }
             SoundPlayer sp = new SoundPlayer();
             string soundPath = Path.Combine(MainForm.Instance.cacheController.soundsPath, soundFile);
             if (File.Exists(soundPath))

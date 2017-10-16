@@ -19,6 +19,9 @@ using System.Media;
 
 namespace EliteMonitor.Journal
 {
+
+    public class NoRegisteredCommanderException : Exception { }
+
     public class JournalParser
     {
 
@@ -35,6 +38,11 @@ namespace EliteMonitor.Journal
         private Thread journalTailThread;
         private bool abortJournalTailing = false;
         private bool fileWatcherRunning = false;
+        private bool betaJournal = false;
+        private bool isCommanderRegistered = false;
+        private DateTime lastJumpStartTime = DateTime.MinValue;
+
+        List<ParsableJournalEntry> preLoadCommanderData = new List<ParsableJournalEntry>(3);
 
         public JournalParser(MainForm m)
         {
@@ -65,7 +73,7 @@ namespace EliteMonitor.Journal
             }
         }
 
-        public JournalEntry parseEvent(string json, out Commander commander, bool isReparse = false, Commander forcedCommander = null)
+        public JournalEntry parseEvent(string json, out Commander commander, bool isReparse = false, Commander forcedCommander = null, bool doNotPlaySounds = false, bool isBeta = false, bool bypassRegisterCheck = false)
         {
             /*
             { "timestamp":"2017-01-26T21:23:18Z", "event":"Fileheader", "part":1, "language":"English\\UK", "gameversion":"2.2", "build":"r131487/r0 " }
@@ -95,11 +103,18 @@ namespace EliteMonitor.Journal
             string timestamp = tsData.ToString("G");
 
 
-            // NOTES: Missions that rank up a player in a major power have RankFed or RamkEmp in the names. This is (currently) the ONLY way to detect a Fed/Empire rank-up
+            if (!bypassRegisterCheck && (!new string[] { "Fileheader", "LoadGame" }.Contains(@event) && !this.isCommanderRegistered))
+            {
+                //Console.WriteLine($"- {@event}");
+                throw new NoRegisteredCommanderException();
+            }
+            //Console.WriteLine($"+ {@event}");
 
             switch (@event)
             {
                 case "Fileheader":
+                    this.betaJournal = j.GetValue("gameversion").ToString().Contains("Beta");
+                    this.isCommanderRegistered = !j.GetValue("part").ToString().Equals("1");
                     return new JournalEntry(timestamp, @event, "", j);
                 case "LoadGame":
                     bool isGroup = false;
@@ -127,6 +142,8 @@ namespace EliteMonitor.Journal
                     }
                     long commanderCredits = (long)j["Credits"];
                     string commanderName = (string)j["Commander"];
+                    if (isBeta || this.betaJournal)
+                        commanderName += " [BETA]";
                     string shipName = (string)j["ShipName"];
                     string shipID = (string)j["ShipIdent"];
                     string commanderString = $"{commanderName}" + (isGroup ? $" ({pGroup})" : "");
@@ -136,6 +153,7 @@ namespace EliteMonitor.Journal
                     commander = activeCommander = _commander;
                     string commanderShipFormatted = commander.ShipData.getFormattedShipString();
                     _commander.isInMulticrew = false;
+                    this.isCommanderRegistered = true;
                     return new JournalEntry(timestamp, @event, $"Commander {commanderString} | {commanderShipFormatted} | Credit balance: {String.Format("{0:n0}", commanderCredits)}", j);
                 case "Rank":
 
@@ -251,7 +269,14 @@ namespace EliteMonitor.Journal
                         commander.CurrentSystemCoordinates = sc;
                         commander.isLanded = commander.isDocked = false;
                     }
-                    return new JournalEntry(timestamp, @event, $"Jumped to {(string)j["StarSystem"]} ({String.Format("{0:f2}", (float)j["JumpDist"])}Ly)", j);
+                    string Append = string.Empty;
+                    if (this.lastJumpStartTime > DateTime.MinValue)
+                    {
+                        string JumpDuration = Utils.formatTimeFromSeconds((int)(DateTime.Parse(timestamp) - this.lastJumpStartTime).TotalSeconds - 5);
+                        Append = $", {JumpDuration}";
+                        this.lastJumpStartTime = DateTime.MinValue;
+                    }
+                    return new JournalEntry(timestamp, @event, $"Jumped to {(string)j["StarSystem"]} ({String.Format("{0:f2}", (float)j["JumpDist"])}Ly{Append})", j);
                 case "RepairPartial": // Legacy
                 case "RepairAll":
                     cost = (long)j["Cost"];
@@ -458,6 +483,7 @@ namespace EliteMonitor.Journal
                     }
                     else
                     {
+                        this.lastJumpStartTime = DateTime.Parse(timestamp);
                         system = (string)j["StarSystem"];
                         string starClass = (string)j["StarClass"];
                         eventText = string.Format("Preparing to jump to {0} | Star Class: {1}", system, starClass);
@@ -566,6 +592,8 @@ namespace EliteMonitor.Journal
                              // Planet: { "timestamp":"2017-08-11T17:46:06Z", "event":"Scan", "BodyName":"Synookio OP-K b10-2 A 6", "DistanceFromArrivalLS":107.124298, "TidalLock":false, "TerraformState":"", "PlanetClass":"Water world", "Atmosphere":"thick argon rich atmosphere", "AtmosphereType":"ArgonRich", "AtmosphereComposition":[ { "Name":"Nitrogen", "Percent":96.575706 }, { "Name":"Argon", "Percent":2.764786 }, { "Name":"CarbonDioxide", "Percent":0.626221 } ], "Volcanism":"major water magma volcanism", "MassEM":1.340439, "Radius":8274225.000000, "SurfaceGravity":7.803720, "SurfaceTemperature":353.210022, "SurfacePressure":80850008.000000, "Landable":false, "SemiMajorAxis":32115288064.000000, "Eccentricity":0.000016, "OrbitalInclination":-0.000502, "Periapsis":229.444931, "OrbitalPeriod":5383803.500000, "RotationPeriod":-5384022.000000, "AxialTilt":-1.736953 }
                              // Star: { "timestamp":"2017-08-11T17:46:29Z", "event":"Scan", "BodyName":"Synookio OP-K b10-2 A", "DistanceFromArrivalLS":0.000000, "StarType":"M", "StellarMass":0.339844, "Radius":329793632.000000, "AbsoluteMagnitude":9.631912, "Age_MY":12912, "SurfaceTemperature":2778.000000, "SemiMajorAxis":1099630116864.000000, "Eccentricity":0.045134, "OrbitalInclination":34.794361, "Periapsis":77.388535, "OrbitalPeriod":4289333248.000000, "RotationPeriod":142939.281250, "AxialTilt":0.000000, "Rings":[ { "Name":"Synookio OP-K b10-2 A A Belt", "RingClass":"eRingClass_MetalRich", "MassMT":6.794e+09, "InnerRad":6.0099e+08, "OuterRad":1.684e+09 } ] }
                     string bodyName = j.GetValue("BodyName").ToString();
+                    if (bodyName.Contains("Belt Cluster"))
+                        return new JournalEntry(timestamp, @event, bodyName, j);
                     long orbitalPeriod = 0;
                     try
                     {
@@ -604,13 +632,23 @@ namespace EliteMonitor.Journal
                         rotationCriteria.Add("retrograde");
                     if (!isStar)
                     {
-                        if (Properties.Settings.Default.SoundsEnabled)
+                        bool terraformable = j.GetValue("TerraformState").ToString().Equals("Terraformable");
+                        if (Properties.Settings.Default.SoundsEnabled && !doNotPlaySounds)
                         {
                             string soundFile = string.Empty;
                             switch (bodyClass)
                             {
-                                case "Earthlike world":
+                                case "Earthlike body":
                                     soundFile = "elw_scanned.wav";
+                                    break;
+                                case "Ammonia world":
+                                    soundFile = "aw_scanned.wav";
+                                    break;
+                                case "Water world":
+                                    soundFile = terraformable ? "tww_scanned.wav" : "ww_scanned.wav";
+                                    break;
+                                case "High metal content body":
+                                    soundFile = terraformable ? "thmc_scanned.wav" : "hmc_scanned.wav";
                                     break;
                             }
                             Utils.PlaySound(soundFile);
@@ -636,7 +674,6 @@ namespace EliteMonitor.Journal
                                     materials.Add(fuck.Name, fuck.Percent);
                             }
                         }
-                        bool terraformable = j.GetValue("TerraformState").ToString().Equals("Terraformable");
                         sb.AppendLineFormatted("Terraformable: {0}", terraformable ? "yes" : "no");
                         sb.AppendLineFormatted("Earth masses: {0:n3}", j.GetValue("MassEM").ToObject<double>());
                         sb.AppendLineFormatted("Gravity: {0:n2} g", j.GetValue("SurfaceGravity").ToObject<double>());
@@ -664,6 +701,9 @@ namespace EliteMonitor.Journal
                 case "Friends":
                     string status = j.GetValue("Status").ToString();
                     return new JournalEntry(timestamp, @event, string.Format("CMDR {0} has {1} {2}.", j.GetValue("Name").ToString(), status.Equals("Offline") ? "gone" : "come", status.Equals("Offline") ? "offline" : "online"), j);
+                case "Music":
+                    string track = j.GetValue("MusicTrack").ToString();
+                    return new JournalEntry(timestamp, @event, $"New music track: {track}", j);
                 default:
                     return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
             }
@@ -684,7 +724,7 @@ namespace EliteMonitor.Journal
             DirectoryInfo di = new DirectoryInfo(journalPath);
             FileInfo[] fileInfo = di.GetFiles().OrderBy(f => f.CreationTime).ToArray();
             mainForm.cacheController._journalLengthCache.Clear();
-            List<string> allJournalEntries = new List<string>();
+            List<ParsableJournalEntry> allJournalEntries = new List<ParsableJournalEntry>();
             int x = 0;
             foreach (FileInfo _file in fileInfo)
             {
@@ -698,7 +738,7 @@ namespace EliteMonitor.Journal
                         string line;
                         while ((line = sr.ReadLine()) != null)
                         {
-                            allJournalEntries.Add(line);
+                            allJournalEntries.Add(new ParsableJournalEntry(line, _file.Name.StartsWith("JournalBeta")));
                         }
                         
                     }
@@ -706,7 +746,7 @@ namespace EliteMonitor.Journal
             }
             try
             {
-                createJournalEntries(allJournalEntries, false, true);
+                createJournalEntries(allJournalEntries, false, true, dontPlaySounds: true);
             }
             catch (Exception e)
             {
@@ -718,19 +758,31 @@ namespace EliteMonitor.Journal
             this.fullParseInProgress = false;
         }
 
-        public void createJournalEntries(List<string> entries, bool checkDuplicates = false, bool dontUpdateDisplays = false, bool dontUpdatePercentage = false)
+        /*public void createJournalEntries(List<Tuple<string, bool>> entries, bool checkDupes = false, bool dontUpdateDisplays = false, bool dontUpdatePercentage = false, bool dontPlaySounds = false, bool isBetaJournal = false)
+        {
+            // This is a bit inefficient, but hey, what're you gonna do - we only use it for bulk updates
+            //List<string> toParse = entries.Select(a => a.Item1).ToList();
+            foreach (Tuple<string, bool> t in entries)
+                createJournalEntries(new List<string> { t.Item1 }, checkDupes, dontUpdateDisplays, dontUpdatePercentage, dontPlaySounds, t.Item2);
+        }*/
+
+        public void createJournalEntries(List<ParsableJournalEntry> entries, bool checkDuplicates = false, bool dontUpdateDisplays = false, bool dontUpdatePercentage = false, bool dontPlaySounds = false)
         {
             if (!dontUpdatePercentage)
                 mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Generating Journal entries...");
-            mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.BeginUpdate());
             int cEntry = 0;
             int lastPercent = 0;
             DateTime timeStarted = DateTime.Now;
             DateTime lastETAUpdate = DateTime.Now;
-            Commander commander = activeCommander;
-            List<string> preLoadCommanderData = new List<string>(3);
-            foreach (string s in entries)
+            Commander commander = activeCommander ?? new Commander("blank");
+            //logger.Log("{0}", commander == null);
+            if (dontUpdateDisplays)
+                mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.BeginUpdate());
+            //logger.Log("Number of log entries needing parsing: {0}", entries.Count);
+            foreach (ParsableJournalEntry en in entries)
             {
+                string s = en.JSON;
+                bool isBetaJournalEntry = en.IsBetaJournal;
                 double percent = ((double)cEntry++ / (double)entries.Count) * 100.00;
                 //Console.WriteLine(percent + " / " + lastPercent);
                 if (!dontUpdatePercentage && ((int)percent > lastPercent || DateTime.Now.Subtract(lastETAUpdate).TotalSeconds >= 1.00))
@@ -746,25 +798,40 @@ namespace EliteMonitor.Journal
                     double timeLeft = (ts.TotalSeconds / cEntry) * (entries.Count - cEntry);
                     mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = String.Format("Generating Journal entries... ({2}/{3}, {0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft), cEntry, entries.Count));
                 }
-                JournalEntry je = parseEvent(s, out commander);
-                if (je.Event.Equals("Fileheader"))
+                /*string @event = JObject.Parse(en.JSON).GetValue("event").ToString();
+                if (!@event.Equals("LoadGame") && this.isNewGameSession)
+                {
+                    preLoadCommanderData.Add(en);
                     continue;
-                if (je.Event.Equals("LoadGame") && /*!hasAlreadyLoaded*/commander != null)
+                }*/
+                JournalEntry je;
+                try
                 {
-                    createJournalEntries(preLoadCommanderData, checkDuplicates, dontUpdateDisplays, true);
-                    preLoadCommanderData.Clear();
+                    je = parseEvent(s, out commander, doNotPlaySounds: dontPlaySounds, isBeta: isBetaJournalEntry);
+                    if (je.Event.Equals("Fileheader") || (je.Event.Equals("Music") && Properties.Settings.Default.HideMusicEvents))
+                        continue;
+                    if (je.Event.Equals("LoadGame") && this.isCommanderRegistered)
+                    {
+                        logger.Log("There are {0} entries waiting in pre-load, parsing them now...", this.preLoadCommanderData.Count);
+                        createJournalEntries(this.preLoadCommanderData, checkDuplicates, dontUpdateDisplays, true, true);
+                        this.preLoadCommanderData.Clear();
+                        logger.Log("Done parsing pre-load journal entries.");
+                    }
+
+                    if (!mainForm.comboCommanderList.Items.Contains(commander.Name))
+                    {
+                        mainForm.comboCommanderList.InvokeIfRequired(() => mainForm.comboCommanderList.Items.Add(commander.Name));
+                        commander.JournalEntries = new List<JournalEntry>(entries.Count);
+                    }
+                    commander.addJournalEntry(je, checkDuplicates, dontUpdateDisplays);
                 }
-                if (/*!hasLoadedCommander*/commander == null)
+                catch (NoRegisteredCommanderException)
                 {
-                    preLoadCommanderData.Add(s);
+                    string @event = JObject.Parse(en.JSON).GetValue("event").ToString();
+                    this.logger.Log("No commander is registered yet, holding on to journal entry with event of '{0}' until one is.", @event);
+                    this.preLoadCommanderData.Add(en);
                     continue;
                 }
-                if (!mainForm.comboCommanderList.Items.Contains(commander.Name))
-                {
-                    mainForm.comboCommanderList.InvokeIfRequired(() => mainForm.comboCommanderList.Items.Add(commander.Name));
-                    commander.JournalEntries = new List<JournalEntry>(entries.Count);
-                }
-                commander.addJournalEntry(je, checkDuplicates, dontUpdateDisplays);
 
                 if (commander != null /*&& !isReparse */&& commander.HasActiveExpedition)
                     if (commander.Expeditions == null) // Commander's expedition file cannot be loaded after previously being present
@@ -772,7 +839,8 @@ namespace EliteMonitor.Journal
                     else
                         commander.Expeditions[commander.ActiveExpeditionGuid].parseJournalEntry(je);
             }
-            mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.EndUpdate());
+            if (dontUpdateDisplays)
+                mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.EndUpdate());
             if (viewedCommander != null && activeCommander != null && commander != null && !fullParseInProgress && Properties.Settings.Default.autoSwitchActiveCommander && !viewedCommander.Name.Equals(activeCommander.Name))
             {
                 switchViewedCommander(commander);
@@ -901,7 +969,7 @@ namespace EliteMonitor.Journal
             else
             {
                 lvi.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-                int h = TextRenderer.MeasureText(j.Data, lvi.DefaultCellStyle.Font).Height - 22;
+                int h = TextRenderer.MeasureText(j.Data, mainForm.eventList.DefaultCellStyle.Font).Height + 5;
                 if (h > 22)
                     lvi.Height = h;
             }
@@ -994,7 +1062,7 @@ namespace EliteMonitor.Journal
                             while (!sr.EndOfStream)
                             {
                                 string newEntry = sr.ReadLine();
-                                createJournalEntries(new List<string>() { newEntry }, checkDuplicates: true, dontUpdatePercentage: true);
+                                createJournalEntries(new List<ParsableJournalEntry>() { new ParsableJournalEntry(newEntry, last.Name.StartsWith("JournalBeta")) }, checkDuplicates: true, dontUpdatePercentage: true);
                                 if (mainForm.cacheController._journalLengthCache.ContainsKey(last.Name))
                                     mainForm.cacheController._journalLengthCache[last.Name] = fs.Position;
                                 else
@@ -1093,7 +1161,7 @@ namespace EliteMonitor.Journal
                 using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
                 {
                     string s = "";
-                    List<string> entries = new List<string>();
+                    List<ParsableJournalEntry> entries = new List<ParsableJournalEntry>();
                     while ((s = sr.ReadLine()) != null)
                     {
                         mainForm.cacheController._journalLengthCache[fileName] = fs.Position;
@@ -1101,9 +1169,9 @@ namespace EliteMonitor.Journal
                         JournalEntry j = parseEvent(s, out c);
                         if (j.Event.Equals("FileHeader")) continue;
                         c.addJournalEntry(j);*/
-                        entries.Add(s);
+                        entries.Add(new ParsableJournalEntry(s, file.StartsWith("JournalBeta")));
                     }
-                    createJournalEntries(entries, true);
+                    createJournalEntries(entries, true, dontPlaySounds: true);
                 }
             }
         }

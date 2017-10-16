@@ -35,5 +35,8 @@ namespace EliteMonitor.Elite
             this.Symbol = symbol;
         }
 
+        public Material()
+        {
+        }
     }
 }

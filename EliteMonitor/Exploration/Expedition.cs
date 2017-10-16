@@ -1,4 +1,5 @@
 ﻿using EliteMonitor.Elite;
+using EliteMonitor.Extensions;
 using EliteMonitor.Logging;
 using EliteMonitor.Utilities;
 using Newtonsoft.Json;
@@ -94,6 +95,8 @@ namespace EliteMonitor.Exploration
                     return false;
                 case "Scan":
                     string bodyType = string.Empty;
+                    string bodyName = json.GetValue("BodyName").ToString();
+                    if (bodyName.ContainsIgnoreCase("Belt Cluster")) return false;
                     try
                     {
                         bool terraformable = json.GetValue("TerraformState").ToString().Equals("Terraformable");

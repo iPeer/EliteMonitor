@@ -54,6 +54,16 @@
             this.showDistanceFromSolToNetoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.displayCommanderCountDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listViewedCommanderFirstDiscoveriesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addTestRowsToDataViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sOUNDSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.waterWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.terraformableWaterWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.earthlikeWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ammoniaWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tHMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.enableSoundsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.commanderBox = new System.Windows.Forms.GroupBox();
             this.commanderLocationLabel = new System.Windows.Forms.Label();
             this.labelCreditsChange = new System.Windows.Forms.Label();
@@ -94,17 +104,10 @@
             this.buttonDiscoveredBodies = new System.Windows.Forms.Button();
             this.buttonExpeditions = new System.Windows.Forms.Button();
             this.eventList = new System.Windows.Forms.DataGridView();
-            this.addTestRowsToDataViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.sOUNDSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.waterWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.terraformableWaterWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.earthlikeWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ammoniaWorldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.hMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tHMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hideMusicEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
@@ -171,7 +174,8 @@
             this.fileToolStripMenuItem,
             this.eliteToolStripMenuItem,
             this.eDMCToolStripMenuItem,
-            this.dEBUGToolStripMenuItem});
+            this.dEBUGToolStripMenuItem,
+            this.optionsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(966, 24);
@@ -199,6 +203,7 @@
             // 
             // applicationSettingsToolStripMenuItem
             // 
+            this.applicationSettingsToolStripMenuItem.Enabled = false;
             this.applicationSettingsToolStripMenuItem.Name = "applicationSettingsToolStripMenuItem";
             this.applicationSettingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.applicationSettingsToolStripMenuItem.Text = "&Application Settings";
@@ -259,8 +264,9 @@
             // 
             // launchEliteToolStripMenuItem
             // 
+            this.launchEliteToolStripMenuItem.Enabled = false;
             this.launchEliteToolStripMenuItem.Name = "launchEliteToolStripMenuItem";
-            this.launchEliteToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.launchEliteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.launchEliteToolStripMenuItem.Text = "Launch Elite";
             // 
             // hUDEditorToolStripMenuItem
@@ -274,6 +280,7 @@
             // 
             this.eDMCToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.launchEDMCToolStripMenuItem});
+            this.eDMCToolStripMenuItem.Enabled = false;
             this.eDMCToolStripMenuItem.Name = "eDMCToolStripMenuItem";
             this.eDMCToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
             this.eDMCToolStripMenuItem.Text = "EDMC";
@@ -324,6 +331,86 @@
             this.listViewedCommanderFirstDiscoveriesToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
             this.listViewedCommanderFirstDiscoveriesToolStripMenuItem.Text = "List viewed commander first discoveries";
             this.listViewedCommanderFirstDiscoveriesToolStripMenuItem.Click += new System.EventHandler(this.listViewedCommanderFirstDiscoveriesToolStripMenuItem_Click);
+            // 
+            // addTestRowsToDataViewToolStripMenuItem
+            // 
+            this.addTestRowsToDataViewToolStripMenuItem.Name = "addTestRowsToDataViewToolStripMenuItem";
+            this.addTestRowsToDataViewToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.addTestRowsToDataViewToolStripMenuItem.Text = "Add test rows to data view";
+            this.addTestRowsToDataViewToolStripMenuItem.Click += new System.EventHandler(this.addTestRowsToDataViewToolStripMenuItem_Click);
+            // 
+            // sOUNDSToolStripMenuItem
+            // 
+            this.sOUNDSToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.waterWorldToolStripMenuItem,
+            this.terraformableWaterWorldToolStripMenuItem,
+            this.earthlikeWorldToolStripMenuItem,
+            this.ammoniaWorldToolStripMenuItem,
+            this.hMCToolStripMenuItem,
+            this.tHMCToolStripMenuItem});
+            this.sOUNDSToolStripMenuItem.Name = "sOUNDSToolStripMenuItem";
+            this.sOUNDSToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.sOUNDSToolStripMenuItem.Text = "SOUNDS";
+            // 
+            // waterWorldToolStripMenuItem
+            // 
+            this.waterWorldToolStripMenuItem.Name = "waterWorldToolStripMenuItem";
+            this.waterWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.waterWorldToolStripMenuItem.Text = "Water World";
+            this.waterWorldToolStripMenuItem.Click += new System.EventHandler(this.waterWorldToolStripMenuItem_Click);
+            // 
+            // terraformableWaterWorldToolStripMenuItem
+            // 
+            this.terraformableWaterWorldToolStripMenuItem.Name = "terraformableWaterWorldToolStripMenuItem";
+            this.terraformableWaterWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.terraformableWaterWorldToolStripMenuItem.Text = "Terraformable Water World";
+            this.terraformableWaterWorldToolStripMenuItem.Click += new System.EventHandler(this.terraformableWaterWorldToolStripMenuItem_Click);
+            // 
+            // earthlikeWorldToolStripMenuItem
+            // 
+            this.earthlikeWorldToolStripMenuItem.Name = "earthlikeWorldToolStripMenuItem";
+            this.earthlikeWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.earthlikeWorldToolStripMenuItem.Text = "Earthlike World";
+            this.earthlikeWorldToolStripMenuItem.Click += new System.EventHandler(this.earthlikeWorldToolStripMenuItem_Click);
+            // 
+            // ammoniaWorldToolStripMenuItem
+            // 
+            this.ammoniaWorldToolStripMenuItem.Name = "ammoniaWorldToolStripMenuItem";
+            this.ammoniaWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.ammoniaWorldToolStripMenuItem.Text = "Ammonia World";
+            this.ammoniaWorldToolStripMenuItem.Click += new System.EventHandler(this.ammoniaWorldToolStripMenuItem_Click);
+            // 
+            // hMCToolStripMenuItem
+            // 
+            this.hMCToolStripMenuItem.Name = "hMCToolStripMenuItem";
+            this.hMCToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.hMCToolStripMenuItem.Text = "HMC";
+            this.hMCToolStripMenuItem.Click += new System.EventHandler(this.hMCToolStripMenuItem_Click);
+            // 
+            // tHMCToolStripMenuItem
+            // 
+            this.tHMCToolStripMenuItem.Name = "tHMCToolStripMenuItem";
+            this.tHMCToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.tHMCToolStripMenuItem.Text = "THMC";
+            this.tHMCToolStripMenuItem.Click += new System.EventHandler(this.tHMCToolStripMenuItem_Click);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.enableSoundsToolStripMenuItem,
+            this.hideMusicEventsToolStripMenuItem});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.optionsToolStripMenuItem.Text = "Options";
+            // 
+            // enableSoundsToolStripMenuItem
+            // 
+            this.enableSoundsToolStripMenuItem.Checked = true;
+            this.enableSoundsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.enableSoundsToolStripMenuItem.Name = "enableSoundsToolStripMenuItem";
+            this.enableSoundsToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.enableSoundsToolStripMenuItem.Text = "Enable planetary scan sounds";
+            this.enableSoundsToolStripMenuItem.Click += new System.EventHandler(this.enableSoundsToolStripMenuItem_Click);
             // 
             // commanderBox
             // 
@@ -792,13 +879,6 @@
             this.eventList.TabIndex = 10;
             this.eventList.MouseClick += new System.Windows.Forms.MouseEventHandler(this.eventList_MouseClick);
             // 
-            // addTestRowsToDataViewToolStripMenuItem
-            // 
-            this.addTestRowsToDataViewToolStripMenuItem.Name = "addTestRowsToDataViewToolStripMenuItem";
-            this.addTestRowsToDataViewToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
-            this.addTestRowsToDataViewToolStripMenuItem.Text = "Add test rows to data view";
-            this.addTestRowsToDataViewToolStripMenuItem.Click += new System.EventHandler(this.addTestRowsToDataViewToolStripMenuItem_Click);
-            // 
             // Column1
             // 
             this.Column1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
@@ -822,60 +902,14 @@
             this.Column3.Name = "Column3";
             this.Column3.ReadOnly = true;
             // 
-            // sOUNDSToolStripMenuItem
+            // hideMusicEventsToolStripMenuItem
             // 
-            this.sOUNDSToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.waterWorldToolStripMenuItem,
-            this.terraformableWaterWorldToolStripMenuItem,
-            this.earthlikeWorldToolStripMenuItem,
-            this.ammoniaWorldToolStripMenuItem,
-            this.hMCToolStripMenuItem,
-            this.tHMCToolStripMenuItem});
-            this.sOUNDSToolStripMenuItem.Name = "sOUNDSToolStripMenuItem";
-            this.sOUNDSToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
-            this.sOUNDSToolStripMenuItem.Text = "SOUNDS";
-            // 
-            // waterWorldToolStripMenuItem
-            // 
-            this.waterWorldToolStripMenuItem.Name = "waterWorldToolStripMenuItem";
-            this.waterWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
-            this.waterWorldToolStripMenuItem.Text = "Water World";
-            this.waterWorldToolStripMenuItem.Click += new System.EventHandler(this.waterWorldToolStripMenuItem_Click);
-            // 
-            // terraformableWaterWorldToolStripMenuItem
-            // 
-            this.terraformableWaterWorldToolStripMenuItem.Name = "terraformableWaterWorldToolStripMenuItem";
-            this.terraformableWaterWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
-            this.terraformableWaterWorldToolStripMenuItem.Text = "Terraformable Water World";
-            this.terraformableWaterWorldToolStripMenuItem.Click += new System.EventHandler(this.terraformableWaterWorldToolStripMenuItem_Click);
-            // 
-            // earthlikeWorldToolStripMenuItem
-            // 
-            this.earthlikeWorldToolStripMenuItem.Name = "earthlikeWorldToolStripMenuItem";
-            this.earthlikeWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
-            this.earthlikeWorldToolStripMenuItem.Text = "Earthlike World";
-            this.earthlikeWorldToolStripMenuItem.Click += new System.EventHandler(this.earthlikeWorldToolStripMenuItem_Click);
-            // 
-            // ammoniaWorldToolStripMenuItem
-            // 
-            this.ammoniaWorldToolStripMenuItem.Name = "ammoniaWorldToolStripMenuItem";
-            this.ammoniaWorldToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
-            this.ammoniaWorldToolStripMenuItem.Text = "Ammonia World";
-            this.ammoniaWorldToolStripMenuItem.Click += new System.EventHandler(this.ammoniaWorldToolStripMenuItem_Click);
-            // 
-            // hMCToolStripMenuItem
-            // 
-            this.hMCToolStripMenuItem.Name = "hMCToolStripMenuItem";
-            this.hMCToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
-            this.hMCToolStripMenuItem.Text = "HMC";
-            this.hMCToolStripMenuItem.Click += new System.EventHandler(this.hMCToolStripMenuItem_Click);
-            // 
-            // tHMCToolStripMenuItem
-            // 
-            this.tHMCToolStripMenuItem.Name = "tHMCToolStripMenuItem";
-            this.tHMCToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
-            this.tHMCToolStripMenuItem.Text = "THMC";
-            this.tHMCToolStripMenuItem.Click += new System.EventHandler(this.tHMCToolStripMenuItem_Click);
+            this.hideMusicEventsToolStripMenuItem.Checked = true;
+            this.hideMusicEventsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.hideMusicEventsToolStripMenuItem.Name = "hideMusicEventsToolStripMenuItem";
+            this.hideMusicEventsToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.hideMusicEventsToolStripMenuItem.Text = "Hide \"Music\" events";
+            this.hideMusicEventsToolStripMenuItem.Click += new System.EventHandler(this.hideMusicEventsToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -997,6 +1031,9 @@
         private System.Windows.Forms.ToolStripMenuItem ammoniaWorldToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem hMCToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tHMCToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem enableSoundsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hideMusicEventsToolStripMenuItem;
     }
 }
 

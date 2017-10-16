@@ -118,5 +118,17 @@ namespace EliteMonitor.Properties {
                 this["WindowState"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool HideMusicEvents {
+            get {
+                return ((bool)(this["HideMusicEvents"]));
+            }
+            set {
+                this["HideMusicEvents"] = value;
+            }
+        }
     }
 }
