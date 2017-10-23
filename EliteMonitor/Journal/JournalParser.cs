@@ -16,6 +16,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using EliteMonitor.Logging;
 using System.Media;
+using EliteMonitor.Exploration;
 
 namespace EliteMonitor.Journal
 {
@@ -704,6 +705,19 @@ namespace EliteMonitor.Journal
                 case "Music":
                     string track = j.GetValue("MusicTrack").ToString();
                     return new JournalEntry(timestamp, @event, $"New music track: {track}", j);
+                case "Repair":
+                    long repairCost = j.GetValue("Cost").ToObject<long>();
+                    if (!isReparse)
+                        commander.deductCredits(repairCost);
+                    return new JournalEntry(timestamp, @event, string.Format("Spent {0:n0} credits on advanced maintenance", repairCost), j);
+                case "LaunchSRV":
+                    return new JournalEntry(timestamp, @event, "Deployed SRV.", j);
+                case "DockSRV":
+                    return new JournalEntry(timestamp, @event, "Docked SRV.", j);
+                case "DatalinkScan":
+                    return new JournalEntry(timestamp, @event, j.GetValue("Message_Localised").ToString(), j);
+                case "DatalinkVoucher":
+                    return new JournalEntry(timestamp, @event, string.Format("Awarded {0} intel package worth {1:n0} credits", j.GetValue("PayeeFaction").ToString(), j.GetValue("Reward").ToObject<long>()), j);
                 default:
                     return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
             }
@@ -833,11 +847,9 @@ namespace EliteMonitor.Journal
                     continue;
                 }
 
-                if (commander != null /*&& !isReparse */&& commander.HasActiveExpedition)
-                    if (commander.Expeditions == null) // Commander's expedition file cannot be loaded after previously being present
-                        commander.HasActiveExpedition = false;
-                    else
-                        commander.Expeditions[commander.ActiveExpeditionGuid].parseJournalEntry(je);
+                foreach (Expedition e in commander.getActiveExpeditions())
+                    e.parseJournalEntry(je);
+
             }
             if (dontUpdateDisplays)
                 mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.EndUpdate());
@@ -970,7 +982,7 @@ namespace EliteMonitor.Journal
             {
                 lvi.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
                 int h = TextRenderer.MeasureText(j.Data, mainForm.eventList.DefaultCellStyle.Font).Height + 5;
-                if (h > 22)
+                if (h > 18)
                     lvi.Height = h;
             }
             if (Properties.Settings.Default.enableEntryHighlighting)

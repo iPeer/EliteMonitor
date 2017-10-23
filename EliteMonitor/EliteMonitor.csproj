@@ -165,12 +165,6 @@
     <Compile Include="Extensions\StringBuilderExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="HomeSystemChooser.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="HomeSystemChooser.Designer.cs">
-      <DependentUpon>HomeSystemChooser.cs</DependentUpon>
-    </Compile>
     <Compile Include="HUDEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -201,9 +195,22 @@
     <Compile Include="Exploration\StartExpedition.Designer.cs">
       <DependentUpon>StartExpedition.cs</DependentUpon>
     </Compile>
+    <Compile Include="SystemSearchSelector.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SystemSearchSelector.Designer.cs">
+      <DependentUpon>SystemSearchSelector.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UpdateNotifier.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UpdateNotifier.Designer.cs">
+      <DependentUpon>UpdateNotifier.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utilities\DownloadableDataItem.cs" />
     <Compile Include="Utilities\FileDownloadHandler.cs" />
     <Compile Include="Utilities\ISavable.cs" />
+    <Compile Include="Utilities\ListViewItemComparer.cs" />
     <Compile Include="Utilities\Utils.cs" />
     <EmbeddedResource Include="Exploration\DiscoveredBodyList.resx">
       <DependentUpon>DiscoveredBodyList.cs</DependentUpon>
@@ -213,9 +220,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Exploration\ScanJournalDialog.resx">
       <DependentUpon>ScanJournalDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="HomeSystemChooser.resx">
-      <DependentUpon>HomeSystemChooser.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="HUDEditor.resx">
       <DependentUpon>HUDEditor.cs</DependentUpon>
@@ -239,6 +243,12 @@
     <EmbeddedResource Include="Exploration\StartExpedition.resx">
       <DependentUpon>StartExpedition.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SystemSearchSelector.resx">
+      <DependentUpon>SystemSearchSelector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UpdateNotifier.resx">
+      <DependentUpon>UpdateNotifier.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="EliteMonitor_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -259,6 +269,7 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AssemblyFileData.cs</LastGenOutput>
     </Content>
+    <Content Include="ChangeLog.txt" />
     <None Include="Resources\359320_20170224220206_1.png" />
     <None Include="Resources\359320_20170224211736_1.png" />
     <None Include="Resources\359320_20170224211731_1.png" />

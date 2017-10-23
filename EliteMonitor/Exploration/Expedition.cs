@@ -28,7 +28,7 @@ namespace EliteMonitor.Exploration
     public class Expedition : ISavable
     {
 
-        public static int ExpeditionVersion = 4;
+        public static int ExpeditionVersion = 5;
 
         public int Version { get; set; } = ExpeditionVersion;
         public Guid ExpeditionID { get; set; }
@@ -47,6 +47,7 @@ namespace EliteMonitor.Exploration
 
         public bool AutoComplete { get; set; }
         public string AutoCompleteSystemName { get; set; }
+        public string StartingSystemName { get; set; }
 
         public bool IsCompleted { get; set; } = false;
 
@@ -89,7 +90,7 @@ namespace EliteMonitor.Exploration
                     if (this.AutoComplete && this.AutoCompleteSystemName.Equals(systemName))
                     {
                         this.IsCompleted = true;
-                        (MainForm.Instance.journalParser.viewedCommander == null ? MainForm.Instance.journalParser.activeCommander : MainForm.Instance.journalParser.viewedCommander).HasActiveExpedition = false;
+                        //(MainForm.Instance.journalParser.viewedCommander == null ? MainForm.Instance.journalParser.activeCommander : MainForm.Instance.journalParser.viewedCommander).HasActiveExpedition = false;
                         return true;
                     }
                     return false;
@@ -163,6 +164,11 @@ namespace EliteMonitor.Exploration
                         MainForm.Instance.journalParser.viewedCommander.NeedsSaving = true;
                     //}
                 }
+            }
+            if (this.Version < 5)
+            {
+                this.StartingSystemName = this.AutoCompleteSystemName;
+                MainForm.Instance.journalParser.viewedCommander.NeedsSaving = true;
             }
 
             this.Version = ExpeditionVersion;

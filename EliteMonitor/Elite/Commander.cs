@@ -96,7 +96,14 @@ namespace EliteMonitor.Elite
         public List<BodyDiscovery> DiscoveredBodies = new List<BodyDiscovery>();
         [JsonIgnore]
         public Dictionary<Guid, Expedition> Expeditions = new Dictionary<Guid, Expedition>();
-        public bool HasActiveExpedition { get; set; } = false;
+        [JsonIgnore]
+        public bool HasActiveExpedition {
+            get
+            {
+                return this.Expeditions.Values.Any(a => !a.IsCompleted);
+            }
+        }
+        [JsonIgnore]
         public Guid ActiveExpeditionGuid { get; set; }
         public long nextId = 0;
         [JsonIgnore]
@@ -712,6 +719,9 @@ namespace EliteMonitor.Elite
                 m.InvokeIfRequired(() => m.appStatus.Text = messageText);
                 m.journalParser.logger.Log(messageText);
                 this.Expeditions = JsonConvert.DeserializeObject<Dictionary<Guid, Expedition>>(Utils.loadGZip(Path.Combine(this.saveDirectory, "expeditions.emj"), true));
+#if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[{this.Name}] {this.getActiveExpeditions().Count} active expeditions.");
+#endif
 
                 messageText = String.Format("Applying post-load Journal entry patches for commander '{0}'", this.Name);
                 m.InvokeIfRequired(() => m.appStatus.Text = messageText);
@@ -769,6 +779,11 @@ namespace EliteMonitor.Elite
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("StartJump") || a.Event.Equals("FSDJump"));
                 updateJournalEntries(toUpdate, m, patchVer, this);
             }
+            if (this.cacheVersion < (patchVer = 1426))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("Repair") || a.Event.Equals("DockSRV") || a.Event.Equals("LaunchSRV") || a.Event.Equals("DatalinkVoucher") || a.Event.Equals("DatalinkScan"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
         }
 
         private void updateJournalEntries(List<JournalEntry> toUpdate, MainForm m, int patchVer, Commander c)
@@ -819,6 +834,13 @@ namespace EliteMonitor.Elite
         public void setSaveRequired()
         {
             this.NeedsSaving = true;
+        }
+
+        public List<Expedition> getActiveExpeditions()
+        {
+            if (this.Expeditions == null)
+                return new List<Expedition>();
+            return this.Expeditions.Where(a => !a.Value.IsCompleted).Select(b => b.Value).ToList();
         }
     }
 }

@@ -125,6 +125,7 @@ namespace EliteMonitor.Logging
 
 #if DEBUG
                 Console.WriteLine(@string);
+                System.Diagnostics.Debug.WriteLine(@string);
 #endif
 
                 // Write the juicy goodness to file

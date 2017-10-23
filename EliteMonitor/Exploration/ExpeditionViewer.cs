@@ -1,4 +1,5 @@
 ﻿using EliteMonitor.Extensions;
+using EliteMonitor.Logging;
 using EliteMonitor.Utilities;
 using System;
 using System.Collections.Generic;
@@ -33,6 +34,12 @@ namespace EliteMonitor.Exploration
         {
             InitializeComponent();
             Instance = this;
+            loadExpeditions();
+        }
+
+        private void loadExpeditions()
+        {
+            this.comboBoxExpeditionPicker.Items.Clear();
             foreach (KeyValuePair<Guid, Expedition> e in MainForm.Instance.journalParser.viewedCommander.Expeditions)
             {
                 this.comboBoxExpeditionPicker.Items.Add(e.Value.ExpeditionName);
@@ -45,12 +52,12 @@ namespace EliteMonitor.Exploration
             this.Dispose();
         }
 
-        public void SetActiveExpedition(Guid guid)
+        public void SetActiveExpedition(Expedition expedition)
         {
             this.CurrentEstimatedValue = 0;
             if (this.LoadedExpedition != null)
                 this.LoadedExpedition.IsExpeditionLoaded = false;
-            this.LoadedExpedition = MainForm.Instance.journalParser.viewedCommander.Expeditions[guid];
+            this.LoadedExpedition = expedition;
             this.LoadedExpedition.OnLoad();
             this.DontUpdateOnChangedEvent = true;
             this.comboBoxExpeditionPicker.SelectedIndex = this.comboBoxExpeditionPicker.Items.IndexOf(this.LoadedExpedition.ExpeditionName);
@@ -152,6 +159,8 @@ namespace EliteMonitor.Exploration
                         column.TextAlign = HorizontalAlignment.Right;
                 }
                 this.listViewExpeditionStats.EndUpdate();
+                this.buttonCompleted.Enabled = !this.LoadedExpedition.IsCompleted;
+                this.labelExpeditionStatus.Text = this.LoadedExpedition.IsCompleted ? "COMPLETED" : "ACTIVE";
             });
         }
 
@@ -160,8 +169,8 @@ namespace EliteMonitor.Exploration
             if (!this.DontUpdateOnChangedEvent)
             {
                 string SelectedName = this.comboBoxExpeditionPicker.Items[this.comboBoxExpeditionPicker.SelectedIndex].ToString();
-                Guid selectedExpeditionGuid = MainForm.Instance.journalParser.viewedCommander.Expeditions.First(a => a.Value.ExpeditionName.Equals(SelectedName)).Key;
-                this.SetActiveExpedition(selectedExpeditionGuid);
+                Expedition selectedExpedition = MainForm.Instance.journalParser.viewedCommander.Expeditions.First(a => a.Value.ExpeditionName.Equals(SelectedName)).Value;
+                this.SetActiveExpedition(selectedExpedition);
             }
         }
 
@@ -189,9 +198,49 @@ namespace EliteMonitor.Exploration
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonRename_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(string.Format("{0}, {1}", this.Width, this.Height));
+            string newName = Utils.Prompt("Enter a new name for this expedition", "Rename Expedition");
+            if (MessageBox.Show($"Are you sure you want to rename the expedition '{this.LoadedExpedition.ExpeditionName}' to '{newName}'?", "Confirm Rename", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                int index = this.comboBoxExpeditionPicker.SelectedIndex;
+                this.LoadedExpedition.ExpeditionName = newName;
+                this.loadExpeditions();
+                this.comboBoxExpeditionPicker.SelectedIndex = index;
+            }
+        }
+
+        private void buttonDelete_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show($"Once deleted, '{this.LoadedExpedition.ExpeditionName}' will be gone forever, OK?", "Confirm Delete", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                if (ModifierKeys == Keys.Shift || MessageBox.Show($"Are you ABSOLUTELY sure you want to delete the expedition '{this.LoadedExpedition.ExpeditionName}'?\nTip: You can hold shift to skip this confirmation in the future.", "Confirm Delete", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    int chance = new Random((int)TimeSpan.Parse(DateTime.Now.ToShortTimeString()).TotalSeconds).Next(0, 100);
+#if DEBUG 
+                    MainForm.Instance.logger.Log("Random chance: {0}", LogLevel.DEBUG, chance);
+#endif
+                    if (chance < 5)
+                        MessageBox.Show(string.Format("{0} was released outside. Bye {0}", this.LoadedExpedition.ExpeditionName), ":(");
+                    Elite.Commander c = MainForm.Instance.journalParser.viewedCommander;
+                    this.comboBoxExpeditionPicker.Items.Remove(this.LoadedExpedition.ExpeditionName);
+                    c.Expeditions.Remove(this.LoadedExpedition.ExpeditionID);
+                    c.setSaveRequired();
+                    if (this.comboBoxExpeditionPicker.Items.Count > 0)
+                        this.comboBoxExpeditionPicker.SelectedIndex = this.comboBoxExpeditionPicker.Items.Count - 1;
+                    else
+                        this.Close();
+                }
+            }
+        }
+
+        private void buttonCompleted_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Are you sure you want to mark this expedition as complete?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                this.LoadedExpedition.IsCompleted = true;
+                this.updateData();
+            }
         }
     }
 }

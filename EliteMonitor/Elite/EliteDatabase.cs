@@ -11,20 +11,26 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Net;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 
 namespace EliteMonitor.Elite
 {
 
     public class NoElementMatchesSymbolException : Exception { }
+    public class NoResultsForSystemSearchException : Exception { }
 
     public class EliteDatabase
     {
 
-#if DEBUG
-        public const string EDSM_API_URL = "http://beta.edsm.net:8080/api-v1/";
-#else
+/*#if DEBUG
+        public const string EDSM_API_URL = "https://beta.edsm.net:8080/api-v1/"; // Seems to be deprecated?
+#else*/
         public const string EDSM_API_URL = "https://www.edsm.net/api-v1/";
-#endif
+        /*#endif*/
+
+        private WebClient EDSMWebClient = new WebClient();
+        public event EventHandler<List<BasicSystem>> OnEDSMDataDownloadComplete;
+        public event EventHandler<Int64[]> OnEDSMSystemParseProgress;
 
         public List<Material> Materials;
         public Dictionary<string, string> Ships;
@@ -233,6 +239,64 @@ namespace EliteMonitor.Elite
                 return string.Format("{0} class star", starClass);
         }
 
+        public void getSystemSearchResultsFromEDSMAPI(string searchText, EventHandler<List<BasicSystem>> onEDSMDataDoneDownloading, DownloadProgressChangedEventHandler downloadProgress = null, EventHandler<Int64[]> parseProgresshandler = null)
+        {
+            EDSMWebClient = new WebClient();
+            string url = string.Format("https://www.edsm.net/api-v1/systems?systemName={0}&showCoordinates=1&showInformation=1", searchText.Replace(" ", "%20"));
+            if (downloadProgress != null)
+                EDSMWebClient.DownloadProgressChanged += downloadProgress;
+            if (parseProgresshandler != null)
+                this.OnEDSMSystemParseProgress += parseProgresshandler;
+            EDSMWebClient.DownloadStringCompleted += EDSMDownloadCompleted;
+            EDSMWebClient.DownloadStringAsync(new Uri(url));
+            OnEDSMDataDownloadComplete += onEDSMDataDoneDownloading;
+        }
+
+        private void EDSMDownloadCompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+
+            JArray json = JArray.Parse(e.Result);
+            List<BasicSystem> results = new List<BasicSystem>();
+            long totalEntries = json.Count;
+            long currentEntry = 0;
+            foreach (JObject j in json)
+            {
+                this.OnEDSMSystemParseProgress(this, new Int64[] { currentEntry++, totalEntries });
+                string systemName = j.GetValue("name").ToString();
+                //Debug.WriteLine($"{currentEntry}: {systemName}");
+                SystemCoordinate coords;
+                try
+                {
+                    coords = JsonConvert.DeserializeObject<SystemCoordinate>(j.GetValue("coords").ToString());
+                } catch { continue; }
+                string Allegiance = "Independent";
+                string Economy = "None";
+                Dictionary<string, object> systemInfo = new Dictionary<string, object>();
+                try
+                {
+                    systemInfo = JsonConvert.DeserializeObject<Dictionary<string, object>>(j.GetValue("information").ToString());
+                }
+                catch { }
+
+                if (systemInfo.Count > 0)
+                {
+                    Allegiance = systemInfo["allegiance"].ToString();
+                    Economy = systemInfo["economy"].ToString();
+                }
+                results.Add(new BasicSystem(systemName, 0, coords, Allegiance, Economy));
+            }
+
+            OnEDSMDataDownloadComplete(this, results);
+
+            results.Clear();
+
+            // Unsubscribe all event listeners, otherwise shit gets crazy.
+            EDSMWebClient.Dispose();
+            this.OnEDSMDataDownloadComplete = null;
+            this.OnEDSMSystemParseProgress = null;
+
+        }
+
         public BasicSystem getSystemDataFromEDSMAPI(string text)
         {
             string apiURL = string.Format("{0}system", EDSM_API_URL);
@@ -390,6 +454,8 @@ namespace EliteMonitor.Elite
                         return 1720;
                     case "Helium rich gas giant": // Again, no idea if this is their actual designation
                         return 2100;
+                    case "Gas giant with water based life":
+                        return 2300;
 
                     default:
                         return 0;

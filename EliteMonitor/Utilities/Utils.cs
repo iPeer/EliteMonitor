@@ -233,6 +233,9 @@ namespace EliteMonitor.Utilities
             return v;
         }
 
+        public static double CalculateLyDistance(double toX, double toY, double toZ, double fromX, double fromY, double fromZ) => CalculateLyDistance(new SystemCoordinate(toX, toY, toZ), new SystemCoordinate(fromX, fromY, fromZ));
+        public static double CalculateLyDistance(double toX, double toY, double toZ, SystemCoordinate from) => CalculateLyDistance(new SystemCoordinate(toX, toY, toZ), from);
+        public static double CalculateLyDistance(SystemCoordinate to, double fromX, double fromY, double fromZ) => CalculateLyDistance(to, new SystemCoordinate(fromX, fromY, fromZ));
         public static double CalculateLyDistance(SystemCoordinate to, SystemCoordinate from)
         {
             return Math.Sqrt(Math.Pow((from.X - to.X), 2) + Math.Pow((from.Y - to.Y), 2) + Math.Pow((from.Z - to.Z), 2));

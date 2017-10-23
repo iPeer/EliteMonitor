@@ -28,30 +28,30 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem("a");
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("b");
-            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("c");
-            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("");
-            System.Windows.Forms.ListViewItem listViewItem5 = new System.Windows.Forms.ListViewItem("d");
-            System.Windows.Forms.ListViewItem listViewItem6 = new System.Windows.Forms.ListViewItem("");
-            System.Windows.Forms.ListViewItem listViewItem7 = new System.Windows.Forms.ListViewItem("e");
-            System.Windows.Forms.ListViewItem listViewItem8 = new System.Windows.Forms.ListViewItem("f");
-            System.Windows.Forms.ListViewItem listViewItem9 = new System.Windows.Forms.ListViewItem("a");
-            System.Windows.Forms.ListViewItem listViewItem10 = new System.Windows.Forms.ListViewItem("b");
-            System.Windows.Forms.ListViewItem listViewItem11 = new System.Windows.Forms.ListViewItem("c");
-            System.Windows.Forms.ListViewItem listViewItem12 = new System.Windows.Forms.ListViewItem("");
-            System.Windows.Forms.ListViewItem listViewItem13 = new System.Windows.Forms.ListViewItem("d");
-            System.Windows.Forms.ListViewItem listViewItem14 = new System.Windows.Forms.ListViewItem("");
-            System.Windows.Forms.ListViewItem listViewItem15 = new System.Windows.Forms.ListViewItem("e");
-            System.Windows.Forms.ListViewItem listViewItem16 = new System.Windows.Forms.ListViewItem("f");
-            System.Windows.Forms.ListViewItem listViewItem17 = new System.Windows.Forms.ListViewItem("a");
-            System.Windows.Forms.ListViewItem listViewItem18 = new System.Windows.Forms.ListViewItem("b");
-            System.Windows.Forms.ListViewItem listViewItem19 = new System.Windows.Forms.ListViewItem("c");
-            System.Windows.Forms.ListViewItem listViewItem20 = new System.Windows.Forms.ListViewItem("");
-            System.Windows.Forms.ListViewItem listViewItem21 = new System.Windows.Forms.ListViewItem("d");
-            System.Windows.Forms.ListViewItem listViewItem22 = new System.Windows.Forms.ListViewItem("");
-            System.Windows.Forms.ListViewItem listViewItem23 = new System.Windows.Forms.ListViewItem("e");
-            System.Windows.Forms.ListViewItem listViewItem24 = new System.Windows.Forms.ListViewItem("f");
+            System.Windows.Forms.ListViewItem listViewItem49 = new System.Windows.Forms.ListViewItem("a");
+            System.Windows.Forms.ListViewItem listViewItem50 = new System.Windows.Forms.ListViewItem("b");
+            System.Windows.Forms.ListViewItem listViewItem51 = new System.Windows.Forms.ListViewItem("c");
+            System.Windows.Forms.ListViewItem listViewItem52 = new System.Windows.Forms.ListViewItem("");
+            System.Windows.Forms.ListViewItem listViewItem53 = new System.Windows.Forms.ListViewItem("d");
+            System.Windows.Forms.ListViewItem listViewItem54 = new System.Windows.Forms.ListViewItem("");
+            System.Windows.Forms.ListViewItem listViewItem55 = new System.Windows.Forms.ListViewItem("e");
+            System.Windows.Forms.ListViewItem listViewItem56 = new System.Windows.Forms.ListViewItem("f");
+            System.Windows.Forms.ListViewItem listViewItem57 = new System.Windows.Forms.ListViewItem("a");
+            System.Windows.Forms.ListViewItem listViewItem58 = new System.Windows.Forms.ListViewItem("b");
+            System.Windows.Forms.ListViewItem listViewItem59 = new System.Windows.Forms.ListViewItem("c");
+            System.Windows.Forms.ListViewItem listViewItem60 = new System.Windows.Forms.ListViewItem("");
+            System.Windows.Forms.ListViewItem listViewItem61 = new System.Windows.Forms.ListViewItem("d");
+            System.Windows.Forms.ListViewItem listViewItem62 = new System.Windows.Forms.ListViewItem("");
+            System.Windows.Forms.ListViewItem listViewItem63 = new System.Windows.Forms.ListViewItem("e");
+            System.Windows.Forms.ListViewItem listViewItem64 = new System.Windows.Forms.ListViewItem("f");
+            System.Windows.Forms.ListViewItem listViewItem65 = new System.Windows.Forms.ListViewItem("a");
+            System.Windows.Forms.ListViewItem listViewItem66 = new System.Windows.Forms.ListViewItem("b");
+            System.Windows.Forms.ListViewItem listViewItem67 = new System.Windows.Forms.ListViewItem("c");
+            System.Windows.Forms.ListViewItem listViewItem68 = new System.Windows.Forms.ListViewItem("");
+            System.Windows.Forms.ListViewItem listViewItem69 = new System.Windows.Forms.ListViewItem("d");
+            System.Windows.Forms.ListViewItem listViewItem70 = new System.Windows.Forms.ListViewItem("");
+            System.Windows.Forms.ListViewItem listViewItem71 = new System.Windows.Forms.ListViewItem("e");
+            System.Windows.Forms.ListViewItem listViewItem72 = new System.Windows.Forms.ListViewItem("f");
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.listViewExpeditionStats = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -73,6 +73,8 @@
             this.buttonExportSystems = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.labelDataWorth = new System.Windows.Forms.Label();
+            this.labelExpeditionStatus = new System.Windows.Forms.Label();
+            this.buttonCompleted = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -96,14 +98,14 @@
             this.listViewExpeditionStats.FullRowSelect = true;
             this.listViewExpeditionStats.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listViewExpeditionStats.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1,
-            listViewItem2,
-            listViewItem3,
-            listViewItem4,
-            listViewItem5,
-            listViewItem6,
-            listViewItem7,
-            listViewItem8});
+            listViewItem49,
+            listViewItem50,
+            listViewItem51,
+            listViewItem52,
+            listViewItem53,
+            listViewItem54,
+            listViewItem55,
+            listViewItem56});
             this.listViewExpeditionStats.Location = new System.Drawing.Point(6, 19);
             this.listViewExpeditionStats.Name = "listViewExpeditionStats";
             this.listViewExpeditionStats.Size = new System.Drawing.Size(362, 137);
@@ -153,14 +155,14 @@
             this.listViewSystemList.FullRowSelect = true;
             this.listViewSystemList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listViewSystemList.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem9,
-            listViewItem10,
-            listViewItem11,
-            listViewItem12,
-            listViewItem13,
-            listViewItem14,
-            listViewItem15,
-            listViewItem16});
+            listViewItem57,
+            listViewItem58,
+            listViewItem59,
+            listViewItem60,
+            listViewItem61,
+            listViewItem62,
+            listViewItem63,
+            listViewItem64});
             this.listViewSystemList.Location = new System.Drawing.Point(394, 31);
             this.listViewSystemList.Name = "listViewSystemList";
             this.listViewSystemList.Size = new System.Drawing.Size(326, 609);
@@ -181,14 +183,14 @@
             this.listViewScanCounts.GridLines = true;
             this.listViewScanCounts.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewScanCounts.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem17,
-            listViewItem18,
-            listViewItem19,
-            listViewItem20,
-            listViewItem21,
-            listViewItem22,
-            listViewItem23,
-            listViewItem24});
+            listViewItem65,
+            listViewItem66,
+            listViewItem67,
+            listViewItem68,
+            listViewItem69,
+            listViewItem70,
+            listViewItem71,
+            listViewItem72});
             this.listViewScanCounts.Location = new System.Drawing.Point(12, 272);
             this.listViewScanCounts.MultiSelect = false;
             this.listViewScanCounts.Name = "listViewScanCounts";
@@ -233,23 +235,23 @@
             // 
             // buttonDelete
             // 
-            this.buttonDelete.Enabled = false;
-            this.buttonDelete.Location = new System.Drawing.Point(106, 39);
+            this.buttonDelete.Location = new System.Drawing.Point(339, 36);
             this.buttonDelete.Name = "buttonDelete";
-            this.buttonDelete.Size = new System.Drawing.Size(105, 23);
+            this.buttonDelete.Size = new System.Drawing.Size(49, 23);
             this.buttonDelete.TabIndex = 6;
-            this.buttonDelete.Text = "Delete Expedition";
+            this.buttonDelete.Text = "Delete";
             this.buttonDelete.UseVisualStyleBackColor = true;
+            this.buttonDelete.Click += new System.EventHandler(this.buttonDelete_Click);
             // 
             // buttonRename
             // 
-            this.buttonRename.Enabled = false;
-            this.buttonRename.Location = new System.Drawing.Point(267, 39);
+            this.buttonRename.Location = new System.Drawing.Point(276, 36);
             this.buttonRename.Name = "buttonRename";
-            this.buttonRename.Size = new System.Drawing.Size(121, 23);
+            this.buttonRename.Size = new System.Drawing.Size(57, 23);
             this.buttonRename.TabIndex = 7;
-            this.buttonRename.Text = "Rename Expedition";
+            this.buttonRename.Text = "Rename";
             this.buttonRename.UseVisualStyleBackColor = true;
+            this.buttonRename.Click += new System.EventHandler(this.buttonRename_Click);
             // 
             // buttonExportSystems
             // 
@@ -280,11 +282,32 @@
             this.labelDataWorth.TabIndex = 10;
             this.labelDataWorth.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // labelExpeditionStatus
+            // 
+            this.labelExpeditionStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelExpeditionStatus.Location = new System.Drawing.Point(9, 36);
+            this.labelExpeditionStatus.Name = "labelExpeditionStatus";
+            this.labelExpeditionStatus.Size = new System.Drawing.Size(91, 23);
+            this.labelExpeditionStatus.TabIndex = 1;
+            this.labelExpeditionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // buttonCompleted
+            // 
+            this.buttonCompleted.Location = new System.Drawing.Point(106, 36);
+            this.buttonCompleted.Name = "buttonCompleted";
+            this.buttonCompleted.Size = new System.Drawing.Size(92, 23);
+            this.buttonCompleted.TabIndex = 1;
+            this.buttonCompleted.Text = "Mark completed";
+            this.buttonCompleted.UseVisualStyleBackColor = true;
+            this.buttonCompleted.Click += new System.EventHandler(this.buttonCompleted_Click);
+            // 
             // ExpeditionViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(732, 698);
+            this.Controls.Add(this.buttonCompleted);
+            this.Controls.Add(this.labelExpeditionStatus);
             this.Controls.Add(this.labelDataWorth);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.buttonExportSystems);
@@ -332,5 +355,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.Label label4;
         public System.Windows.Forms.Label labelDataWorth;
+        private System.Windows.Forms.Label labelExpeditionStatus;
+        private System.Windows.Forms.Button buttonCompleted;
     }
 }

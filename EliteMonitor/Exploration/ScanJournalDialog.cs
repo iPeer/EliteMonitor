@@ -29,8 +29,8 @@ namespace EliteMonitor.Exploration
             long startId = startPoint.ID + 1;
             if (startId <= commander.JournalEntries.Count)
             {
-                commander.HasActiveExpedition = true;
-                commander.ActiveExpeditionGuid = expedition.ExpeditionID;
+                /*commander.HasActiveExpedition = true;
+                commander.ActiveExpeditionGuid = expedition.ExpeditionID;*/
                 string[] validEvents = new string[] { "FSDJump", "Scan" };
                 List<JournalEntry> entries = commander.JournalEntries.FindAll(a => a.ID >= startId && validEvents.Contains(a.Event));
                 this.progressBar1.InvokeIfRequired(() => this.progressBar1.Style = ProgressBarStyle.Continuous);

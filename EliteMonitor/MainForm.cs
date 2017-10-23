@@ -740,8 +740,15 @@ namespace EliteMonitor
 
         private void commanderLabel_Click(object sender, EventArgs e)
         {
-            HomeSystemChooser hsc = new HomeSystemChooser();
-            hsc.Show(this);
+            SystemSearchSelector sss = new SystemSearchSelector();
+            sss.SetCustomTitle("Select Home System");
+            sss.OnSystemSelected += SetHomeSystem;
+            sss.ShowDialog(this);
+        }
+
+        private void SetHomeSystem(object sender, BasicSystem e)
+        {
+            MainForm.Instance.journalParser.viewedCommander.setHomeSystem(e);
         }
 
         private void listViewedCommanderFirstDiscoveriesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -793,10 +800,10 @@ namespace EliteMonitor
             {
                 if (/*!this.journalParser.viewedCommander.HasActiveExpedition && */!this.journalContextMenu.Items.Contains(ExpeditionButton))
                 {
-                    Console.WriteLine("Boop");
                     this.journalContextMenu.Items.Insert(0, new ToolStripSeparator());
                     //ExpeditionButton.Click += startExpedition_Click;
                     this.journalContextMenu.Items.Insert(0, ExpeditionButton);
+                    this.journalContextMenu.Width = ExpeditionButton.Width;
                     this.journalContextMenu.PerformLayout();
                 }
             }
@@ -816,7 +823,6 @@ namespace EliteMonitor
         {
             if (this.journalContextMenu.Items.Contains(ExpeditionButton))
             {
-                Console.WriteLine("Boop!");
                 this.journalContextMenu.Items.Remove(ExpeditionButton);
                 this.journalContextMenu.Items.RemoveAt(0); // Remove the separator
                 this.journalContextMenu.PerformLayout();
@@ -841,10 +847,10 @@ namespace EliteMonitor
         {
             if (this.journalParser.viewedCommander.Expeditions == null || this.journalParser.viewedCommander.Expeditions.Count == 0) { MessageBox.Show("There are no expeditions attached to this commander. You'll need to make some first."); return; }
             ExpeditionViewer ev = new ExpeditionViewer();
-            if (this.journalParser.viewedCommander.HasActiveExpedition)
-                ev.SetActiveExpedition(this.journalParser.viewedCommander.ActiveExpeditionGuid);
+            if (this.journalParser.viewedCommander.getActiveExpeditions().Count > 0)
+                ev.SetActiveExpedition(this.journalParser.viewedCommander.getActiveExpeditions().Last());
             else
-                ev.SetActiveExpedition(this.journalParser.viewedCommander.Expeditions.Last().Key);
+                ev.SetActiveExpedition(this.journalParser.viewedCommander.Expeditions.Last().Value);
             ev.Show();
         }
 
@@ -939,6 +945,34 @@ namespace EliteMonitor
             hideMusicEventsToolStripMenuItem.Checked = !hideMusicEventsToolStripMenuItem.Checked;
             Properties.Settings.Default.HideMusicEvents = hideMusicEventsToolStripMenuItem.Checked;
             Properties.Settings.Default.Save();
+        }
+
+        private void systemSearchTestToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SystemSearchSelector sss = new SystemSearchSelector();
+            sss.ShowDialog();
+        }
+
+        private void addTimestampWidthTestRowToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.eventList.Rows.Insert(0, DateTime.Now.ToString(@"MM/dd/yyyy HH\:mm\:ss tt", System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        private void displayDataGridViewColumnWidthsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (DataGridViewColumn c in this.eventList.Columns)
+            {
+                sb.AppendFormat("{0}: {1}\n", c.HeaderText, c.Width);
+            }
+            MessageBox.Show(sb.ToString());
+        }
+
+        private void forceOpenUpdateDialogToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            UpdateNotifier un = new UpdateNotifier();
+            un.setVersion(Utils.getApplicationVersion().ToString());
+            un.Show();
         }
     }
 }
