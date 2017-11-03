@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.appStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTailingFailed = new System.Windows.Forms.ToolStripStatusLabel();
@@ -64,6 +64,11 @@
             this.hMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tHMCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.systemSearchTestToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addTimestampWidthTestRowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.displayDataGridViewColumnWidthsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.forceOpenUpdateDialogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.displayActiveScreenResolutionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.displayTestNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.enableSoundsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hideMusicEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -72,19 +77,25 @@
             this.labelCreditsChange = new System.Windows.Forms.Label();
             this.empireRankProgress = new System.Windows.Forms.ProgressBar();
             this.empireRankName = new System.Windows.Forms.Label();
+            this.empireRankImage = new System.Windows.Forms.PictureBox();
             this.fedRankProgress = new System.Windows.Forms.ProgressBar();
             this.fedRankName = new System.Windows.Forms.Label();
+            this.federationRankImage = new System.Windows.Forms.PictureBox();
             this.cqcRankProgress = new System.Windows.Forms.ProgressBar();
             this.cqcRankName = new System.Windows.Forms.Label();
+            this.cqcRankImage = new System.Windows.Forms.PictureBox();
             this.exploreRankProgress = new System.Windows.Forms.ProgressBar();
             this.exploreRankName = new System.Windows.Forms.Label();
+            this.exploreRankImage = new System.Windows.Forms.PictureBox();
             this.tradeRankProgress = new System.Windows.Forms.ProgressBar();
             this.tradeRankName = new System.Windows.Forms.Label();
+            this.tradeRankImage = new System.Windows.Forms.PictureBox();
             this.combatProgress = new System.Windows.Forms.ProgressBar();
             this.combatRankName = new System.Windows.Forms.Label();
             this.creditsLabel = new System.Windows.Forms.Label();
             this.commanderLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.combatRankImage = new System.Windows.Forms.PictureBox();
             this.journalContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
@@ -101,29 +112,24 @@
             this.buttonDiscoveredBodies = new System.Windows.Forms.Button();
             this.buttonExpeditions = new System.Windows.Forms.Button();
             this.eventList = new System.Windows.Forms.DataGridView();
-            this.addTimestampWidthTestRowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.displayDataGridViewColumnWidthsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.empireRankImage = new System.Windows.Forms.PictureBox();
-            this.federationRankImage = new System.Windows.Forms.PictureBox();
-            this.cqcRankImage = new System.Windows.Forms.PictureBox();
-            this.exploreRankImage = new System.Windows.Forms.PictureBox();
-            this.tradeRankImage = new System.Windows.Forms.PictureBox();
-            this.combatRankImage = new System.Windows.Forms.PictureBox();
-            this.forceOpenUpdateDialogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.notificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.notificationsEnabledToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.friendsNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scanNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
-            this.journalContextMenu.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.eventList)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.empireRankImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.federationRankImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cqcRankImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.exploreRankImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tradeRankImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.combatRankImage)).BeginInit();
+            this.journalContextMenu.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.eventList)).BeginInit();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -308,7 +314,9 @@
             this.systemSearchTestToolStripMenuItem,
             this.addTimestampWidthTestRowToolStripMenuItem,
             this.displayDataGridViewColumnWidthsToolStripMenuItem,
-            this.forceOpenUpdateDialogToolStripMenuItem});
+            this.forceOpenUpdateDialogToolStripMenuItem,
+            this.displayActiveScreenResolutionToolStripMenuItem,
+            this.displayTestNotificationsToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -410,11 +418,47 @@
             this.systemSearchTestToolStripMenuItem.Text = "System Search Test";
             this.systemSearchTestToolStripMenuItem.Click += new System.EventHandler(this.systemSearchTestToolStripMenuItem_Click);
             // 
+            // addTimestampWidthTestRowToolStripMenuItem
+            // 
+            this.addTimestampWidthTestRowToolStripMenuItem.Name = "addTimestampWidthTestRowToolStripMenuItem";
+            this.addTimestampWidthTestRowToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.addTimestampWidthTestRowToolStripMenuItem.Text = "Add timestamp width test row";
+            this.addTimestampWidthTestRowToolStripMenuItem.Click += new System.EventHandler(this.addTimestampWidthTestRowToolStripMenuItem_Click);
+            // 
+            // displayDataGridViewColumnWidthsToolStripMenuItem
+            // 
+            this.displayDataGridViewColumnWidthsToolStripMenuItem.Name = "displayDataGridViewColumnWidthsToolStripMenuItem";
+            this.displayDataGridViewColumnWidthsToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.displayDataGridViewColumnWidthsToolStripMenuItem.Text = "Display DataGridView column widths";
+            this.displayDataGridViewColumnWidthsToolStripMenuItem.Click += new System.EventHandler(this.displayDataGridViewColumnWidthsToolStripMenuItem_Click);
+            // 
+            // forceOpenUpdateDialogToolStripMenuItem
+            // 
+            this.forceOpenUpdateDialogToolStripMenuItem.Name = "forceOpenUpdateDialogToolStripMenuItem";
+            this.forceOpenUpdateDialogToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.forceOpenUpdateDialogToolStripMenuItem.Text = "Force open update dialog";
+            this.forceOpenUpdateDialogToolStripMenuItem.Click += new System.EventHandler(this.forceOpenUpdateDialogToolStripMenuItem_Click);
+            // 
+            // displayActiveScreenResolutionToolStripMenuItem
+            // 
+            this.displayActiveScreenResolutionToolStripMenuItem.Name = "displayActiveScreenResolutionToolStripMenuItem";
+            this.displayActiveScreenResolutionToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.displayActiveScreenResolutionToolStripMenuItem.Text = "Display active screen resolution";
+            this.displayActiveScreenResolutionToolStripMenuItem.Click += new System.EventHandler(this.displayActiveScreenResolutionToolStripMenuItem_Click);
+            // 
+            // displayTestNotificationsToolStripMenuItem
+            // 
+            this.displayTestNotificationsToolStripMenuItem.Name = "displayTestNotificationsToolStripMenuItem";
+            this.displayTestNotificationsToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.displayTestNotificationsToolStripMenuItem.Text = "Display test notifications";
+            this.displayTestNotificationsToolStripMenuItem.Click += new System.EventHandler(this.displayTestNotificationsToolStripMenuItem_Click);
+            // 
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.enableSoundsToolStripMenuItem,
-            this.hideMusicEventsToolStripMenuItem});
+            this.hideMusicEventsToolStripMenuItem,
+            this.notificationsToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsToolStripMenuItem.Text = "Options";
@@ -521,6 +565,20 @@
             this.empireRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.empireRankName.Click += new System.EventHandler(this.tradeRankName_Click);
             // 
+            // empireRankImage
+            // 
+            this.empireRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.empireRankImage.Image = global::EliteMonitor.Properties.Resources.empire;
+            this.empireRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.empireRankImage.Location = new System.Drawing.Point(656, 47);
+            this.empireRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.empireRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.empireRankImage.Name = "empireRankImage";
+            this.empireRankImage.Size = new System.Drawing.Size(137, 120);
+            this.empireRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.empireRankImage.TabIndex = 18;
+            this.empireRankImage.TabStop = false;
+            // 
             // fedRankProgress
             // 
             this.fedRankProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -545,6 +603,21 @@
             this.fedRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.fedRankName.Click += new System.EventHandler(this.tradeRankName_Click);
             // 
+            // federationRankImage
+            // 
+            this.federationRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.federationRankImage.BackColor = System.Drawing.SystemColors.Control;
+            this.federationRankImage.Image = global::EliteMonitor.Properties.Resources.federation;
+            this.federationRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.federationRankImage.Location = new System.Drawing.Point(513, 47);
+            this.federationRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.federationRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.federationRankImage.Name = "federationRankImage";
+            this.federationRankImage.Size = new System.Drawing.Size(137, 120);
+            this.federationRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.federationRankImage.TabIndex = 15;
+            this.federationRankImage.TabStop = false;
+            // 
             // cqcRankProgress
             // 
             this.cqcRankProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -568,6 +641,20 @@
             this.cqcRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.cqcRankName.Click += new System.EventHandler(this.tradeRankName_Click);
             // 
+            // cqcRankImage
+            // 
+            this.cqcRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cqcRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_cqc;
+            this.cqcRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.cqcRankImage.Location = new System.Drawing.Point(799, 47);
+            this.cqcRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.cqcRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.cqcRankImage.Name = "cqcRankImage";
+            this.cqcRankImage.Size = new System.Drawing.Size(137, 120);
+            this.cqcRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.cqcRankImage.TabIndex = 12;
+            this.cqcRankImage.TabStop = false;
+            // 
             // exploreRankProgress
             // 
             this.exploreRankProgress.Location = new System.Drawing.Point(292, 186);
@@ -588,6 +675,19 @@
             this.exploreRankName.Text = "Aimless";
             this.exploreRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.exploreRankName.Click += new System.EventHandler(this.tradeRankName_Click);
+            // 
+            // exploreRankImage
+            // 
+            this.exploreRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1;
+            this.exploreRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.exploreRankImage.Location = new System.Drawing.Point(292, 47);
+            this.exploreRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.exploreRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.exploreRankImage.Name = "exploreRankImage";
+            this.exploreRankImage.Size = new System.Drawing.Size(137, 120);
+            this.exploreRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.exploreRankImage.TabIndex = 9;
+            this.exploreRankImage.TabStop = false;
             // 
             // tradeRankProgress
             // 
@@ -610,6 +710,20 @@
             this.tradeRankName.Text = "Penniless";
             this.tradeRankName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.tradeRankName.Click += new System.EventHandler(this.tradeRankName_Click);
+            // 
+            // tradeRankImage
+            // 
+            this.tradeRankImage.BackColor = System.Drawing.SystemColors.Control;
+            this.tradeRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_trading;
+            this.tradeRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.tradeRankImage.Location = new System.Drawing.Point(149, 47);
+            this.tradeRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.tradeRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.tradeRankImage.Name = "tradeRankImage";
+            this.tradeRankImage.Size = new System.Drawing.Size(137, 120);
+            this.tradeRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.tradeRankImage.TabIndex = 6;
+            this.tradeRankImage.TabStop = false;
             // 
             // combatProgress
             // 
@@ -668,6 +782,19 @@
             this.label1.Size = new System.Drawing.Size(43, 13);
             this.label1.TabIndex = 0;
             this.label1.Text = "CMDR";
+            // 
+            // combatRankImage
+            // 
+            this.combatRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.combatRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
+            this.combatRankImage.Location = new System.Drawing.Point(6, 47);
+            this.combatRankImage.MaximumSize = new System.Drawing.Size(137, 120);
+            this.combatRankImage.MinimumSize = new System.Drawing.Size(137, 120);
+            this.combatRankImage.Name = "combatRankImage";
+            this.combatRankImage.Size = new System.Drawing.Size(137, 120);
+            this.combatRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.combatRankImage.TabIndex = 3;
+            this.combatRankImage.TabStop = false;
             // 
             // journalContextMenu
             // 
@@ -822,25 +949,11 @@
             this.eventList.TabIndex = 10;
             this.eventList.MouseClick += new System.Windows.Forms.MouseEventHandler(this.eventList_MouseClick);
             // 
-            // addTimestampWidthTestRowToolStripMenuItem
-            // 
-            this.addTimestampWidthTestRowToolStripMenuItem.Name = "addTimestampWidthTestRowToolStripMenuItem";
-            this.addTimestampWidthTestRowToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
-            this.addTimestampWidthTestRowToolStripMenuItem.Text = "Add timestamp width test row";
-            this.addTimestampWidthTestRowToolStripMenuItem.Click += new System.EventHandler(this.addTimestampWidthTestRowToolStripMenuItem_Click);
-            // 
-            // displayDataGridViewColumnWidthsToolStripMenuItem
-            // 
-            this.displayDataGridViewColumnWidthsToolStripMenuItem.Name = "displayDataGridViewColumnWidthsToolStripMenuItem";
-            this.displayDataGridViewColumnWidthsToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
-            this.displayDataGridViewColumnWidthsToolStripMenuItem.Text = "Display DataGridView column widths";
-            this.displayDataGridViewColumnWidthsToolStripMenuItem.Click += new System.EventHandler(this.displayDataGridViewColumnWidthsToolStripMenuItem_Click);
-            // 
             // Column1
             // 
             this.Column1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.Column1.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.Column1.DefaultCellStyle = dataGridViewCellStyle3;
             this.Column1.HeaderText = "Timestamp";
             this.Column1.Name = "Column1";
             this.Column1.ReadOnly = true;
@@ -861,95 +974,36 @@
             this.Column3.Name = "Column3";
             this.Column3.ReadOnly = true;
             // 
-            // empireRankImage
+            // notificationsToolStripMenuItem
             // 
-            this.empireRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.empireRankImage.Image = global::EliteMonitor.Properties.Resources.empire;
-            this.empireRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.empireRankImage.Location = new System.Drawing.Point(656, 47);
-            this.empireRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.empireRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.empireRankImage.Name = "empireRankImage";
-            this.empireRankImage.Size = new System.Drawing.Size(137, 120);
-            this.empireRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.empireRankImage.TabIndex = 18;
-            this.empireRankImage.TabStop = false;
+            this.notificationsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.notificationsEnabledToolStripMenuItem,
+            this.friendsNotificationsToolStripMenuItem,
+            this.scanNotificationsToolStripMenuItem});
+            this.notificationsToolStripMenuItem.Name = "notificationsToolStripMenuItem";
+            this.notificationsToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.notificationsToolStripMenuItem.Text = "Notifications";
             // 
-            // federationRankImage
+            // notificationsEnabledToolStripMenuItem
             // 
-            this.federationRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.federationRankImage.BackColor = System.Drawing.SystemColors.Control;
-            this.federationRankImage.Image = global::EliteMonitor.Properties.Resources.federation;
-            this.federationRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.federationRankImage.Location = new System.Drawing.Point(513, 47);
-            this.federationRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.federationRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.federationRankImage.Name = "federationRankImage";
-            this.federationRankImage.Size = new System.Drawing.Size(137, 120);
-            this.federationRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.federationRankImage.TabIndex = 15;
-            this.federationRankImage.TabStop = false;
+            this.notificationsEnabledToolStripMenuItem.Name = "notificationsEnabledToolStripMenuItem";
+            this.notificationsEnabledToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.notificationsEnabledToolStripMenuItem.Text = "Notifications Enabled";
+            this.notificationsEnabledToolStripMenuItem.Click += new System.EventHandler(this.notificationsEnabledToolStripMenuItem_Click);
             // 
-            // cqcRankImage
+            // friendsNotificationsToolStripMenuItem
             // 
-            this.cqcRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cqcRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_cqc;
-            this.cqcRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.cqcRankImage.Location = new System.Drawing.Point(799, 47);
-            this.cqcRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.cqcRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.cqcRankImage.Name = "cqcRankImage";
-            this.cqcRankImage.Size = new System.Drawing.Size(137, 120);
-            this.cqcRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.cqcRankImage.TabIndex = 12;
-            this.cqcRankImage.TabStop = false;
+            this.friendsNotificationsToolStripMenuItem.Name = "friendsNotificationsToolStripMenuItem";
+            this.friendsNotificationsToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.friendsNotificationsToolStripMenuItem.Text = "Friends Notifications";
+            this.friendsNotificationsToolStripMenuItem.Click += new System.EventHandler(this.friendsNotificationsToolStripMenuItem_Click);
             // 
-            // exploreRankImage
+            // scanNotificationsToolStripMenuItem
             // 
-            this.exploreRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1;
-            this.exploreRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.exploreRankImage.Location = new System.Drawing.Point(292, 47);
-            this.exploreRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.exploreRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.exploreRankImage.Name = "exploreRankImage";
-            this.exploreRankImage.Size = new System.Drawing.Size(137, 120);
-            this.exploreRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.exploreRankImage.TabIndex = 9;
-            this.exploreRankImage.TabStop = false;
-            // 
-            // tradeRankImage
-            // 
-            this.tradeRankImage.BackColor = System.Drawing.SystemColors.Control;
-            this.tradeRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_trading;
-            this.tradeRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.tradeRankImage.Location = new System.Drawing.Point(149, 47);
-            this.tradeRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.tradeRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.tradeRankImage.Name = "tradeRankImage";
-            this.tradeRankImage.Size = new System.Drawing.Size(137, 120);
-            this.tradeRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.tradeRankImage.TabIndex = 6;
-            this.tradeRankImage.TabStop = false;
-            // 
-            // combatRankImage
-            // 
-            this.combatRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.combatRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.combatRankImage.Location = new System.Drawing.Point(6, 47);
-            this.combatRankImage.MaximumSize = new System.Drawing.Size(137, 120);
-            this.combatRankImage.MinimumSize = new System.Drawing.Size(137, 120);
-            this.combatRankImage.Name = "combatRankImage";
-            this.combatRankImage.Size = new System.Drawing.Size(137, 120);
-            this.combatRankImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.combatRankImage.TabIndex = 3;
-            this.combatRankImage.TabStop = false;
-            // 
-            // forceOpenUpdateDialogToolStripMenuItem
-            // 
-            this.forceOpenUpdateDialogToolStripMenuItem.Name = "forceOpenUpdateDialogToolStripMenuItem";
-            this.forceOpenUpdateDialogToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
-            this.forceOpenUpdateDialogToolStripMenuItem.Text = "Force open update dialog";
-            this.forceOpenUpdateDialogToolStripMenuItem.Click += new System.EventHandler(this.forceOpenUpdateDialogToolStripMenuItem_Click);
+            this.scanNotificationsToolStripMenuItem.Name = "scanNotificationsToolStripMenuItem";
+            this.scanNotificationsToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.scanNotificationsToolStripMenuItem.Text = "Scan Notifications";
+            this.scanNotificationsToolStripMenuItem.Click += new System.EventHandler(this.scanNotificationsToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -980,14 +1034,14 @@
             this.menuStrip1.PerformLayout();
             this.commanderBox.ResumeLayout(false);
             this.commanderBox.PerformLayout();
-            this.journalContextMenu.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.eventList)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.empireRankImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.federationRankImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.cqcRankImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.exploreRankImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tradeRankImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.combatRankImage)).EndInit();
+            this.journalContextMenu.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.eventList)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1078,6 +1132,12 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
         private System.Windows.Forms.ToolStripMenuItem forceOpenUpdateDialogToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem displayActiveScreenResolutionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem displayTestNotificationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem notificationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem notificationsEnabledToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem friendsNotificationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem scanNotificationsToolStripMenuItem;
     }
 }
 

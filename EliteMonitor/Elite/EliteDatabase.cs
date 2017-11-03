@@ -166,6 +166,7 @@ namespace EliteMonitor.Elite
 
         public void loadCommodities()
         {
+            // TODO
             /*using (StreamReader sr = new StreamReader(Path.Combine(MainForm.Instance.cacheController.dataPath, "commodities.json")))
             {
                 this.Commodities = JsonConvert.DeserializeObject<List<Commodity>>(sr.ReadToEnd());
@@ -285,6 +286,8 @@ namespace EliteMonitor.Elite
                 }
                 results.Add(new BasicSystem(systemName, 0, coords, Allegiance, Economy));
             }
+
+            json.Clear();
 
             OnEDSMDataDownloadComplete(this, results);
 

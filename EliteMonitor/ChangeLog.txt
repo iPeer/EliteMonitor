@@ -1,14 +1,23 @@
 ﻿1.0.0.????
+	
+
+1.0.0.1614
 	* ChangeLog added, we're in 2017 now!
 	* Fixed an issue where journal entries created before the LoadGame entry on new sessions were not being parsed.
-	* Fixed a crash when scanning asteroid belts with the DSS which having an active expedition.
+	* Fixed a crash when scanning asteroid belts with the DSS while having an active expedition.
 	* System selection for home systems has been completely overhauled.
 	* Fixed "Gas giant with water based life" showing as 0 credits in the Expedition viewer's scan count list.
 	* Users can now pick a custom ending point for exploration expeditions.
 	* Expeditions can now be ended manually via the expedition viewer.
 	* Expeditions can now be renamed.
 	* Expeditions can now be deleted.
-	* EliteMonitor now supports users having multiple (unlimited) active expeditions at once.
+	* EliteMonitor now supports users having multiple active expeditions at once.
 	* Line heights have been tweaked slightly on the main journal display to combat some text-wrapping issues.
 	* Fixed an issue where the ante/post meridiems were being wrapped on timestamps for locales that use them.
 	* Added support for the following events: DatalinkVoucher, DatalinkScan, DockSRV, LaunchSRV and Repair.
+	* Removed some redundant caching of new journal entries to help on the long-term memory footprint.
+	* Fixed an issue causing the previously active commander to not be marked as dirty (requiring save) when switching to a different commander.
+	* Fixed several issues with parsing Scan entries from 2.3.* beta journals.
+	* Notifications: Notifications can be displayed when scanning planets (enabled by default) or when friends come online (disabled by default). Can be disabled under the options menu.
+	* Minor: Kelvin temperatures in Scan data now have commas(!)
+	* Checked entries under the options menu will now correctly represent the settings' status

@@ -130,5 +130,41 @@ namespace EliteMonitor.Properties {
                 this["HideMusicEvents"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool FriendNotifications {
+            get {
+                return ((bool)(this["FriendNotifications"]));
+            }
+            set {
+                this["FriendNotifications"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool NotificationsEnabled {
+            get {
+                return ((bool)(this["NotificationsEnabled"]));
+            }
+            set {
+                this["NotificationsEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ScanNotifications {
+            get {
+                return ((bool)(this["ScanNotifications"]));
+            }
+            set {
+                this["ScanNotifications"] = value;
+            }
+        }
     }
 }

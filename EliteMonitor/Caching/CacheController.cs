@@ -86,6 +86,7 @@ namespace EliteMonitor.Caching
             return /*File.Exists(this.commandersPath) && */File.Exists(this.journalLengthCache);
         }
 
+        [Obsolete("This method should no longer be used", true)]
         public void addJournalEntryToCache(string journalEntry)
         {
             if (!_journalCache.Contains(journalEntry))
@@ -141,7 +142,7 @@ namespace EliteMonitor.Caching
                             this._journalLengthCache.Add(f.Name, f.Length);*/
                     }
                     this.logger.Log("Creating up to {0} new entries from files that failed verification", newEntries.Count);
-                    mainForm.journalParser.createJournalEntries(newEntries, true, true, dontPlaySounds: true, dontUpdatePercentage: false);
+                    mainForm.journalParser.createJournalEntries(newEntries, true, true, dontPlaySounds: true, dontUpdatePercentage: false, showNotifications: false);
                     foreach (KeyValuePair<string, long> kvp in newJournalLengthCache)
                     {
                         if (this._journalLengthCache.ContainsKey(kvp.Key))

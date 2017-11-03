@@ -4,6 +4,7 @@ using EliteMonitor.Exploration;
 using EliteMonitor.Extensions;
 using EliteMonitor.Journal;
 using EliteMonitor.Logging;
+using EliteMonitor.Notifications;
 using EliteMonitor.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -42,6 +43,7 @@ namespace EliteMonitor
         private string lastHighlight = "";
         public EliteDatabase Database;
         ToolStripButton ExpeditionButton = new ToolStripButton("Start exploration expedition here");
+        public NotificationManager notificationManager;
 
         public MainForm()
         {
@@ -54,6 +56,12 @@ namespace EliteMonitor
 
             this.WindowState = (FormWindowState)Properties.Settings.Default.WindowState;
 
+            enableSoundsToolStripMenuItem.Checked = Properties.Settings.Default.SoundsEnabled;
+            hideMusicEventsToolStripMenuItem.Checked = Properties.Settings.Default.HideMusicEvents;
+            notificationsEnabledToolStripMenuItem.Checked = Properties.Settings.Default.NotificationsEnabled;
+            friendsNotificationsToolStripMenuItem.Checked = Properties.Settings.Default.FriendNotifications;
+            scanNotificationsToolStripMenuItem.Checked = Properties.Settings.Default.ScanNotifications;
+
             ExpeditionButton.Click += startExpedition_Click;
 #if !DEBUG
             dEBUGToolStripMenuItem.Visible = false;
@@ -64,6 +72,7 @@ namespace EliteMonitor
             journalParser = new JournalParser(this);
             cacheController = new CacheController(this);
             Database = new EliteDatabase(this);
+            notificationManager = new NotificationManager();
             if (!cacheController.cacheExists())
             {
                 startNoCacheLoadThread();
@@ -137,6 +146,8 @@ namespace EliteMonitor
                     MessageBox.Show("Unfortunately, an error occurred while attempting to load data from the journal files. Please try loading it again by restarting EliteMonitor.\nIf this issue persists, please report it as a bug so it can be fixed!", "Journal parsing error", MessageBoxButtons.OK);
                     this.InvokeIfRequired(() => this.eventList.EndUpdate()); // Force end update otherwise the list becomes blank after load failure of new data
                     this.logger.Log("{0}", e.ToString(), LogLevel.ERROR);
+                    this.logger.Log("JSON causing the error: {0}", journalParser.LastParsedJson, LogLevel.ERROR);
+                    return; // Prevent saving
                 }
                 cacheController.saveAllCaches();
                 onCacheLoadComplete();
@@ -164,6 +175,8 @@ namespace EliteMonitor
                         MessageBox.Show("Unfortunately, an error occurred while attempting to load new data from the journal files. Old, existing data will still be available to view, but new data will not be added until the issue is resolved.\nIf this issue persists, please report it as a bug so it can be fixed!", "Journal parsing error", MessageBoxButtons.OK);
                         this.InvokeIfRequired(() => this.eventList.EndUpdate()); // Force end update otherwise the list becomes blank after load failure of new data
                         this.logger.Log("{0}", e.ToString(), LogLevel.ERROR);
+                        this.logger.Log("JSON causing the error: {0}", journalParser.LastParsedJson, LogLevel.ERROR);
+                        return; // Prevent saving
                     }
                     journalParser.switchViewedCommander(cacheController.switchOnLoad);
                     cacheController.switchOnLoad = null;
@@ -973,6 +986,62 @@ namespace EliteMonitor
             UpdateNotifier un = new UpdateNotifier();
             un.setVersion(Utils.getApplicationVersion().ToString());
             un.Show();
+        }
+
+        private void displayActiveScreenResolutionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(Utils.getActiveScreenResolution().ToString());
+        }
+
+        private void displayTestNotificationsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Notification test1 = new Notification("Test 1", "I am a test notification.");
+            Notification test2 = new Notification("Test 2", "I am a test notification with a longer text body and a 25 second display timer.", 25);
+            Notification test3 = new Notification("Test 3", "I am a test notification with the same delay as Test 1 but I'm in the middle of multiple notifications.");
+            Notification test4 = new Notification("Test 4", "I am a test notification with the same delay as Test 1, in the middle of multiple notifications.\nAnd spread\nOver multiple\nlines!");
+            Notification test5 = new Notification("You shouldn't see this!", "I am a test notification with a longer text body, a 20 second display timer and no title", 20, false);
+
+            this.notificationManager.AddNotificationToQueue(test1);
+            this.notificationManager.AddNotificationToQueue(test2);
+            this.notificationManager.AddNotificationToQueue(test3);
+            this.notificationManager.AddNotificationToQueue(test4);
+            this.notificationManager.AddNotificationToQueue(test5);
+            //this.notificationManager.showNotificationQueue();
+
+           /* NotificationPopup np = new NotificationPopup();
+            NotificationPopup np2 = new NotificationPopup();
+            np.Location = new Point(Utils.getActiveScreenResolution().Width - (np.Width + 100), 10);
+            np2.Location = new Point(Utils.getActiveScreenResolution().Width - 50, 300);
+            np.Show();
+            np2.Show();
+            Thread t = new Thread(() =>
+            {
+                Thread.Sleep(5000);
+                np2.InvokeIfRequired(() => np2.Location = new Point(Utils.getActiveScreenResolution().Width - 500, 300));
+            });
+            t.IsBackground = true;
+            t.Start();*/
+        }
+
+        private void notificationsEnabledToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            notificationsEnabledToolStripMenuItem.Checked = !notificationsEnabledToolStripMenuItem.Checked;
+            Properties.Settings.Default.NotificationsEnabled = notificationsEnabledToolStripMenuItem.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void friendsNotificationsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            friendsNotificationsToolStripMenuItem.Checked = !friendsNotificationsToolStripMenuItem.Checked;
+            Properties.Settings.Default.FriendNotifications = friendsNotificationsToolStripMenuItem.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void scanNotificationsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            scanNotificationsToolStripMenuItem.Checked = !scanNotificationsToolStripMenuItem.Checked;
+            Properties.Settings.Default.ScanNotifications = scanNotificationsToolStripMenuItem.Checked;
+            Properties.Settings.Default.Save();
         }
     }
 }

@@ -12,17 +12,19 @@ using System.Windows.Forms;
 using System.Net;
 using System.Threading;
 using EliteMonitor.Extensions;
+using System.Diagnostics;
 
 namespace EliteMonitor
 {
 
     // FIXME: Memory leak (somewhere)!
+    // Memory leak may be fixed, requires further testing
 
     public partial class SystemSearchSelector : Form
     {
 
         public event EventHandler<BasicSystem> OnSystemSelected;
-        public List<BasicSystem> searchResults = new List<BasicSystem>();
+        public List<BasicSystem> searchResults;
         Thread searchThread;
 
         public SystemSearchSelector()
@@ -37,7 +39,8 @@ namespace EliteMonitor
 
         private void buttonSearch_Click(object sender, EventArgs e)
         {
-            this.searchResults.Clear();
+            if (this.searchResults != null)
+                this.searchResults.Clear();
             if (string.IsNullOrWhiteSpace(textBoxSearchText.Text))
             {
                 MessageBox.Show("You must enter some text to search for!");
@@ -52,10 +55,14 @@ namespace EliteMonitor
             listView1.Items.Clear();
             if (searchThread != null && searchThread.IsAlive)
                 searchThread.Abort();
-            searchThread = new Thread(() =>
+            if (searchThread == null || !searchThread.IsAlive)
             {
-                EliteDatabase.Instance.getSystemSearchResultsFromEDSMAPI(textBoxSearchText.Text, EDSMDataDownloadCompleted, EDSMDataDownloadProgress, EDSMSystemParseProgress);
-            });
+                this.searchThread = null;
+                this.searchThread = new Thread(() =>
+                {
+                    EliteDatabase.Instance.getSystemSearchResultsFromEDSMAPI(textBoxSearchText.Text, EDSMDataDownloadCompleted, EDSMDataDownloadProgress, EDSMSystemParseProgress);
+                });
+            }
             /*searchThread.IsBackground = true;*/
             searchThread.Start();
 
@@ -91,13 +98,26 @@ namespace EliteMonitor
         {
             labelInstructions.InvokeIfRequired(() => labelInstructions.Visible = true);
             progressBar1.InvokeIfRequired(() => progressBar1.Visible = labelProgress.Visible = false);
-            this.searchResults = new List<BasicSystem>(e);
+            if (this.listView1.Items.Count > 0)
+                this.listView1.InvokeIfRequired(() => this.listView1.Items.Clear());
+            if (this.searchResults != null && this.searchResults.Count > 0)
+                this.searchResults.Clear();
+            if (this.searchResults == null)
+                this.searchResults = new List<BasicSystem>();
+            /*e.Clear();
+            this.searchResults.OrderBy(a => a.DistanceFromSol);*/
+            e.OrderBy(a => a.DistanceFromSol);
             listView1.InvokeIfRequired(() => listView1.BeginUpdate());
+#if DEBUG
+            Debug.WriteLine(e.Count);
+#endif
             foreach (BasicSystem s in e)
             {
+                this.searchResults.Add(s);
                 ListViewItem lvi = new ListViewItem(new string[] { string.Format("{0:n2}", s.DistanceFromSol), s.Name, s.Coordinates.ToString() });
                 listView1.InvokeIfRequired(() => listView1.Items.Add(lvi));
             }
+            e.Clear();
             listView1.InvokeIfRequired(() =>
             {
                 foreach (ColumnHeader c in listView1.Columns)
@@ -133,7 +153,16 @@ namespace EliteMonitor
 
         private void SystemSearchSelector_FormClosing(object sender, FormClosingEventArgs e)
         {
-            this.searchResults.Clear();
+            if (this.searchResults != null)
+                this.searchResults.Clear();
+            this.listView1.Items.Clear();
+            if (this.searchThread != null && this.searchThread.IsAlive)
+                this.searchThread.Abort();
+            this.searchThread = null;
+            this.Hide();
+            GC.Collect(GC.MaxGeneration);
+            GC.WaitForPendingFinalizers();
+            this.Dispose();
         }
     }
 }

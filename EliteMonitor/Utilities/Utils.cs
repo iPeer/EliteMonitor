@@ -36,8 +36,10 @@ namespace EliteMonitor.Utilities
             return v.Revision;
         }
 
-        public static string getApplicationEXEFolderPath()
+        public static string getApplicationEXEFolderPath(bool withEXE = false)
         {
+            if (withEXE)
+                return Assembly.GetEntryAssembly().Location;
             return AppDomain.CurrentDomain.BaseDirectory;
         }
 
@@ -280,6 +282,14 @@ namespace EliteMonitor.Utilities
                 sp.SoundLocation = Path.Combine(MainForm.Instance.cacheController.soundsPath, soundFile);
                 sp.Play();
             }
+        }
+
+        public static System.Drawing.Rectangle getActiveScreenResolution()
+        {
+            System.Drawing.Rectangle ret = new System.Drawing.Rectangle(0, 0, 0, 0);
+            MainForm.Instance.InvokeIfRequired(() => ret = Screen.FromControl(MainForm.Instance).Bounds);
+            return ret;
+
         }
     }
 }

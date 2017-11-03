@@ -17,6 +17,7 @@ using System.Diagnostics;
 using EliteMonitor.Logging;
 using System.Media;
 using EliteMonitor.Exploration;
+using EliteMonitor.Notifications;
 
 namespace EliteMonitor.Journal
 {
@@ -42,6 +43,7 @@ namespace EliteMonitor.Journal
         private bool betaJournal = false;
         private bool isCommanderRegistered = false;
         private DateTime lastJumpStartTime = DateTime.MinValue;
+        public string LastParsedJson = string.Empty;
 
         List<ParsableJournalEntry> preLoadCommanderData = new List<ParsableJournalEntry>(3);
 
@@ -74,7 +76,7 @@ namespace EliteMonitor.Journal
             }
         }
 
-        public JournalEntry parseEvent(string json, out Commander commander, bool isReparse = false, Commander forcedCommander = null, bool doNotPlaySounds = false, bool isBeta = false, bool bypassRegisterCheck = false)
+        public JournalEntry parseEvent(string json, out Commander commander, bool isReparse = false, Commander forcedCommander = null, bool doNotPlaySounds = false, bool isBeta = false, bool bypassRegisterCheck = false, bool showNotifications = true)
         {
             /*
             { "timestamp":"2017-01-26T21:23:18Z", "event":"Fileheader", "part":1, "language":"English\\UK", "gameversion":"2.2", "build":"r131487/r0 " }
@@ -84,7 +86,8 @@ namespace EliteMonitor.Journal
             { "timestamp":"2017-02-03T04:26:40Z", "event":"MarketBuy", "Type":"superconductors", "Count":728, "BuyPrice":6883, "TotalCost":5010824 }
             { "timestamp":"2017-02-03T04:33:23Z", "event":"MarketSell", "Type":"superconductors", "Count":728, "SellPrice":7265, "TotalSale":5288920, "AvgPricePaid":6883 }
             */
-            mainForm.cacheController.addJournalEntryToCache(json);
+            //mainForm.cacheController.addJournalEntryToCache(json);
+            this.LastParsedJson = json;
             if (forcedCommander == null)
                 commander = activeCommander ?? viewedCommander; // Under normal operating procedures, activeCommander will NEVER be null. It can be null during testing due to "hot inserting" of events (because we don't parse the full log properly), so if it's null, we default the the currently viewed commander.
             else
@@ -633,7 +636,9 @@ namespace EliteMonitor.Journal
                         rotationCriteria.Add("retrograde");
                     if (!isStar)
                     {
-                        bool terraformable = j.GetValue("TerraformState").ToString().Equals("Terraformable");
+                        bool terraformable = false;
+                        try { terraformable = j.GetValue("TerraformState").ToString().Equals("Terraformable"); }
+                        catch { }
                         if (Properties.Settings.Default.SoundsEnabled && !doNotPlaySounds)
                         {
                             string soundFile = string.Empty;
@@ -654,10 +659,15 @@ namespace EliteMonitor.Journal
                             }
                             Utils.PlaySound(soundFile);
                         }
-                        bool tidallyLocked = j.GetValue("TidalLock").ToObject<bool>();
+                        // { "timestamp":"2017-04-06T10:33:23Z", "event":"Scan", "BodyName":"Akandi BC 2 a", "DistanceFromArrivalLS":81403.218750, "PlanetClass":"Icy body", "MassEM":0.027412, "Radius":2631372.500000, "SurfaceGravity":1.577917, "SemiMajorAxis":635405376.000000, "Eccentricity":0.000000, "OrbitalInclination":76.420624, "Periapsis":109.436974, "OrbitalPeriod":2750407.500000, "RotationPeriod":2761699.750000 }
+                        bool tidallyLocked = false;
+                        try { tidallyLocked = j.GetValue("TidalLock").ToObject<bool>(); }
+                        catch { }
                         if (tidallyLocked)
                             rotationCriteria.Add("tidally locked");
-                        bool landable = j.GetValue("Landable").ToObject<bool>();
+                        bool landable = false;
+                        try { landable = j.GetValue("Landable").ToObject<bool>(); }
+                        catch { }
                         sb.AppendLineFormatted("Is Landable: {0}", landable ? "yes" : "no");
                         if (landable)
                         {
@@ -682,10 +692,15 @@ namespace EliteMonitor.Journal
                     if (orbitalPeriod > 0)
                         sb.AppendLineFormatted("Orbital period: {0}{1}", Utils.formatTimeFromGalacticSeconds(Math.Abs(orbitalPeriod)), orbitCriteria.Count > 0 ? string.Format(" ({0})", string.Join(", ", orbitCriteria.ToArray())) : "");
                     sb.AppendLineFormatted("Rotational period: {0}{1}", Utils.formatTimeFromGalacticSeconds(Math.Abs(rotationPeriod)), rotationCriteria.Count > 0 ? string.Format(" ({0})", string.Join(", ", rotationCriteria.ToArray())) : "");
-                    int tempKelvin = j.GetValue("SurfaceTemperature").ToObject<int>();
-                    double tempCelsius = tempKelvin - 273.15;
-                    double tempFahrenheit = (tempKelvin * 9 / 5) - 459.67;
-                    sb.AppendLineFormatted("Surface temperature: {0} K ({1:n2} C / {2:n2} F)", tempKelvin, tempCelsius, tempFahrenheit);
+                    int tempKelvin = Int32.MaxValue;
+                    try { tempKelvin = j.GetValue("SurfaceTemperature").ToObject<int>(); }
+                    catch { }
+                    if (tempKelvin != Int32.MaxValue)
+                    {
+                        double tempCelsius = tempKelvin - 273.15;
+                        double tempFahrenheit = (tempKelvin * 9 / 5) - 459.67;
+                        sb.AppendLineFormatted("Surface temperature: {0:n0} K ({1:n2} C / {2:n2} F)", tempKelvin, tempCelsius, tempFahrenheit);
+                    }
                     sb.AppendLineFormatted("Radius: {0:n3} km", j.GetValue("Radius").ToObject<double>() / 1000d);
                     if (isStar)
                     {
@@ -698,10 +713,20 @@ namespace EliteMonitor.Journal
                         foreach (KeyValuePair<string, double> kvp in materials)
                             sb.AppendLineFormatted("{0}: {1:n2}%", kvp.Key.CapitaliseFirst(), kvp.Value);
                     }
+                    if (showNotifications && !isReparse && Properties.Settings.Default.NotificationsEnabled && Properties.Settings.Default.ScanNotifications)
+                    {
+                        Notification n = new Notification(bodyName, sb.ToString());
+                        InvokeNotification(n);
+                    }
                     return new JournalEntry(timestamp, @event, sb.ToString().Trim(), j);
                 case "Friends":
                     string status = j.GetValue("Status").ToString();
-                    return new JournalEntry(timestamp, @event, string.Format("CMDR {0} has {1} {2}.", j.GetValue("Name").ToString(), status.Equals("Offline") ? "gone" : "come", status.Equals("Offline") ? "offline" : "online"), j);
+                    string friendString = string.Format("CMDR {0} has {1} {2}.", j.GetValue("Name").ToString(), status.Equals("Offline") ? "gone" : "come", status.Equals("Offline") ? "offline" : "online");
+                    if (showNotifications && !isReparse && Properties.Settings.Default.NotificationsEnabled && Properties.Settings.Default.FriendNotifications)
+                    {
+                        InvokeNotification(new Notification(string.Format("Friend {0}", status), friendString));
+                    }
+                    return new JournalEntry(timestamp, @event, friendString, j);
                 case "Music":
                     string track = j.GetValue("MusicTrack").ToString();
                     return new JournalEntry(timestamp, @event, $"New music track: {track}", j);
@@ -722,6 +747,14 @@ namespace EliteMonitor.Journal
                     return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
             }
            
+        }
+
+        public void InvokeNotification(Notification n)
+        {
+            MainForm.Instance.Invoke((MethodInvoker)delegate()
+            {
+                MainForm.Instance.notificationManager.AddNotificationToQueue(n);
+            });
         }
 
         public void parseAllJournals()
@@ -758,14 +791,15 @@ namespace EliteMonitor.Journal
                     }
                 }
             }
-            try
-            {
-                createJournalEntries(allJournalEntries, false, true, dontPlaySounds: true);
-            }
+            /*try
+            {*/
+                createJournalEntries(allJournalEntries, false, true, dontPlaySounds: true, showNotifications: false);
+            /*}
             catch (Exception e)
             {
                 throw e;
-            }
+            }*/
+            allJournalEntries.Clear();
             mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Switching commander...");
             switchViewedCommander(activeCommander);
             mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Ready.");
@@ -780,7 +814,7 @@ namespace EliteMonitor.Journal
                 createJournalEntries(new List<string> { t.Item1 }, checkDupes, dontUpdateDisplays, dontUpdatePercentage, dontPlaySounds, t.Item2);
         }*/
 
-        public void createJournalEntries(List<ParsableJournalEntry> entries, bool checkDuplicates = false, bool dontUpdateDisplays = false, bool dontUpdatePercentage = false, bool dontPlaySounds = false)
+        public void createJournalEntries(List<ParsableJournalEntry> entries, bool checkDuplicates = false, bool dontUpdateDisplays = false, bool dontUpdatePercentage = false, bool dontPlaySounds = false, bool showNotifications = true)
         {
             if (!dontUpdatePercentage)
                 mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Generating Journal entries...");
@@ -821,13 +855,13 @@ namespace EliteMonitor.Journal
                 JournalEntry je;
                 try
                 {
-                    je = parseEvent(s, out commander, doNotPlaySounds: dontPlaySounds, isBeta: isBetaJournalEntry);
+                    je = parseEvent(s, out commander, doNotPlaySounds: dontPlaySounds, isBeta: isBetaJournalEntry, showNotifications: showNotifications);
                     if (je.Event.Equals("Fileheader") || (je.Event.Equals("Music") && Properties.Settings.Default.HideMusicEvents))
                         continue;
-                    if (je.Event.Equals("LoadGame") && this.isCommanderRegistered)
+                    if (je.Event.Equals("LoadGame") && this.isCommanderRegistered && this.preLoadCommanderData.Count > 0)
                     {
                         logger.Log("There are {0} entries waiting in pre-load, parsing them now...", this.preLoadCommanderData.Count);
-                        createJournalEntries(this.preLoadCommanderData, checkDuplicates, dontUpdateDisplays, true, true);
+                        createJournalEntries(this.preLoadCommanderData, checkDuplicates, dontUpdateDisplays, true, true, showNotifications: false);
                         this.preLoadCommanderData.Clear();
                         logger.Log("Done parsing pre-load journal entries.");
                     }
@@ -889,6 +923,11 @@ namespace EliteMonitor.Journal
                 this.logger.Log("Journal entries for commander '{0}' are not loaded into memory, loading them in...", c.Name, c.Journal.Count, c.JournalEntries.Count);
                 createJournalEntries(c.Journal);
             }*/
+            if (this.viewedCommander != null)
+            {
+                this.viewedCommander.isViewed = false;
+                this.viewedCommander.setSaveRequired();
+            }
             this.viewedCommander = c;
             List<JournalEntry> _entries = c.JournalEntries;
             List<DataGridViewRow> entries = new List<DataGridViewRow>();
@@ -1183,7 +1222,7 @@ namespace EliteMonitor.Journal
                         c.addJournalEntry(j);*/
                         entries.Add(new ParsableJournalEntry(s, file.StartsWith("JournalBeta")));
                     }
-                    createJournalEntries(entries, true, dontPlaySounds: true);
+                    createJournalEntries(entries, true, dontPlaySounds: true, showNotifications: false);
                 }
             }
         }

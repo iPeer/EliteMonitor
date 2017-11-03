@@ -78,9 +78,6 @@ namespace EliteMonitor.Elite
         public List<JournalEntry> JournalEntries { get; set; } = new List<JournalEntry>();
         public List<string> EventsList { get; set; } = new List<string>();
         [JsonIgnore]
-        [Obsolete("No longer needed", true)]
-        public List<string> Journal { get; set; } = new List<string>();
-        [JsonIgnore]
         public long lastCreditsChange = 0L;
         [JsonIgnore]
         public Dictionary<string, int> Materials { get; set; } = new Dictionary<string, int>();
@@ -357,13 +354,13 @@ namespace EliteMonitor.Elite
             return this;
         }
 
-        [Obsolete]
+        /*[Obsolete]
         public Commander addEvent(string @event)
         {
             if (!this.Journal.Contains(@event))
                 this.Journal.Add(@event);
             return this;
-        }
+        }*/
 
         public void updateDialogDisplays()
         {
@@ -719,9 +716,6 @@ namespace EliteMonitor.Elite
                 m.InvokeIfRequired(() => m.appStatus.Text = messageText);
                 m.journalParser.logger.Log(messageText);
                 this.Expeditions = JsonConvert.DeserializeObject<Dictionary<Guid, Expedition>>(Utils.loadGZip(Path.Combine(this.saveDirectory, "expeditions.emj"), true));
-#if DEBUG
-                System.Diagnostics.Debug.WriteLine($"[{this.Name}] {this.getActiveExpeditions().Count} active expeditions.");
-#endif
 
                 messageText = String.Format("Applying post-load Journal entry patches for commander '{0}'", this.Name);
                 m.InvokeIfRequired(() => m.appStatus.Text = messageText);
@@ -807,7 +801,7 @@ namespace EliteMonitor.Elite
                     m.InvokeIfRequired(() => m.appStatus.Text = String.Format("Updating Journal entries... ({0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft)));
                 }
                 Commander __;
-                JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true, forcedCommander: c, bypassRegisterCheck: true);
+                JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true, forcedCommander: c, bypassRegisterCheck: true, showNotifications: false, doNotPlaySounds: true);
                 j.Data = nje.Data;
             }
             if (cEntry > 0)
