@@ -453,7 +453,7 @@ namespace EliteMonitor.Elite
                         cmdrLocString += this.CurrentLocation+" | ";
                     cmdrLocString += this.CurrentSystem;
                     m.commanderLocationLabel.Text = cmdrLocString;
-                    if (this.HasHomeSystem && this.CurrentSystemCoordinates != null)
+                    if (this.HasHomeSystem && this.CurrentSystemCoordinates != null && !this.CurrentSystem.Equals(this.HomeSystem.Name))
                     {
                         m.commanderLocationLabel.Text += string.Format(" ({0} ly from {1})", Utils.CalculateLyDistance(to: this.CurrentSystemCoordinates, from: this.HomeSystem.Coordinates).ToString("0,0.00"), this.HomeSystem.Name);
                     }
@@ -807,6 +807,7 @@ namespace EliteMonitor.Elite
             if (cEntry > 0)
                 this.setSaveRequired();
             m.journalParser.logger.Log("{0} entries have been updated to version {1} for commander '{2}'", cEntry, patchVer, this.Name);
+            toUpdate.Clear();
         }
 
         public Commander setHomeSystem(BasicSystem system)

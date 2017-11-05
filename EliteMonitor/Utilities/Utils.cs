@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using EliteMonitor.Elite;
 using System.Media;
+using EliteMonitor.Notifications;
 
 namespace EliteMonitor.Utilities
 {
@@ -259,8 +260,8 @@ namespace EliteMonitor.Utilities
             foreach (KeyValuePair<string, SystemCoordinate> kvp in landmarkSystems)
             {
                 Commander commander = MainForm.Instance.journalParser.viewedCommander;
-                if (commander == null) break;
-                if (commander.HasHomeSystem && kvp.Key.Equals(commander.HomeSystem.Name)) continue;
+                if (commander == null || !commander.HasHomeSystem) break;
+                if (kvp.Key.Equals(commander.HomeSystem.Name)) continue;
                 sb.AppendFormat("Distance from {0}: {1:n2} Ly\n", kvp.Key, CalculateLyDistance(kvp.Value, commander.CurrentSystemCoordinates));
             }
 
@@ -290,6 +291,14 @@ namespace EliteMonitor.Utilities
             MainForm.Instance.InvokeIfRequired(() => ret = Screen.FromControl(MainForm.Instance).Bounds);
             return ret;
 
+        }
+
+        public static void InvokeNotification(Notification n)
+        {
+            MainForm.Instance.Invoke((MethodInvoker)delegate ()
+            {
+                MainForm.Instance.notificationManager.AddNotificationToQueue(n);
+            });
         }
     }
 }

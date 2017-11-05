@@ -107,17 +107,23 @@ namespace EliteMonitor
             /*e.Clear();
             this.searchResults.OrderBy(a => a.DistanceFromSol);*/
             e.OrderBy(a => a.DistanceFromSol);
+            this.searchResults.Clear();
+            this.searchResults.AddRange(e);
+            /*this.searchResults.OrderBy(a => a.DistanceFromSol);*/
             listView1.InvokeIfRequired(() => listView1.BeginUpdate());
 #if DEBUG
             Debug.WriteLine(e.Count);
 #endif
+            List<ListViewItem> items = new List<ListViewItem>();
             foreach (BasicSystem s in e)
             {
-                this.searchResults.Add(s);
                 ListViewItem lvi = new ListViewItem(new string[] { string.Format("{0:n2}", s.DistanceFromSol), s.Name, s.Coordinates.ToString() });
-                listView1.InvokeIfRequired(() => listView1.Items.Add(lvi));
+                //listView1.InvokeIfRequired(() => listView1.Items.Add(lvi));
+                items.Add(lvi);
             }
             e.Clear();
+            listView1.InvokeIfRequired(() => listView1.Items.AddRange(items.ToArray()));
+            items.Clear();
             listView1.InvokeIfRequired(() =>
             {
                 foreach (ColumnHeader c in listView1.Columns)
@@ -137,7 +143,14 @@ namespace EliteMonitor
                 return;
             }
             ListViewItem lvi = listView1.SelectedItems[0]; // We can only have one selected, and we already have sanity checking for it none are selected.
-            BasicSystem s = this.searchResults[lvi.Index];
+            string coords = lvi.SubItems[2].Text;
+
+            BasicSystem s = this.searchResults.First(a => a.Coordinates.ToString().Equals(coords));
+            if (s == null)
+            {
+                MessageBox.Show("Well this is embarassing... It seems that something went very wrong when attempting to select this system! Please try again, and, if it persists, report it as a bug!");
+                return;
+            }
 #if DEBUG
             MessageBox.Show($"SYSTEM: {s.Name} \nCOORDINTAES: {s.Coordinates.ToString()}\nDISTANCE FROM SOL: {s.DistanceFromSol}\nALLEGIANCE: {s.Allegiance}\nECONOMY: {s.Economy}");
 #endif
@@ -159,10 +172,8 @@ namespace EliteMonitor
             if (this.searchThread != null && this.searchThread.IsAlive)
                 this.searchThread.Abort();
             this.searchThread = null;
-            this.Hide();
             GC.Collect(GC.MaxGeneration);
             GC.WaitForPendingFinalizers();
-            this.Dispose();
         }
     }
 }

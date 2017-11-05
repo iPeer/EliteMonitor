@@ -28,11 +28,11 @@ namespace EliteMonitor.Notifications
         public string Title { get; set; } = "Notification";
         public string Text { get; set; } = "Notification Text";
         public int DisplayTime { get; set; } = 10; // Seconds
-        public int DisplayMs
+        public long DisplayMs
         {
             get
             {
-                return this.DisplayTime * 1000;
+                return this.DisplayTime * 1000L;
             }
         }
         public bool DisplayTitle { get; set; } = true;

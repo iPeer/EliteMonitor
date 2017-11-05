@@ -28,7 +28,6 @@ namespace EliteMonitor.Journal
     {
 
         private MainForm mainForm;
-        public Dictionary<string, int> _materialCounts = new Dictionary<string, int>();
         private FileSystemWatcher fileSystemWatcher;
         public Dictionary<string, Commander> commanders = new Dictionary<string, Commander>();
         public Commander activeCommander, viewedCommander;
@@ -715,8 +714,8 @@ namespace EliteMonitor.Journal
                     }
                     if (showNotifications && !isReparse && Properties.Settings.Default.NotificationsEnabled && Properties.Settings.Default.ScanNotifications)
                     {
-                        Notification n = new Notification(bodyName, sb.ToString());
-                        InvokeNotification(n);
+                        Notification n = new Notification(bodyName, sb.ToString(), 20);
+                        Utils.InvokeNotification(n);
                     }
                     return new JournalEntry(timestamp, @event, sb.ToString().Trim(), j);
                 case "Friends":
@@ -724,7 +723,7 @@ namespace EliteMonitor.Journal
                     string friendString = string.Format("CMDR {0} has {1} {2}.", j.GetValue("Name").ToString(), status.Equals("Offline") ? "gone" : "come", status.Equals("Offline") ? "offline" : "online");
                     if (showNotifications && !isReparse && Properties.Settings.Default.NotificationsEnabled && Properties.Settings.Default.FriendNotifications)
                     {
-                        InvokeNotification(new Notification(string.Format("Friend {0}", status), friendString));
+                        Utils.InvokeNotification(new Notification(string.Format("Friend {0}", status), friendString));
                     }
                     return new JournalEntry(timestamp, @event, friendString, j);
                 case "Music":
@@ -749,19 +748,13 @@ namespace EliteMonitor.Journal
            
         }
 
-        public void InvokeNotification(Notification n)
-        {
-            MainForm.Instance.Invoke((MethodInvoker)delegate()
-            {
-                MainForm.Instance.notificationManager.AddNotificationToQueue(n);
-            });
-        }
-
         public void parseAllJournals()
         {
             this.fullParseInProgress = true;
             string journalPath = EliteUtils.JOURNAL_PATH;
             journalPath = Environment.ExpandEnvironmentVariables(journalPath);
+            if (!Directory.Exists(journalPath))
+                Directory.CreateDirectory(journalPath);
             /*string[] files = Directory.GetFiles(journalPath);
             files.OrderBy(p => new FileInfo(p).CreationTime);*/
             /*foreach (string _f in files)
@@ -770,6 +763,11 @@ namespace EliteMonitor.Journal
             }*/
             DirectoryInfo di = new DirectoryInfo(journalPath);
             FileInfo[] fileInfo = di.GetFiles().OrderBy(f => f.CreationTime).ToArray();
+            if (fileInfo.Length == 0)
+            {
+                mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = $"No journals to load yet!");
+                return;
+            }
             mainForm.cacheController._journalLengthCache.Clear();
             List<ParsableJournalEntry> allJournalEntries = new List<ParsableJournalEntry>();
             int x = 0;
@@ -887,7 +885,13 @@ namespace EliteMonitor.Journal
             }
             if (dontUpdateDisplays)
                 mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.EndUpdate());
-            if (viewedCommander != null && activeCommander != null && commander != null && !fullParseInProgress && Properties.Settings.Default.autoSwitchActiveCommander && !viewedCommander.Name.Equals(activeCommander.Name))
+            if (!fullParseInProgress && viewedCommander == null && this.commanders.Count > 0)
+            {
+                Commander com = this.commanders.Values.First();
+                if (com != null)
+                    switchViewedCommander(com);
+            }
+            else if (viewedCommander != null && activeCommander != null && commander != null && !fullParseInProgress && Properties.Settings.Default.autoSwitchActiveCommander && !viewedCommander.Name.Equals(activeCommander.Name))
             {
                 switchViewedCommander(commander);
                 if (!Properties.Settings.Default.autoSwitchMessagesDisplayed)
@@ -942,7 +946,7 @@ namespace EliteMonitor.Journal
                 if ((int)percent > lastPercent || DateTime.Now.Subtract(lastETAUpdate).TotalSeconds >= 1.00)
                 {
                     TimeSpan ts = (DateTime.Now - timeStarted);
-                    double timeLeft = (ts.TotalSeconds / x) * (entries.Count - x);
+                    double timeLeft = (ts.TotalSeconds / x) * (_entries.Count - x);
                     lastETAUpdate = DateTime.Now;
                     lastPercent = (int)percent;
                     mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = String.Format("Loading commander data for '{0}' ({1:n0}%) [ETA: {2}]", c.Name, percent, Utils.formatTimeFromSeconds(timeLeft)));
@@ -953,14 +957,15 @@ namespace EliteMonitor.Journal
                 DataGridViewRow lvi = getListViewEntryForEntry(j);
                 entries.Add(lvi);
             }
-            mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = String.Format("Finalising commander data for '{0}'", c.Name));
+            mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Populating entry list...");
             entries.Reverse();
             mainForm.comboCommanderList.InvokeIfRequired(() => mainForm.comboCommanderList.SelectedIndex = mainForm.comboCommanderList.Items.IndexOf(c.Name));
             mainForm.eventList.InvokeIfRequired(() =>
             {
                 mainForm.eventList.BeginUpdate();
                 mainForm.eventList.Rows.Clear();
-                mainForm.eventList.Rows.AddRange(entries.ToArray());
+                mainForm.eventList.Rows.AddRange(entries/*.GetRange(0, 1000)*/.ToArray());
+                entries.Clear();
                 /*mainForm.eventList.AutoSize = true;
                 mainForm.eventList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCellsExceptHeader;*/
                 /*mainForm.eventList.DataSource = c.JournalEntries;
@@ -995,6 +1000,8 @@ namespace EliteMonitor.Journal
             {
                 _c.saveData();
             }*/
+            GC.Collect(GC.MaxGeneration);
+            GC.WaitForPendingFinalizers();
             mainForm.setAppStatusText("Ready.");
             mainForm.buttonDiscoveredBodies.InvokeIfRequired(() => mainForm.buttonDiscoveredBodies.Enabled = true);
             mainForm.buttonExpeditions.InvokeIfRequired(() => mainForm.buttonExpeditions.Enabled = true);
@@ -1043,6 +1050,8 @@ namespace EliteMonitor.Journal
             this.logger.Log("Requested change to Journal file {0}", fi.FullName);
             this.hasChangedLogFile = true;
             this.currentTailFile = fi.FullName;
+            if (this.journalTailThread == null)
+                tailFile(this.currentTailFile);
         }
 
         public void tailJournal(string path)
@@ -1055,7 +1064,7 @@ namespace EliteMonitor.Journal
             if (abortJournalTailing)
             {
                 string err = "Tailing not started due to Journal error.";
-                mainForm.InvokeIfRequired(() => 
+                mainForm.InvokeIfRequired(() =>
                 {
                     mainForm.appStatus.Text = err;
                     mainForm.toolStripTailingFailed.Visible = true;
@@ -1068,12 +1077,14 @@ namespace EliteMonitor.Journal
 
 
             DirectoryInfo di = new DirectoryInfo(EliteUtils.JOURNAL_PATH);
-            FileInfo last = di.GetFiles().OrderBy(f => f.CreationTime).ToArray().Last();
-
-            this.currentTailFile = last.FullName;
-
-            tailFile(this.currentTailFile);
-
+            FileInfo last = null;
+            try
+            {
+                last = di.GetFiles().OrderBy(f => f.CreationTime).ToArray().Last();
+                this.currentTailFile = last.FullName;
+                tailFile(this.currentTailFile);
+            }
+            catch { }
 
             this.logger.Log($"Setting up file watcher on directory {path}...");
             path = Environment.ExpandEnvironmentVariables(path);
@@ -1084,7 +1095,6 @@ namespace EliteMonitor.Journal
             fileSystemWatcher.Created += fileCreated;
             fileSystemWatcher.Filter = "Journal*.log";
             fileSystemWatcher.EnableRaisingEvents = true;
-            mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = "Tailing started...");
         }
 
         public void tailFile(string filePath)
@@ -1096,6 +1106,7 @@ namespace EliteMonitor.Journal
             FileInfo last = new FileInfo(filePath);
 
             this.logger.Log("Tailer running on {0}...", last.Name);
+            mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = $"Tailing '{last.Name}'...");
 
             journalTailThread = new Thread(() =>
             {

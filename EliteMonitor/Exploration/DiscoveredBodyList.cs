@@ -13,6 +13,7 @@ namespace EliteMonitor
 {
     public partial class DiscoveredBodyList : Form
     {
+
         public DiscoveredBodyList()
         {
             InitializeComponent();

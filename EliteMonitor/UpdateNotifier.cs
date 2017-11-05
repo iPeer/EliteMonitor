@@ -40,6 +40,12 @@ namespace EliteMonitor
         private void buttonYes_Click(object sender, EventArgs e)
         {
             Process.Start("https://ipeer.auron.co.uk/EliteMonitor/EliteMonitor.zip");
+            this.Close();
+        }
+
+        private void buttonNo_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

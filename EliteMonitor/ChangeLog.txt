@@ -1,5 +1,18 @@
 ﻿1.0.0.????
-	
+	* Fixed an issue where pressing "No" on the update prompt would do nothing.
+	* Fixed an issue where the ETA for "finalising commander data" would always be 00s.
+	* Memory optimisations when loading commander data.
+	* Fixed an issue where, when given a large number of results, the system search window would fail to populate the results list (or would do so *very* slowly).
+	* Fixed an issue causing Elite Monitor's main window to "flash" when the system search window was closed.
+	* Scan-related notifications now remain on screen longer to allow more time to read the information displayed (20s vs 10s).
+	* Forget what the ending criteria for an Expedition is? Hover over the "ACTIVE" text and it'll tell you now.
+	* Expedition Viewer now only allows one instance.
+	* The First Discovery window is now treated as a modal dialog.
+	* Fixed a crash that would occur when Elite Monitor was loading on a system that had no journal files.
+	* Elite Monitor will now automatically create the folder structure for where journal files are stored if it does not exist already to prevent crashing.
+	* The grid which displays journal entries on the main window will no longer permanently have a blank row at the bottom.
+	* Elite Monitor will no longer display the distance to your home system if you're in your home system.
+	* Notifications now correctly obey their display times instead of being 25-30% less.
 
 1.0.0.1614
 	* ChangeLog added, we're in 2017 now!

@@ -1,6 +1,7 @@
 ﻿using EliteMonitor.Elite;
 using EliteMonitor.Extensions;
 using EliteMonitor.Logging;
+using EliteMonitor.Notifications;
 using EliteMonitor.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -89,8 +90,9 @@ namespace EliteMonitor.Exploration
                     }
                     if (this.AutoComplete && this.AutoCompleteSystemName.Equals(systemName))
                     {
-                        this.IsCompleted = true;
+                        //this.IsCompleted = true;
                         //(MainForm.Instance.journalParser.viewedCommander == null ? MainForm.Instance.journalParser.activeCommander : MainForm.Instance.journalParser.viewedCommander).HasActiveExpedition = false;
+                        this.MarkCompleted();
                         return true;
                     }
                     return false;
@@ -118,6 +120,16 @@ namespace EliteMonitor.Exploration
                     return false;
             }
             return true;
+        }
+
+        public void MarkCompleted()
+        {
+            this.IsCompleted = true;
+            if (Properties.Settings.Default.NotificationsEnabled)
+            {
+                Notification n = new Notification("Expedition Completed", $"The expedition '{this.ExpeditionName}' is now complete!");
+                Utils.InvokeNotification(n);
+            }
         }
 
         public void OnSave()

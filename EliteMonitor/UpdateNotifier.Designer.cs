@@ -64,6 +64,7 @@
             this.buttonNo.TabIndex = 2;
             this.buttonNo.Text = "No";
             this.buttonNo.UseVisualStyleBackColor = true;
+            this.buttonNo.Click += new System.EventHandler(this.buttonNo_Click);
             // 
             // richTextBox1
             // 

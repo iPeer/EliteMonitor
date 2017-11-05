@@ -21,6 +21,7 @@ namespace EliteMonitor.Notifications
         private int timeOpen = 0;
         private int totalHeight;
         private int newHeight = 0;
+        private Stopwatch timingWatch = new Stopwatch();
 
         protected override bool ShowWithoutActivation
         {
@@ -96,13 +97,16 @@ namespace EliteMonitor.Notifications
                 else
                 {
                     this.owningNotification.State = NotificationState.OPENED;
+                    this.timingWatch.Start();
                 }
             }
             else if (this.owningNotification.State == NotificationState.OPENED)
             {
-                this.timeOpen += this.timer1.Interval;
-                if (this.timeOpen >= this.owningNotification.DisplayMs)
+                //this.timeOpen += this.timer1.Interval;
+                //if (this.timeOpen >= this.owningNotification.DisplayMs)
+                if (this.timingWatch.ElapsedMilliseconds >= this.owningNotification.DisplayMs)
                 {
+                    this.timingWatch.Stop();
                     this.owningNotification.State = NotificationState.CLOSING;
                 }
             }

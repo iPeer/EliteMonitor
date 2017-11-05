@@ -44,6 +44,8 @@ namespace EliteMonitor
         public EliteDatabase Database;
         ToolStripButton ExpeditionButton = new ToolStripButton("Start exploration expedition here");
         public NotificationManager notificationManager;
+        public bool ExpeditionViewerOpen { get; private set; } = false;
+        public bool DiscoveryListOpen { get; private set; } = false;
 
         public MainForm()
         {
@@ -775,7 +777,7 @@ namespace EliteMonitor
         private void buttonDiscoveredBodies_Click(object sender, EventArgs e)
         {
             DiscoveredBodyList b = new DiscoveredBodyList();
-            b.Show(this);
+            b.ShowDialog(this);
         }
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e) // Copy timestamp
@@ -809,6 +811,11 @@ namespace EliteMonitor
         {
             if (this.eventList.Rows.Count == 0) { e.Cancel = true; return; } // Fix for crash if user right clicks event list before it's initialized (or if the commander has no journal entries)
             DataGridViewRow lvi = this.eventList.Rows[this._lastRightClickedRowIndex];
+            if (lvi.Cells[1].Value == null) // That random blank line
+            {
+                e.Cancel = true;
+                return;
+            }
             if ((new string[] { "FSDJump", /*"Scan", */"Location", "Docked" }).Contains(lvi.Cells[1].Value.ToString()))
             {
                 if (/*!this.journalParser.viewedCommander.HasActiveExpedition && */!this.journalContextMenu.Items.Contains(ExpeditionButton))
@@ -845,10 +852,8 @@ namespace EliteMonitor
 
         private void startExpedition_Click(object s, EventArgs _e/*, ListViewItem lvi*/)
         {
-            Console.WriteLine("B");
             JournalEntry je = this.journalParser.viewedCommander.JournalEntries[this.journalParser.viewedCommander.JournalEntries.Count - (this._lastRightClickedRowIndex + 1)];
             JObject json = JObject.Parse(je.Json);
-            Console.WriteLine(json.GetValue("event"));
             if (!(new string[] { "FSDJump", "Location", "Docked" }).Contains(json.GetValue("event").ToString())) { return; } // Failsafe
             StartExpedition se = new StartExpedition();
             se.StartingJournalEntry = je;
@@ -858,13 +863,31 @@ namespace EliteMonitor
 
         private void buttonExpeditions_Click(object sender, EventArgs e)
         {
+            if (this.ExpeditionViewerOpen)
+            {
+                if (ExpeditionViewer.Instance.WindowState == FormWindowState.Minimized)
+                {
+                    MessageBox.Show("An instance of the Expedition Viewer is already opened.");
+                    return;
+                }
+                ExpeditionViewer.Instance.BringToFront();
+                return;
+            }
             if (this.journalParser.viewedCommander.Expeditions == null || this.journalParser.viewedCommander.Expeditions.Count == 0) { MessageBox.Show("There are no expeditions attached to this commander. You'll need to make some first."); return; }
+            this.ExpeditionViewerOpen = true;
             ExpeditionViewer ev = new ExpeditionViewer();
+            ev.OnExpeditionViewerClosed += OnExpeditionViewerClosed;
             if (this.journalParser.viewedCommander.getActiveExpeditions().Count > 0)
                 ev.SetActiveExpedition(this.journalParser.viewedCommander.getActiveExpeditions().Last());
             else
                 ev.SetActiveExpedition(this.journalParser.viewedCommander.Expeditions.Last().Value);
             ev.Show();
+        }
+
+        private void OnExpeditionViewerClosed(object sender, EventArgs e)
+        {
+            ((ExpeditionViewer)sender).OnExpeditionViewerClosed -= OnExpeditionViewerClosed;
+            this.ExpeditionViewerOpen = false;
         }
 
         private void addTestRowsToDataViewToolStripMenuItem_Click(object sender, EventArgs e)
@@ -882,6 +905,7 @@ namespace EliteMonitor
             if (e.Button == MouseButtons.Right)
             {
                 int rowIndex = this.eventList.HitTest(e.Location.X, e.Location.Y).RowIndex;
+                if (rowIndex == -1) return;
                 this._lastRightClickedRowIndex = rowIndex;
                 this.eventList.Rows[rowIndex].Selected = true;
                 journalContextMenu.Show(this.eventList, e.Location);
@@ -995,17 +1019,18 @@ namespace EliteMonitor
 
         private void displayTestNotificationsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Notification test1 = new Notification("Test 1", "I am a test notification.");
+            Notification test1 = new Notification("Test 1", "I am a test notification.", 20);
             Notification test2 = new Notification("Test 2", "I am a test notification with a longer text body and a 25 second display timer.", 25);
             Notification test3 = new Notification("Test 3", "I am a test notification with the same delay as Test 1 but I'm in the middle of multiple notifications.");
             Notification test4 = new Notification("Test 4", "I am a test notification with the same delay as Test 1, in the middle of multiple notifications.\nAnd spread\nOver multiple\nlines!");
             Notification test5 = new Notification("You shouldn't see this!", "I am a test notification with a longer text body, a 20 second display timer and no title", 20, false);
 
-            this.notificationManager.AddNotificationToQueue(test1);
-            this.notificationManager.AddNotificationToQueue(test2);
+            //this.notificationManager.AddNotificationToQueue(test1);
+            Utils.InvokeNotification(test1);
+            /*this.notificationManager.AddNotificationToQueue(test2);
             this.notificationManager.AddNotificationToQueue(test3);
             this.notificationManager.AddNotificationToQueue(test4);
-            this.notificationManager.AddNotificationToQueue(test5);
+            this.notificationManager.AddNotificationToQueue(test5);*/
             //this.notificationManager.showNotificationQueue();
 
            /* NotificationPopup np = new NotificationPopup();

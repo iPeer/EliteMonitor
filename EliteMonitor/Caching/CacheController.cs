@@ -143,6 +143,7 @@ namespace EliteMonitor.Caching
                     }
                     this.logger.Log("Creating up to {0} new entries from files that failed verification", newEntries.Count);
                     mainForm.journalParser.createJournalEntries(newEntries, true, true, dontPlaySounds: true, dontUpdatePercentage: false, showNotifications: false);
+                    newEntries.Clear();
                     foreach (KeyValuePair<string, long> kvp in newJournalLengthCache)
                     {
                         if (this._journalLengthCache.ContainsKey(kvp.Key))
@@ -150,6 +151,7 @@ namespace EliteMonitor.Caching
                         else
                             this._journalLengthCache.Add(kvp.Key, kvp.Value);
                     }
+                    newJournalLengthCache.Clear();
                     this.saveAllCaches();
                 }
             }
@@ -307,6 +309,11 @@ namespace EliteMonitor.Caching
             else {
                 this.logger.Log("Loading commander cache list...");
                 this.commanderCaches.Clear();
+                if (!File.Exists(this.commandersPath))
+                {
+                    this.logger.Log("No commander data exists (no journal files to parse?)", LogLevel.WARNING);
+                    return false;
+                }
                 try
                 {
                     using (StreamReader sr = new StreamReader(this.commandersPath, Encoding.UTF8))

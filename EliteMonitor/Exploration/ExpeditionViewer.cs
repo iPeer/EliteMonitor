@@ -22,6 +22,7 @@ namespace EliteMonitor.Exploration
         public Expedition LoadedExpedition { get; private set; }
         private bool DontUpdateOnChangedEvent = false;
         public long CurrentEstimatedValue = 0;
+        public EventHandler OnExpeditionViewerClosed;
         public List<string> landmarkSystems = new List<string>()
         {
             "Sagittarius A*",
@@ -137,6 +138,19 @@ namespace EliteMonitor.Exploration
 
         public void updateData()
         {
+
+            this.labelExpeditionStatus.InvokeIfRequired(() =>
+            {
+                string tooltipString = string.Empty;
+                if (this.LoadedExpedition.IsCompleted)
+                    tooltipString = "This Expedition is complete!";
+                else if (this.LoadedExpedition.AutoComplete)
+                    tooltipString = string.Format("This Expedition will automatically end when you {0} {1}.", this.LoadedExpedition.StartingSystemName.Equals(this.LoadedExpedition.AutoCompleteSystemName) ? "return to" : "reach", this.LoadedExpedition.AutoCompleteSystemName);
+                else
+                    tooltipString = "This Expedtiion will only end when it manually marked as completed.";
+                this.toolTip1.SetToolTip(this.labelExpeditionStatus, tooltipString);
+            });
+
             this.listViewExpeditionStats.InvokeIfRequired(() =>
             {
                 this.listViewExpeditionStats.BeginUpdate();
@@ -178,6 +192,7 @@ namespace EliteMonitor.Exploration
         {
             this.LoadedExpedition.OnSave();
             this.LoadedExpedition.IsExpeditionLoaded = false;
+            this.OnExpeditionViewerClosed?.Invoke(this, EventArgs.Empty);
         }
 
         private void buttonExportSystems_Click(object sender, EventArgs e)
@@ -238,7 +253,8 @@ namespace EliteMonitor.Exploration
         {
             if (MessageBox.Show("Are you sure you want to mark this expedition as complete?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                this.LoadedExpedition.IsCompleted = true;
+                //this.LoadedExpedition.IsCompleted = true;
+                this.LoadedExpedition.MarkCompleted();
                 this.updateData();
             }
         }

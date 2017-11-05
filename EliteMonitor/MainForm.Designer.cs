@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.appStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTailingFailed = new System.Windows.Forms.ToolStripStatusLabel();
@@ -72,6 +72,10 @@
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.enableSoundsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hideMusicEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.notificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.notificationsEnabledToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.friendsNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scanNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.commanderBox = new System.Windows.Forms.GroupBox();
             this.commanderLocationLabel = new System.Windows.Forms.Label();
             this.labelCreditsChange = new System.Windows.Forms.Label();
@@ -115,10 +119,6 @@
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.notificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.notificationsEnabledToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.friendsNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.scanNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
@@ -480,6 +480,37 @@
             this.hideMusicEventsToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.hideMusicEventsToolStripMenuItem.Text = "Hide \"Music\" events";
             this.hideMusicEventsToolStripMenuItem.Click += new System.EventHandler(this.hideMusicEventsToolStripMenuItem_Click);
+            // 
+            // notificationsToolStripMenuItem
+            // 
+            this.notificationsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.notificationsEnabledToolStripMenuItem,
+            this.friendsNotificationsToolStripMenuItem,
+            this.scanNotificationsToolStripMenuItem});
+            this.notificationsToolStripMenuItem.Name = "notificationsToolStripMenuItem";
+            this.notificationsToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.notificationsToolStripMenuItem.Text = "Notifications";
+            // 
+            // notificationsEnabledToolStripMenuItem
+            // 
+            this.notificationsEnabledToolStripMenuItem.Name = "notificationsEnabledToolStripMenuItem";
+            this.notificationsEnabledToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.notificationsEnabledToolStripMenuItem.Text = "Notifications Enabled";
+            this.notificationsEnabledToolStripMenuItem.Click += new System.EventHandler(this.notificationsEnabledToolStripMenuItem_Click);
+            // 
+            // friendsNotificationsToolStripMenuItem
+            // 
+            this.friendsNotificationsToolStripMenuItem.Name = "friendsNotificationsToolStripMenuItem";
+            this.friendsNotificationsToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.friendsNotificationsToolStripMenuItem.Text = "Friends Notifications";
+            this.friendsNotificationsToolStripMenuItem.Click += new System.EventHandler(this.friendsNotificationsToolStripMenuItem_Click);
+            // 
+            // scanNotificationsToolStripMenuItem
+            // 
+            this.scanNotificationsToolStripMenuItem.Name = "scanNotificationsToolStripMenuItem";
+            this.scanNotificationsToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.scanNotificationsToolStripMenuItem.Text = "Scan Notifications";
+            this.scanNotificationsToolStripMenuItem.Click += new System.EventHandler(this.scanNotificationsToolStripMenuItem_Click);
             // 
             // commanderBox
             // 
@@ -927,6 +958,8 @@
             // 
             // eventList
             // 
+            this.eventList.AllowUserToAddRows = false;
+            this.eventList.AllowUserToDeleteRows = false;
             this.eventList.AllowUserToResizeRows = false;
             this.eventList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
@@ -952,8 +985,8 @@
             // Column1
             // 
             this.Column1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.Column1.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.Column1.DefaultCellStyle = dataGridViewCellStyle1;
             this.Column1.HeaderText = "Timestamp";
             this.Column1.Name = "Column1";
             this.Column1.ReadOnly = true;
@@ -973,37 +1006,6 @@
             this.Column3.HeaderText = "Data";
             this.Column3.Name = "Column3";
             this.Column3.ReadOnly = true;
-            // 
-            // notificationsToolStripMenuItem
-            // 
-            this.notificationsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.notificationsEnabledToolStripMenuItem,
-            this.friendsNotificationsToolStripMenuItem,
-            this.scanNotificationsToolStripMenuItem});
-            this.notificationsToolStripMenuItem.Name = "notificationsToolStripMenuItem";
-            this.notificationsToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
-            this.notificationsToolStripMenuItem.Text = "Notifications";
-            // 
-            // notificationsEnabledToolStripMenuItem
-            // 
-            this.notificationsEnabledToolStripMenuItem.Name = "notificationsEnabledToolStripMenuItem";
-            this.notificationsEnabledToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.notificationsEnabledToolStripMenuItem.Text = "Notifications Enabled";
-            this.notificationsEnabledToolStripMenuItem.Click += new System.EventHandler(this.notificationsEnabledToolStripMenuItem_Click);
-            // 
-            // friendsNotificationsToolStripMenuItem
-            // 
-            this.friendsNotificationsToolStripMenuItem.Name = "friendsNotificationsToolStripMenuItem";
-            this.friendsNotificationsToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.friendsNotificationsToolStripMenuItem.Text = "Friends Notifications";
-            this.friendsNotificationsToolStripMenuItem.Click += new System.EventHandler(this.friendsNotificationsToolStripMenuItem_Click);
-            // 
-            // scanNotificationsToolStripMenuItem
-            // 
-            this.scanNotificationsToolStripMenuItem.Name = "scanNotificationsToolStripMenuItem";
-            this.scanNotificationsToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
-            this.scanNotificationsToolStripMenuItem.Text = "Scan Notifications";
-            this.scanNotificationsToolStripMenuItem.Click += new System.EventHandler(this.scanNotificationsToolStripMenuItem_Click);
             // 
             // MainForm
             // 
