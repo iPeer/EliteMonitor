@@ -1,0 +1,466 @@
+{
+  "shieldpatternanalysis": {
+    "Name": "Aberrant Shield Pattern Analysis",
+    "Type": "Encoded"
+  },
+  "compactemissionsdata": {
+    "Name": "Abnormal Compact Emission Data",
+    "Type": "Encoded"
+  },
+  "adaptiveencryptors": {
+    "Name": "Adaptive Encryptors Capture",
+    "Type": "Encoded"
+  },
+  "bulkscandata": {
+    "Name": "Anomalous Bulk Scan Data",
+    "Type": "Encoded"
+  },
+  "fsdtelemetry": {
+    "Name": "Anomalous FSD Telemetry",
+    "Type": "Encoded"
+  },
+  "disruptedwakeechoes": {
+    "Name": "Atypical Disrupted Wake Echoes",
+    "Type": "Encoded"
+  },
+  "encryptionarchives": {
+    "Name": "Atypical Encryption Archives",
+    "Type": "Encoded"
+  },
+  "scandatabanks": {
+    "Name": "Classified Scan Databanks",
+    "Type": "Encoded"
+  },
+  "classifiedscandata": {
+    "Name": "Classified Scan Fragment",
+    "Type": "Encoded"
+  },
+  "industrialfirmware": {
+    "Name": "Cracked Industrial Firmware",
+    "Type": "Encoded"
+  },
+  "dataminedwake": {
+    "Name": "Datamined Wake Exceptions",
+    "Type": "Encoded"
+  },
+  "decodedemissiondata": {
+    "Name": "Decoded Emission Data",
+    "Type": "Encoded"
+  },
+  "shieldcyclerecordings": {
+    "Name": "Distorted Shield Cycle Recordings",
+    "Type": "Encoded"
+  },
+  "encodedscandata": {
+    "Name": "Divergent Scan Data",
+    "Type": "Encoded"
+  },
+  "hyperspacetrajectories": {
+    "Name": "Eccentric Hyperspace Trajectories",
+    "Type": "Encoded"
+  },
+  "scrambledemissiondata": {
+    "Name": "Exceptional Scrambled Emission Data",
+    "Type": "Encoded"
+  },
+  "shieldsoakanalysis": {
+    "Name": "Inconsistent Shield Soak Analysis",
+    "Type": "Encoded"
+  },
+  "archivedemissiondata": {
+    "Name": "Irregular Emission Data",
+    "Type": "Encoded"
+  },
+  "consumerfirmware": {
+    "Name": "Modified Consumer Firmware",
+    "Type": "Encoded"
+  },
+  "embeddedfirmware": {
+    "Name": "Modified Embedded Firmware",
+    "Type": "Encoded"
+  },
+  "symmetrickeys": {
+    "Name": "Open Symmetric Keys",
+    "Type": "Encoded"
+  },
+  "ancientbiologicaldata": {
+    "Name": "Pattern Alpha Obelisk Data",
+    "Type": "Encoded"
+  },
+  "ancientculturaldata": {
+    "Name": "Pattern Beta Obelisk Data",
+    "Type": "Encoded"
+  },
+  "ancientlanguagedata": {
+    "Name": "Pattern Delta Obelisk Data",
+    "Type": "Encoded"
+  },
+  "ancienttechnologicaldata": {
+    "Name": "Pattern Epsilon Obelisk Data",
+    "Type": "Encoded"
+  },
+  "ancienthistoricaldata": {
+    "Name": "Pattern Gamma Obelisk Data",
+    "Type": "Encoded"
+  },
+  "shieldfrequencydata": {
+    "Name": "Peculiar Shield Frequency Data",
+    "Type": "Encoded"
+  },
+  "securityfirmware": {
+    "Name": "Security Firmware Patch",
+    "Type": "Encoded"
+  },
+  "legacyfirmware": {
+    "Name": "Specialised Legacy Firmware",
+    "Type": "Encoded"
+  },
+  "wakesolutions": {
+    "Name": "Strange Wake Solutions",
+    "Type": "Encoded"
+  },
+  "encryptioncodes": {
+    "Name": "Tagged Encryption Codes",
+    "Type": "Encoded"
+  },
+  "emissiondata": {
+    "Name": "Unexpected Emission Data",
+    "Type": "Encoded"
+  },
+  "scanarchives": {
+    "Name": "Unidentified Scan Archives",
+    "Type": "Encoded"
+  },
+  "shielddensityreports": {
+    "Name": "Untypical Shield Scans",
+    "Type": "Encoded"
+  },
+  "encryptedfiles": {
+    "Name": "Unusual Encrypted Files",
+    "Type": "Encoded"
+  },
+  "unknownshipsignature": {
+    "Name": "Thargoid Ship Signature",
+    "Type": "Encoded"
+  },
+  "unknownwakedata": {
+    "Name": "Thargoid Wake Data",
+    "Type": "Encoded"
+  },
+  "tg_structuraldata": {
+    "Name": "Thargoid Structural Data",
+    "Type": "Encoded"
+  },
+  "tg_residuedata": {
+    "Name": "Thargoid Residue Data",
+    "Type": "Encoded"
+  },
+  "tg_compositiondata": {
+    "Name": "Thargoid Material Composition Data",
+    "Type": "Encoded"
+  },
+  "antimony": {
+    "Name": "Antimony",
+    "Type": "Raw"
+  },
+  "arsenic": {
+    "Name": "Arsenic",
+    "Type": "Raw"
+  },
+  "basicconductors": {
+    "Name": "Basic Conductors",
+    "Type": "Manufactured"
+  },
+  "biotechconductors": {
+    "Name": "Biotech Conductors",
+    "Type": "Manufactured"
+  },
+  "cadmium": {
+    "Name": "Cadmium",
+    "Type": "Raw"
+  },
+  "carbon": {
+    "Name": "Carbon",
+    "Type": "Raw"
+  },
+  "chemicaldistillery": {
+    "Name": "Chemical Distillery",
+    "Type": "Manufactured"
+  },
+  "chemicalmanipulators": {
+    "Name": "Chemical Manipulators",
+    "Type": "Manufactured"
+  },
+  "chemicalprocessors": {
+    "Name": "Chemical Processors",
+    "Type": "Manufactured"
+  },
+  "chemicalstorageunits": {
+    "Name": "Chemical Storage Units",
+    "Type": "Manufactured"
+  },
+  "chromium": {
+    "Name": "Chromium",
+    "Type": "Raw"
+  },
+  "compactcomposites": {
+    "Name": "Compact Composites",
+    "Type": "Manufactured"
+  },
+  "compoundshielding": {
+    "Name": "Compound Shielding",
+    "Type": "Manufactured"
+  },
+  "conductiveceramics": {
+    "Name": "Conductive Ceramics",
+    "Type": "Manufactured"
+  },
+  "conductivecomponents": {
+    "Name": "Conductive Components",
+    "Type": "Manufactured"
+  },
+  "conductivepolymers": {
+    "Name": "Conductive Polymers",
+    "Type": "Manufactured"
+  },
+  "configurablecomponents": {
+    "Name": "Configurable Components",
+    "Type": "Manufactured"
+  },
+  "fedcorecomposites": {
+    "Name": "Core Dynamics Composites",
+    "Type": "Manufactured"
+  },
+  "crystalshards": {
+    "Name": "Crystal Shards",
+    "Type": "Manufactured"
+  },
+  "electrochemicalarrays": {
+    "Name": "Electrochemical Arrays",
+    "Type": "Manufactured"
+  },
+  "exquisitefocuscrystals": {
+    "Name": "Exquisite Focus Crystals",
+    "Type": "Manufactured"
+  },
+  "filamentcomposites": {
+    "Name": "Filament Composites",
+    "Type": "Manufactured"
+  },
+  "uncutfocuscrystals": {
+    "Name": "Flawed Focus Crystals",
+    "Type": "Manufactured"
+  },
+  "focuscrystals": {
+    "Name": "Focus Crystals",
+    "Type": "Manufactured"
+  },
+  "galvanisingalloys": {
+    "Name": "Galvanising Alloys",
+    "Type": "Manufactured"
+  },
+  "germanium": {
+    "Name": "Germanium",
+    "Type": "Raw"
+  },
+  "gridresistors": {
+    "Name": "Grid Resistors",
+    "Type": "Manufactured"
+  },
+  "heatconductionwiring": {
+    "Name": "Heat Conduction Wiring",
+    "Type": "Manufactured"
+  },
+  "heatdispersionplate": {
+    "Name": "Heat Dispersion Plate",
+    "Type": "Manufactured"
+  },
+  "heatexchangers": {
+    "Name": "Heat Exchangers",
+    "Type": "Manufactured"
+  },
+  "heatresistantceramics": {
+    "Name": "Heat Resistant Ceramics",
+    "Type": "Manufactured"
+  },
+  "heatvanes": {
+    "Name": "Heat Vanes",
+    "Type": "Manufactured"
+  },
+  "highdensitycomposites": {
+    "Name": "High Density Composites",
+    "Type": "Manufactured"
+  },
+  "hybridcapacitors": {
+    "Name": "Hybrid Capacitors",
+    "Type": "Manufactured"
+  },
+  "imperialshielding": {
+    "Name": "Imperial Shielding",
+    "Type": "Manufactured"
+  },
+  "improvisedcomponents": {
+    "Name": "Improvised Components",
+    "Type": "Manufactured"
+  },
+  "iron": {
+    "Name": "Iron",
+    "Type": "Raw"
+  },
+  "manganese": {
+    "Name": "Manganese",
+    "Type": "Raw"
+  },
+  "mechanicalcomponents": {
+    "Name": "Mechanical Components",
+    "Type": "Manufactured"
+  },
+  "mechanicalequipment": {
+    "Name": "Mechanical Equipment",
+    "Type": "Manufactured"
+  },
+  "mechanicalscrap": {
+    "Name": "Mechanical Scrap",
+    "Type": "Manufactured"
+  },
+  "mercury": {
+    "Name": "Mercury",
+    "Type": "Raw"
+  },
+  "militarygradealloys": {
+    "Name": "Military Grade Alloys",
+    "Type": "Manufactured"
+  },
+  "militarysupercapacitors": {
+    "Name": "Military Supercapacitors",
+    "Type": "Manufactured"
+  },
+  "molybdenum": {
+    "Name": "Molybdenum",
+    "Type": "Raw"
+  },
+  "nickel": {
+    "Name": "Nickel",
+    "Type": "Raw"
+  },
+  "niobium": {
+    "Name": "Niobium",
+    "Type": "Raw"
+  },
+  "pharmaceuticalisolators": {
+    "Name": "Pharmaceutical Isolators",
+    "Type": "Manufactured"
+  },
+  "phasealloys": {
+    "Name": "Phase Alloys",
+    "Type": "Manufactured"
+  },
+  "phosphorus": {
+    "Name": "Phosphorus",
+    "Type": "Raw"
+  },
+  "polonium": {
+    "Name": "Polonium",
+    "Type": "Raw"
+  },
+  "polymercapacitors": {
+    "Name": "Polymer Capacitors",
+    "Type": "Manufactured"
+  },
+  "precipitatedalloys": {
+    "Name": "Precipitated Alloys",
+    "Type": "Manufactured"
+  },
+  "fedproprietarycomposites": {
+    "Name": "Proprietary Composites",
+    "Type": "Manufactured"
+  },
+  "protoheatradiators": {
+    "Name": "Proto Heat Radiators",
+    "Type": "Manufactured"
+  },
+  "protolightalloys": {
+    "Name": "Proto Light Alloys",
+    "Type": "Manufactured"
+  },
+  "protoradiolicalloys": {
+    "Name": "Proto Radiolic Alloys",
+    "Type": "Manufactured"
+  },
+  "refinedfocuscrystals": {
+    "Name": "Refined Focus Crystals",
+    "Type": "Manufactured"
+  },
+  "ruthenium": {
+    "Name": "Ruthenium",
+    "Type": "Raw"
+  },
+  "salvagedalloys": {
+    "Name": "Salvaged Alloys",
+    "Type": "Manufactured"
+  },
+  "selenium": {
+    "Name": "Selenium",
+    "Type": "Raw"
+  },
+  "shieldemitters": {
+    "Name": "Shield Emitters",
+    "Type": "Manufactured"
+  },
+  "shieldingsensors": {
+    "Name": "Shielding Sensors",
+    "Type": "Manufactured"
+  },
+  "sulphur": {
+    "Name": "Sulphur",
+    "Type": "Raw"
+  },
+  "technetium": {
+    "Name": "Technetium",
+    "Type": "Raw"
+  },
+  "tellurium": {
+    "Name": "Tellurium",
+    "Type": "Raw"
+  },
+  "temperedalloys": {
+    "Name": "Tempered Alloys",
+    "Type": "Manufactured"
+  },
+  "thermicalloys": {
+    "Name": "Thermic Alloys",
+    "Type": "Manufactured"
+  },
+  "tin": {
+    "Name": "Tin",
+    "Type": "Raw"
+  },
+  "tungsten": {
+    "Name": "Tungsten",
+    "Type": "Raw"
+  },
+  "unknownenergysource": {
+    "Name": "Unknown Fragment",
+    "Type": "Manufactured"
+  },
+  "vanadium": {
+    "Name": "Vanadium",
+    "Type": "Raw"
+  },
+  "wornshieldemitters": {
+    "Name": "Worn Shield Emitters",
+    "Type": "Manufactured"
+  },
+  "yttrium": {
+    "Name": "Yttrium",
+    "Type": "Raw"
+  },
+  "zinc": {
+    "Name": "Zinc",
+    "Type": "Raw"
+  },
+  "zirconium": {
+    "Name": "Zirconium",
+    "Type": "Raw"
+  }
+}

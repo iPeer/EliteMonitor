@@ -90,6 +90,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "DiscoveredBodyList";
+            this.ShowInTaskbar = false;
             this.Text = "Discovered Body List";
             this.ResumeLayout(false);
 

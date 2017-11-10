@@ -416,7 +416,6 @@ namespace EliteMonitor.Caching
                 mainForm.journalParser.commanders.Clear();
                 mainForm.eventList.Rows.Clear();
                 mainForm.comboCommanderList.Items.Clear();
-                mainForm.eventFilterDropdown.Items.Clear();
             });
             this.commanderCaches.Clear();
         }

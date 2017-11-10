@@ -1,7 +1,7 @@
 ﻿1.0.0.????
 	* Fixed an issue where pressing "No" on the update prompt would do nothing.
 	* Fixed an issue where the ETA for "finalising commander data" would always be 00s.
-	* Memory optimisations when loading commander data.
+	* Minor memory optimisations when loading commander data.
 	* Fixed an issue where, when given a large number of results, the system search window would fail to populate the results list (or would do so *very* slowly).
 	* Fixed an issue causing Elite Monitor's main window to "flash" when the system search window was closed.
 	* Scan-related notifications now remain on screen longer to allow more time to read the information displayed (20s vs 10s).
@@ -22,9 +22,13 @@
 	* Added a "back to top" button on the main event list.
 	* Journal search! Search through your journal entries to easily find the one(s) you want! Double- or right-click to jump to that entry in the main list!
 	* Added support for the "Materials", "EngineerCraft", "EngineerProgress" and "EngineerApply" events (finally).
+		* The blueprint names for the engineer events currently don't have "real" names, and use the internal name for that blueprint instead for now.
 	* Elite Monitor's database now has real names for many of Elite's commodities, data and materials, though some are still not known. If you find these, let me know their real names!
 	* Removed the "Rescan first discoveries" button from the discovered bodies list as it was always disabled and had no purpose.
 	* Fixed some instances where changes were made to commanders, but they weren't correctly marked as dirty (requiring save).
+	* Fixed an issue where after reloading Elite Monitor the in-game name of the Commander's current ship would show its internal name instead of its real one.
+	* Materials List window has been added. Check your material counts any time, anywhere!
+	* Elite Monitor has an icon now!
 
 1.0.0.1614
 	* ChangeLog added, we're in 2017 now!

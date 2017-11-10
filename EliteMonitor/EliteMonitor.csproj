@@ -80,6 +80,9 @@
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
+  <PropertyGroup>
+    <ApplicationIcon>elitemonitoricon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
@@ -186,6 +189,12 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Logging\Logger.cs" />
+    <Compile Include="MaterialList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MaterialList.Designer.cs">
+      <DependentUpon>MaterialList.cs</DependentUpon>
+    </Compile>
     <Compile Include="Misc\AssemblyBuildTimeAttribute.cs" />
     <Compile Include="Notifications\Notification.cs" />
     <Compile Include="Notifications\NotificationManager.cs" />
@@ -246,6 +255,9 @@
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="MaterialList.resx">
+      <DependentUpon>MaterialList.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Notifications\NotificationPopup.resx">
       <DependentUpon>NotificationPopup.cs</DependentUpon>
     </EmbeddedResource>
@@ -271,6 +283,9 @@
     <EmbeddedResource Include="UpdateNotifier.resx">
       <DependentUpon>UpdateNotifier.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="data\commodities.json" />
+    <None Include="data\materials.json" />
+    <None Include="data\ships.json" />
     <None Include="EliteMonitor_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -292,6 +307,10 @@
       <LastGenOutput>AssemblyFileData.cs</LastGenOutput>
     </Content>
     <Content Include="ChangeLog.txt" />
+    <Content Include="elitemonitoricon.ico" />
+    <Content Include="elitemonitoricon_Sek_icon.ico" />
+    <None Include="Resources\elitemonitoricon_Sek_icon.ico" />
+    <None Include="Resources\Icon1.ico" />
     <None Include="Resources\359320_20170224220206_1.png" />
     <None Include="Resources\359320_20170224211736_1.png" />
     <None Include="Resources\359320_20170224211731_1.png" />
@@ -365,10 +384,10 @@
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PreBuildEvent>xcopy /Y /E $(ProjectDir)data $(TargetDir)data\</PreBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\System.Data.SQLite.Core.1.0.104.0\build\net451\System.Data.SQLite.Core.targets" Condition="Exists('..\packages\System.Data.SQLite.Core.1.0.104.0\build\net451\System.Data.SQLite.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -53,6 +53,7 @@
             System.Windows.Forms.ListViewItem listViewItem22 = new System.Windows.Forms.ListViewItem("");
             System.Windows.Forms.ListViewItem listViewItem23 = new System.Windows.Forms.ListViewItem("e");
             System.Windows.Forms.ListViewItem listViewItem24 = new System.Windows.Forms.ListViewItem("f");
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExpeditionViewer));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.listViewExpeditionStats = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -323,9 +324,9 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.comboBoxExpeditionPicker);
             this.Controls.Add(this.groupBox1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(748, 737);
             this.Name = "ExpeditionViewer";
-            this.ShowIcon = false;
             this.Text = "Expedition Viewer";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExpeditionViewer_FormClosing);
             this.groupBox1.ResumeLayout(false);

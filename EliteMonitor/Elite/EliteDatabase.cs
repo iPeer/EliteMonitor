@@ -189,11 +189,22 @@ namespace EliteMonitor.Elite
             return @internal;
         }
 
+        public bool tryGetMaterialNameFromInternal(string @internal, out string realName)
+        {
+            if (this.Materials.ContainsKey(@internal))
+            {
+                realName = this.Materials[@internal].Name;
+                return true;
+            }
+            realName = @internal;
+            return false;
+        }
+
         public string getMaterialTypeFromInternalName(string @internal)
         {
             if (this.Materials.ContainsKey(@internal))
                 return this.Materials[@internal].Type;
-            return "UNKNOWN";
+            return "Unknown";
         }
 
         public string getCommodityNameFromInternal(string @internal)

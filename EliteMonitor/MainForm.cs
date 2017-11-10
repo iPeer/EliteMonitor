@@ -34,20 +34,19 @@ namespace EliteMonitor
         private Point _lastToolTipMousePos;
         private int _lastRightClickedRowIndex = -1;
         public static MainForm Instance { get; private set; }
-        private Dictionary<string, Color> defaultColours = new Dictionary<string, Color>();
         public JournalParser journalParser;
         public CacheController cacheController;
         public Logger logger;
         private Thread eliteCheckerThread;
         private SQLiteConnection sql;
         private const int PRELOAD_BODY_DATA_LIMIT = 100000;
-        private string lastHighlight = "";
         public EliteDatabase Database;
         ToolStripButton ExpeditionButton = new ToolStripButton("Start exploration expedition here");
         public NotificationManager notificationManager;
         public bool ExpeditionViewerOpen { get; private set; } = false;
         public bool DiscoveryListOpen { get; private set; } = false;
         public bool SearchGUIOpen { get; private set; } = false;
+        public bool MaterialsGUIOpen { get; private set; } = false;
 
         public MainForm()
         {
@@ -73,7 +72,6 @@ namespace EliteMonitor
             dEBUGToolStripMenuItem.Visible = false;
 #endif
             appVersionStatusLabel.Text = Utils.getApplicationVersion();
-            eventFilterDropdown.SelectedIndex = eventFilterDropdown.Items.IndexOf("NONE");
             Instance = this;
             journalParser = new JournalParser(this);
             cacheController = new CacheController(this);
@@ -256,58 +254,6 @@ namespace EliteMonitor
         {
             if (toolTip.Active && !toolTip.ShowAlways)
                 toolTip.Hide(eventList);
-        }
-
-        private void eventFilterDropdown_SelectionChangeCommitted(object sender, EventArgs e)
-        {
-
-            string selected = eventFilterDropdown.SelectedItem.ToString();
-
-            if (selected.Equals(this.lastHighlight)) return;
-
-            IEnumerable<DataGridViewRow> items = this.eventList.Rows.Cast<DataGridViewRow>();
-            Console.WriteLine(string.Format("{0}", items.First().Cells[1].Value.ToString()));
-            if (!this.lastHighlight.Equals(string.Empty))
-            {
-                List<DataGridViewRow> toRemove = items.Where(a => a.Cells[1].Value != null && a.Cells[1].Value.ToString().Equals(this.lastHighlight)).ToList();
-                foreach (DataGridViewRow i in toRemove)
-                {
-                    if (defaultColours.ContainsKey(i.Cells[1].Value.ToString()))
-                        i.DefaultCellStyle.BackColor = defaultColours[i.Cells[1].Value.ToString()];
-                }
-                this.lastHighlight = selected;
-            }
-
-            List<DataGridViewRow> toAdd = items.Where(a => a.Cells[1].Value != null && a.Cells[1].Value.ToString().Equals(selected)).ToList();
-            if (toAdd.Count > 0)
-            {
-                foreach (DataGridViewRow i in toAdd)
-                {
-                    if (!defaultColours.ContainsKey(i.Cells[1].Value.ToString()))
-                        defaultColours.Add(i.Cells[1].Value.ToString(), i.DefaultCellStyle.BackColor);
-                    i.DefaultCellStyle.BackColor = Color.LightBlue;
-                }
-                this.lastHighlight = selected;
-                this.eventList.FirstDisplayedScrollingRowIndex = this.eventList.Rows.IndexOf(toAdd.First());
-            }
-
-            /*foreach (ListViewItem i in eventList.Items)
-            {
-                if (i.SubItems[1].Text.Equals(selected))
-                {
-                    if (!defaultColours.ContainsKey(selected))
-                    {
-                        defaultColours.Add(selected, i.BackColor);
-
-                    }
-                    i.BackColor = Color.LightBlue;
-                }
-                else
-                {
-                    if (defaultColours.ContainsKey(i.SubItems[1].Text))
-                        i.BackColor = defaultColours[i.SubItems[1].Text];
-                }
-            }*/
         }
 
         delegate void ThreadSafeAppStatusLabelTextChange(string text);
@@ -1121,6 +1067,25 @@ namespace EliteMonitor
             searchJournalJSONAsWellAsDataToolStripMenuItem.Checked = !searchJournalJSONAsWellAsDataToolStripMenuItem.Checked;
             Properties.Settings.Default.JournalsSearchJson = searchJournalJSONAsWellAsDataToolStripMenuItem.Checked;
             Properties.Settings.Default.Save();
+        }
+
+        private void buttonMaterials_Click(object sender, EventArgs e)
+        {
+            if (this.MaterialsGUIOpen)
+            {
+                Utils.EnsureFormIsVisible(MaterialList.Instance);
+                return;
+            }
+            this.MaterialsGUIOpen = true;
+            MaterialList ml = new MaterialList();
+            ml.OnMaterialsListClosing += OnMaterialsListClosing;
+            ml.Show();
+        }
+
+        private void OnMaterialsListClosing(object sender, FormClosingEventArgs e)
+        {
+            this.MaterialsGUIOpen = false;
+            MaterialList.Instance.OnMaterialsListClosing -= OnMaterialsListClosing;
         }
     }
 }

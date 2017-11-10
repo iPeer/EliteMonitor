@@ -66,8 +66,8 @@ namespace EliteMonitor.Elite
         public string getFormattedShipString()
         {
             if ((this.ShipID == null || this.ShipName == null) || this.ShipID.Equals("") && this.ShipName.Equals(""))
-                return this.ShipNonVanityName;
-            return string.Format("{0}{1}{2}", this.ShipID, this.ShipName.Equals(this.ShipNonVanityName) ? "" : string.Format(": {0} (", this.ShipName), string.Format(this.ShipName.Equals(this.ShipNonVanityName) ? "{0}" : "{0})", this.ShipNonVanityName));
+                return EliteDatabase.Instance.getShipNameFromInternalName(this.ShipNonVanityName);
+            return string.Format("{0}{1}{2}", this.ShipID, this.ShipName.Equals(EliteDatabase.Instance.getShipNameFromInternalName(this.ShipNonVanityName)) ? "" : string.Format(": {0} (", this.ShipName), string.Format(this.ShipName.Equals(EliteDatabase.Instance.getShipNameFromInternalName(this.ShipNonVanityName)) ? "{0}" : "{0})", EliteDatabase.Instance.getShipNameFromInternalName(this.ShipNonVanityName)));
         }
     }
 
@@ -556,24 +556,6 @@ namespace EliteMonitor.Elite
             m.fedRankProgress.InvokeIfRequired(() => m.fedRankProgress.Value = this.federationProgress);
             m.empireRankProgress.InvokeIfRequired(() => m.empireRankProgress.Value = this.imperialProgress);
 
-            // Event Type list
-
-            updateEventListDropdown();
-
-        }
-
-        public void updateEventListDropdown()
-        {
-            MainForm m = MainForm.Instance;
-            List<string> tmp = new List<string>(this.EventsList);
-            tmp.Sort();
-            tmp.Insert(0, "NONE");
-            m.eventFilterDropdown.InvokeIfRequired(() =>
-            {
-                m.eventFilterDropdown.Items.Clear();
-                m.eventFilterDropdown.Items.AddRange(tmp.ToArray());
-                m.eventFilterDropdown.SelectedIndex = 0;
-            });
         }
 
         public Commander addJournalEntry(JournalEntry je, bool checkDuplicates = false, bool dontUpdateDialogDisplays = false)
@@ -583,8 +565,6 @@ namespace EliteMonitor.Elite
                 if (!this.EventsList.Contains(je.Event))
                 {
                     this.EventsList.Add(je.Event);
-                    if (this.isViewed)
-                        this.updateEventListDropdown();
                 }
                 je.ID = this.nextId++;
                 this.JournalEntries.Add(je);

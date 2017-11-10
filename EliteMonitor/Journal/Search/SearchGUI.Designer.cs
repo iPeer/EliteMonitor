@@ -152,10 +152,10 @@
             this.ClientSize = new System.Drawing.Size(855, 494);
             this.Controls.Add(this.splitContainer1);
             this.DoubleBuffered = true;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "SearchGUI";
-            this.ShowIcon = false;
             this.Text = "Journal Search";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SearchGUI_FormClosing);
             this.splitContainer1.Panel1.ResumeLayout(false);

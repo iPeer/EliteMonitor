@@ -512,7 +512,7 @@ namespace EliteMonitor.Journal
                         ship = (string)j["Ship"];
                         shipName = (string)j["ShipName"];
                         shipID = (string)j["ShipIdent"];
-                        commander.SetShip(new CommanderShip(ship, shipID, shipName));
+                        commander.SetShip(new CommanderShip(mainForm.Database.getShipNameFromInternalName(ship), shipID, shipName));
                         int commanderShipID = (int)j["ShipID"];
                         commander.UpdateShipLoadout(commanderShipID, mainForm.Database.getShipNameFromInternalName(ship), shipID, shipName.Equals(ship) ? "" : shipName, j["Modules"].ToString());
                     }
@@ -1006,6 +1006,7 @@ namespace EliteMonitor.Journal
             mainForm.buttonDiscoveredBodies.InvokeIfRequired(() => mainForm.buttonDiscoveredBodies.Enabled = false);
             mainForm.buttonExpeditions.InvokeIfRequired(() => mainForm.buttonExpeditions.Enabled = false);
             mainForm.buttonSearch.InvokeIfRequired(() => mainForm.buttonSearch.Enabled = false);
+            mainForm.buttonMaterials.InvokeIfRequired(() => mainForm.buttonMaterials.Enabled = false);
             Stopwatch sw = new Stopwatch();
             sw.Start();
             mainForm.setAppStatusText(String.Format("Loading commander data for '{0}'", c.Name));
@@ -1094,6 +1095,7 @@ namespace EliteMonitor.Journal
             mainForm.buttonDiscoveredBodies.InvokeIfRequired(() => mainForm.buttonDiscoveredBodies.Enabled = true);
             mainForm.buttonExpeditions.InvokeIfRequired(() => mainForm.buttonExpeditions.Enabled = true);
             mainForm.buttonSearch.InvokeIfRequired(() => mainForm.buttonSearch.Enabled = true);
+            mainForm.buttonMaterials.InvokeIfRequired(() => mainForm.buttonMaterials.Enabled = true);
         }
 
         public DataGridViewRow getListViewEntryForEntry(JournalEntry j)

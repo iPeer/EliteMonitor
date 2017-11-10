@@ -118,22 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="label1.Text" xml:space="preserve">
-    <value>Enter the search criteria you want to search your journal entries with above and hit the return key.
-You can start a word with "event:" to search for a specific event, for example "event:FSDJump" would only search entries that have FSDJump as their event. You may specifiy multiple events to search, and they can be anywhere in the criteria.
-Additionally, you may also specify other keywords in your search query. For example, if you wanted to search for entries from when you docked in a specific system, you could search for "event:Docked Neto", alternatively, if you wanted to search for any event relating to the system "Neto", you would simply just search "Neto".</value>
+    <value>This window shows the materials currently in your ingame inventory as well as how many of each item you have.
+
+Materials listed in the "unknown" tab are materials that Elite Monitor doesn't have real names for, you can help by letting me know what their real names are along with what type of material they are!</value>
   </data>
-  <metadata name="Column1.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="Column2.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="Column3.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <metadata name="contextMenuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
