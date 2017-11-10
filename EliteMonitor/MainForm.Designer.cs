@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.appStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTailingFailed = new System.Windows.Forms.ToolStripStatusLabel();
@@ -76,6 +76,7 @@
             this.notificationsEnabledToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.friendsNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scanNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dockingLocationNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.commanderBox = new System.Windows.Forms.GroupBox();
             this.commanderLocationLabel = new System.Windows.Forms.Label();
             this.labelCreditsChange = new System.Windows.Forms.Label();
@@ -119,6 +120,10 @@
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.buttonTop = new System.Windows.Forms.Button();
+            this.buttonSearch = new System.Windows.Forms.Button();
+            this.searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.searchJournalJSONAsWellAsDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
@@ -458,7 +463,8 @@
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.enableSoundsToolStripMenuItem,
             this.hideMusicEventsToolStripMenuItem,
-            this.notificationsToolStripMenuItem});
+            this.notificationsToolStripMenuItem,
+            this.searchToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsToolStripMenuItem.Text = "Options";
@@ -486,7 +492,8 @@
             this.notificationsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.notificationsEnabledToolStripMenuItem,
             this.friendsNotificationsToolStripMenuItem,
-            this.scanNotificationsToolStripMenuItem});
+            this.scanNotificationsToolStripMenuItem,
+            this.dockingLocationNotificationsToolStripMenuItem});
             this.notificationsToolStripMenuItem.Name = "notificationsToolStripMenuItem";
             this.notificationsToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.notificationsToolStripMenuItem.Text = "Notifications";
@@ -494,23 +501,30 @@
             // notificationsEnabledToolStripMenuItem
             // 
             this.notificationsEnabledToolStripMenuItem.Name = "notificationsEnabledToolStripMenuItem";
-            this.notificationsEnabledToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.notificationsEnabledToolStripMenuItem.Size = new System.Drawing.Size(238, 22);
             this.notificationsEnabledToolStripMenuItem.Text = "Notifications Enabled";
             this.notificationsEnabledToolStripMenuItem.Click += new System.EventHandler(this.notificationsEnabledToolStripMenuItem_Click);
             // 
             // friendsNotificationsToolStripMenuItem
             // 
             this.friendsNotificationsToolStripMenuItem.Name = "friendsNotificationsToolStripMenuItem";
-            this.friendsNotificationsToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.friendsNotificationsToolStripMenuItem.Size = new System.Drawing.Size(238, 22);
             this.friendsNotificationsToolStripMenuItem.Text = "Friends Notifications";
             this.friendsNotificationsToolStripMenuItem.Click += new System.EventHandler(this.friendsNotificationsToolStripMenuItem_Click);
             // 
             // scanNotificationsToolStripMenuItem
             // 
             this.scanNotificationsToolStripMenuItem.Name = "scanNotificationsToolStripMenuItem";
-            this.scanNotificationsToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.scanNotificationsToolStripMenuItem.Size = new System.Drawing.Size(238, 22);
             this.scanNotificationsToolStripMenuItem.Text = "Scan Notifications";
             this.scanNotificationsToolStripMenuItem.Click += new System.EventHandler(this.scanNotificationsToolStripMenuItem_Click);
+            // 
+            // dockingLocationNotificationsToolStripMenuItem
+            // 
+            this.dockingLocationNotificationsToolStripMenuItem.Name = "dockingLocationNotificationsToolStripMenuItem";
+            this.dockingLocationNotificationsToolStripMenuItem.Size = new System.Drawing.Size(238, 22);
+            this.dockingLocationNotificationsToolStripMenuItem.Text = "Docking Location Notifications";
+            this.dockingLocationNotificationsToolStripMenuItem.Click += new System.EventHandler(this.dockingLocationNotificationsToolStripMenuItem_Click);
             // 
             // commanderBox
             // 
@@ -883,6 +897,7 @@
             this.label2.Size = new System.Drawing.Size(81, 13);
             this.label2.TabIndex = 4;
             this.label2.Text = "Highlight event:";
+            this.label2.Visible = false;
             // 
             // eventFilterDropdown
             // 
@@ -896,12 +911,13 @@
             this.eventFilterDropdown.Size = new System.Drawing.Size(169, 21);
             this.eventFilterDropdown.TabIndex = 5;
             this.eventFilterDropdown.ValueMember = "None";
+            this.eventFilterDropdown.Visible = false;
             this.eventFilterDropdown.SelectionChangeCommitted += new System.EventHandler(this.eventFilterDropdown_SelectionChangeCommitted);
             // 
             // pickCommanderLabel
             // 
             this.pickCommanderLabel.AutoSize = true;
-            this.pickCommanderLabel.Location = new System.Drawing.Point(275, 253);
+            this.pickCommanderLabel.Location = new System.Drawing.Point(115, 253);
             this.pickCommanderLabel.Name = "pickCommanderLabel";
             this.pickCommanderLabel.Size = new System.Drawing.Size(101, 13);
             this.pickCommanderLabel.TabIndex = 6;
@@ -912,7 +928,7 @@
             this.comboCommanderList.DisplayMember = "None";
             this.comboCommanderList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboCommanderList.FormattingEnabled = true;
-            this.comboCommanderList.Location = new System.Drawing.Point(382, 250);
+            this.comboCommanderList.Location = new System.Drawing.Point(222, 250);
             this.comboCommanderList.Name = "comboCommanderList";
             this.comboCommanderList.Size = new System.Drawing.Size(169, 21);
             this.comboCommanderList.Sorted = true;
@@ -980,13 +996,14 @@
             this.eventList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.eventList.Size = new System.Drawing.Size(936, 361);
             this.eventList.TabIndex = 10;
+            this.eventList.Scroll += new System.Windows.Forms.ScrollEventHandler(this.eventList_Scroll);
             this.eventList.MouseClick += new System.Windows.Forms.MouseEventHandler(this.eventList_MouseClick);
             // 
             // Column1
             // 
             this.Column1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            this.Column1.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.Column1.DefaultCellStyle = dataGridViewCellStyle3;
             this.Column1.HeaderText = "Timestamp";
             this.Column1.Name = "Column1";
             this.Column1.ReadOnly = true;
@@ -1007,11 +1024,49 @@
             this.Column3.Name = "Column3";
             this.Column3.ReadOnly = true;
             // 
+            // buttonTop
+            // 
+            this.buttonTop.Location = new System.Drawing.Point(947, 277);
+            this.buttonTop.Name = "buttonTop";
+            this.buttonTop.Size = new System.Drawing.Size(19, 16);
+            this.buttonTop.TabIndex = 11;
+            this.buttonTop.Text = "^";
+            this.buttonTop.UseVisualStyleBackColor = true;
+            this.buttonTop.Visible = false;
+            this.buttonTop.Click += new System.EventHandler(this.buttonTop_Click);
+            // 
+            // buttonSearch
+            // 
+            this.buttonSearch.Location = new System.Drawing.Point(12, 248);
+            this.buttonSearch.Name = "buttonSearch";
+            this.buttonSearch.Size = new System.Drawing.Size(97, 23);
+            this.buttonSearch.TabIndex = 12;
+            this.buttonSearch.Text = "Search Journal";
+            this.buttonSearch.UseVisualStyleBackColor = true;
+            this.buttonSearch.Click += new System.EventHandler(this.buttonSearch_Click);
+            // 
+            // searchToolStripMenuItem
+            // 
+            this.searchToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.searchJournalJSONAsWellAsDataToolStripMenuItem});
+            this.searchToolStripMenuItem.Name = "searchToolStripMenuItem";
+            this.searchToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.searchToolStripMenuItem.Text = "Search";
+            // 
+            // searchJournalJSONAsWellAsDataToolStripMenuItem
+            // 
+            this.searchJournalJSONAsWellAsDataToolStripMenuItem.Name = "searchJournalJSONAsWellAsDataToolStripMenuItem";
+            this.searchJournalJSONAsWellAsDataToolStripMenuItem.Size = new System.Drawing.Size(289, 22);
+            this.searchJournalJSONAsWellAsDataToolStripMenuItem.Text = "Search Journal entry JSON as well as data";
+            this.searchJournalJSONAsWellAsDataToolStripMenuItem.Click += new System.EventHandler(this.searchJournalJSONAsWellAsDataToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(966, 663);
+            this.Controls.Add(this.buttonSearch);
+            this.Controls.Add(this.buttonTop);
             this.Controls.Add(this.eventList);
             this.Controls.Add(this.buttonExpeditions);
             this.Controls.Add(this.buttonDiscoveredBodies);
@@ -1140,6 +1195,11 @@
         private System.Windows.Forms.ToolStripMenuItem notificationsEnabledToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem friendsNotificationsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem scanNotificationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dockingLocationNotificationsToolStripMenuItem;
+        private System.Windows.Forms.Button buttonTop;
+        public System.Windows.Forms.Button buttonSearch;
+        private System.Windows.Forms.ToolStripMenuItem searchToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem searchJournalJSONAsWellAsDataToolStripMenuItem;
     }
 }
 

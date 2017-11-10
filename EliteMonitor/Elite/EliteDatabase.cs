@@ -22,9 +22,9 @@ namespace EliteMonitor.Elite
     public class EliteDatabase
     {
 
-/*#if DEBUG
-        public const string EDSM_API_URL = "https://beta.edsm.net:8080/api-v1/"; // Seems to be deprecated?
-#else*/
+        /*#if DEBUG
+                public const string EDSM_API_URL = "https://beta.edsm.net:8080/api-v1/"; // Seems to be deprecated?
+        #else*/
         public const string EDSM_API_URL = "https://www.edsm.net/api-v1/";
         /*#endif*/
 
@@ -32,9 +32,11 @@ namespace EliteMonitor.Elite
         public event EventHandler<List<BasicSystem>> OnEDSMDataDownloadComplete;
         public event EventHandler<Int64[]> OnEDSMSystemParseProgress;
 
-        public List<Material> Materials;
+        //public List<Material> Materials;
+        public Dictionary<string, Material> Materials;
+        //public Dictionary<string, string> MaterialTypes;
         public Dictionary<string, string> Ships;
-        //public List<Commodity> Commodities; // Coming soon™
+        public Dictionary<string, string> Commodities;
         public Dictionary<string, string> VoucherTypes = new Dictionary<string, string>()
         {
             { "bounty", "Bounty Voucher" },
@@ -85,13 +87,15 @@ namespace EliteMonitor.Elite
             this.mainForm = m;
             this.logger = new Logger("EliteDatabase");
             Instance = this;
-            this.Materials = new List<Material>();
+            this.Materials = new Dictionary<string, Material>();
+            //this.MaterialTypes = new Dictionary<string, string>();
             this.Ships = new Dictionary<string, string>();
-            //this.Commodities = new List<Commodity>();
+            this.Commodities = new Dictionary<string, string>();
 
             loadMaterials();
             loadShips();
             loadCommodities();
+            /*loadMaterialTypes();*/
 
             runUpdatesIfNeeded();
         }
@@ -129,8 +133,74 @@ namespace EliteMonitor.Elite
         {
             using (StreamReader sr = new StreamReader(Path.Combine(MainForm.Instance.cacheController.dataPath, "materials.json")))
             {
-                this.Materials = JsonConvert.DeserializeObject<List<Material>>(sr.ReadToEnd());
+                this.Materials = JsonConvert.DeserializeObject<Dictionary<string, Material>>(sr.ReadToEnd());
             }
+        }
+
+        public void loadCommodities()
+        {
+            using (StreamReader sr = new StreamReader(Path.Combine(MainForm.Instance.cacheController.dataPath, "commodities.json")))
+            {
+                this.Commodities = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
+            }
+        }
+
+        /*public void loadMaterialTypes()
+        {
+            if (File.Exists(Path.Combine(MainForm.Instance.cacheController.dataPath, "materialtypes.json")))
+            {
+                using (StreamReader sr = new StreamReader(Path.Combine(MainForm.Instance.cacheController.dataPath, "materialtypes.json")))
+                {
+                    this.MaterialTypes = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
+                }
+            }
+        }*/
+
+        /*public void saveMaterialTypeToDatabase(string material, string type)
+        {
+            if (this.MaterialTypes.ContainsKey(material)) return;
+            this.MaterialTypeDBIsDirty = true;
+            this.MaterialTypes.Add(material, type);
+        }*/
+
+        /*public void saveMaterialTypeDatabaseToDisk()
+        {
+            if (this.MaterialTypeDBIsDirty)
+            {
+                this.MaterialTypeDBIsDirty = false;
+                using (StreamWriter sw = new StreamWriter(Path.Combine(MainForm.Instance.cacheController.dataPath, "materialtypes.json")))
+                {
+                    sw.WriteLine(JsonConvert.SerializeObject(this.MaterialTypes, Formatting.Indented));
+                }
+            }
+        }*/
+
+        /*public bool getMaterialTypeFromInternal(string material, out string type)
+        {
+            if (!this.MaterialTypes.ContainsKey(material)) { type = string.Empty;  return false; }
+            type = this.MaterialTypes[material];
+            return true;
+        }*/
+
+        public string getMaterialNameFromInternal(string @internal)
+        {
+            if (this.Materials.ContainsKey(@internal))
+                return this.Materials[@internal].Name;
+            return @internal;
+        }
+
+        public string getMaterialTypeFromInternalName(string @internal)
+        {
+            if (this.Materials.ContainsKey(@internal))
+                return this.Materials[@internal].Type;
+            return "UNKNOWN";
+        }
+
+        public string getCommodityNameFromInternal(string @internal)
+        {
+            if (this.Commodities.ContainsKey(@internal))
+                return this.Commodities[@internal];
+            return @internal;
         }
 
         public void loadShips()
@@ -162,58 +232,6 @@ namespace EliteMonitor.Elite
         {
             DownloadableDataItem ddi = new DownloadableDataItem("https://ipeer.auron.co.uk/EliteMonitor/data/commodities.json", Path.Combine(mainForm.cacheController.dataPath, "commodities.json"));
             this.needsUpdate.Add(ddi);
-        }
-
-        public void loadCommodities()
-        {
-            // TODO
-            /*using (StreamReader sr = new StreamReader(Path.Combine(MainForm.Instance.cacheController.dataPath, "commodities.json")))
-            {
-                this.Commodities = JsonConvert.DeserializeObject<List<Commodity>>(sr.ReadToEnd());
-            }*/
-        }
-
-        public string getMaterialNameFromInternalName(string internalName)
-        {
-            Material m = new Material();
-            try
-            {
-                m = this.Materials.First(a => a.InternalName.Equals(internalName));
-            }
-            catch { return internalName; }
-            if (m == null) return internalName;
-            return m.Name;
-        }
-
-        public string getInternalNameFromRealName(string realName)
-        {
-            Material m = this.Materials.First(a => a.Name.Equals(realName));
-            if (m == null) return realName;
-            return m.InternalName;
-        }
-
-        public Material getMaterialFromElementSymbol(string symbol)
-        {
-            Material m = this.Materials.First(a => a.Symbol.Equals(symbol));
-            if (m == null) throw new NoElementMatchesSymbolException();
-            return m;
-        }
-
-        public string getElementNameFromSymbol(string symbol)
-        {
-            try
-            {
-                Material m = getMaterialFromElementSymbol(symbol);
-                return m.Name;
-            }
-            catch (NoElementMatchesSymbolException) { return symbol; }
-        }
-
-        public string getTypeForMaterialByInternalName(string internalName)
-        {
-            Material m = this.Materials.First(a => a.InternalName.Equals(internalName));
-            if (m == null) return "Unknown";
-            return m.Type;
         }
 
         public string getShipNameFromInternalName(string internalName)
@@ -269,7 +287,8 @@ namespace EliteMonitor.Elite
                 try
                 {
                     coords = JsonConvert.DeserializeObject<SystemCoordinate>(j.GetValue("coords").ToString());
-                } catch { continue; }
+                }
+                catch { continue; }
                 string Allegiance = "Independent";
                 string Economy = "None";
                 Dictionary<string, object> systemInfo = new Dictionary<string, object>();
@@ -410,7 +429,7 @@ namespace EliteMonitor.Elite
                     case "M":
                         return 2900;
                     default: // Some mystery class we've never seen before :O thargoids.jpg
-                        return 3120;
+                        return 0;
                 }
             }
             else
@@ -466,5 +485,123 @@ namespace EliteMonitor.Elite
             }
         }
 
+        public string getLandingPadPosition(int pad)
+        {
+            switch (pad)
+            {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                    return "6 o'clock";
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                    return "7 o'clock";
+                case 9:
+                case 10:
+                    return "8 o'clock";
+                case 11:
+                case 12:
+                case 13:
+                case 14:
+                case 15:
+                    return "9 o'clock";
+                case 16:
+                case 17:
+                case 18:
+                case 19:
+                    return "10 o'clock";
+                case 20:
+                case 21:
+                case 22:
+                case 23:
+                    return "11 o'clock";
+                case 24:
+                case 25:
+                    return "12 o'clock";
+                case 26:
+                case 27:
+                case 28:
+                case 29:
+                case 30:
+                    return "1 o'clock";
+                case 31:
+                case 32:
+                case 33:
+                case 34:
+                    return "2 o'clock";
+                case 35:
+                case 36:
+                case 37:
+                case 38:
+                    return "3 o'clock";
+                case 39:
+                case 40:
+                    return "4 o'clock";
+                case 41:
+                case 42:
+                case 43:
+                case 44:
+                case 45:
+                    return "5 o'clock";
+                default:
+                    return "No idea!";
+            }
+        }
+
+        public string getLandingPadDistance(int pad)
+        {
+            switch (pad)
+            {
+                case 1:
+                case 2:
+                case 5:
+                case 6:
+                case 9:
+                case 11:
+                case 12:
+                case 16:
+                case 17:
+                case 20:
+                case 21:
+                case 24:
+                case 26:
+                case 27:
+                case 31:
+                case 32:
+                case 35:
+                case 36:
+                case 39:
+                case 41:
+                case 42:
+                    return "near";
+                case 3:
+                case 4:
+                case 7:
+                case 8:
+                case 10:
+                case 14:
+                case 15:
+                case 18:
+                case 19:
+                case 22:
+                case 23:
+                case 25:
+                case 29:
+                case 30:
+                case 33:
+                case 34:
+                case 37:
+                case 38:
+                case 40:
+                case 44:
+                case 45:
+                    return "far";
+                default:
+                    return "mid";
+            }
+        }
     }
 }

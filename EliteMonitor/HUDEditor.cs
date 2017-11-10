@@ -44,7 +44,6 @@ namespace EliteMonitor
         private HUDMatrix hudMatrix = new HUDMatrix();
 
         private int maxVal = 100;
-        private int minVal = 0;
 
         private Ranges currentRange = Ranges.M0P100;
 
@@ -219,7 +218,6 @@ namespace EliteMonitor
                 this.trackBarBB.Maximum = 100;
 
                 this.maxVal = 100;
-                this.minVal = 0;
             }
             else if (range == Ranges.M100P100)
             {
@@ -287,7 +285,6 @@ namespace EliteMonitor
                 this.trackBarBB.Maximum = 100;
 
                 this.maxVal = 100;
-                this.minVal = -100;
             }
             else if (range == Ranges.M200P200)
             {
@@ -355,7 +352,6 @@ namespace EliteMonitor
                 this.trackBarBB.Maximum = 200;
 
                 this.maxVal = 200;
-                this.minVal = -200;
             }
 
             this.currentRange = range;

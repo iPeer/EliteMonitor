@@ -130,6 +130,13 @@ namespace EliteMonitor.Exploration
                 Notification n = new Notification("Expedition Completed", $"The expedition '{this.ExpeditionName}' is now complete!");
                 Utils.InvokeNotification(n);
             }
+            if (this.IsExpeditionLoaded)
+            {
+                ExpeditionViewer.Instance.updateData();
+                ExpeditionViewer.Instance.updateSystems();
+                ExpeditionViewer.Instance.updateScans();
+            }
+
         }
 
         public void OnSave()

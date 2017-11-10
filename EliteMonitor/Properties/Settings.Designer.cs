@@ -166,5 +166,29 @@ namespace EliteMonitor.Properties {
                 this["ScanNotifications"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DockingNotifications {
+            get {
+                return ((bool)(this["DockingNotifications"]));
+            }
+            set {
+                this["DockingNotifications"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool JournalsSearchJson {
+            get {
+                return ((bool)(this["JournalsSearchJson"]));
+            }
+            set {
+                this["JournalsSearchJson"] = value;
+            }
+        }
     }
 }

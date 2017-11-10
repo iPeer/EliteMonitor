@@ -43,6 +43,8 @@ namespace EliteMonitor.Journal
         private bool isCommanderRegistered = false;
         private DateTime lastJumpStartTime = DateTime.MinValue;
         public string LastParsedJson = string.Empty;
+        private int scanEntriesToIgnore = 0;
+        public bool noCommandersOrJournals = false;
 
         List<ParsableJournalEntry> preLoadCommanderData = new List<ParsableJournalEntry>(3);
 
@@ -199,7 +201,8 @@ namespace EliteMonitor.Journal
                         else
                             commander.addCredits(price);
                     }
-                    return new JournalEntry(timestamp, @event, $"{prefix} {count} {product} for {String.Format("{0:n0}", price)} credits", j);
+                    string productName = mainForm.Database.getCommodityNameFromInternal(product);
+                    return new JournalEntry(timestamp, @event, $"{prefix} {count} {productName} for {String.Format("{0:n0}", price)} credits", j);
                 case "SendText":
                     string message = (string)j["Message"];
                     string to = (string)j["To"];
@@ -223,7 +226,15 @@ namespace EliteMonitor.Journal
                 case "DockingRequested":
                     return new JournalEntry(timestamp, @event, $"Requested docking at {(string)j["StationName"]}", j);
                 case "DockingGranted":
-                    return new JournalEntry(timestamp, @event, $"Docking granted on pad {(string)j["LandingPad"]} at {(string)j["StationName"]}", j);
+                    int landingPad = j.GetValue("LandingPad").ToObject<int>();
+                    if (showNotifications && Properties.Settings.Default.NotificationsEnabled && Properties.Settings.Default.DockingNotifications)
+                    {
+                        string padTime = MainForm.Instance.Database.getLandingPadPosition(landingPad);
+                        string padDist = MainForm.Instance.Database.getLandingPadDistance(landingPad);
+                        Notification n = new Notification("Docking granted", $"Greens on the right, pad {landingPad} located at {padTime} {padDist}\nNote thtat this only applies to stations not outposts. There's no way for us to tell if it's an outpost in the journal.", 15);
+                        Utils.InvokeNotification(n);
+                    }
+                    return new JournalEntry(timestamp, @event, $"Docking granted on pad {landingPad} at {(string)j["StationName"]}", j);
                 case "Docked":
                     string stationName = (string)j["StationName"];
                     string stationType = (string)j["StationType"];
@@ -313,20 +324,21 @@ namespace EliteMonitor.Journal
                     string category = (string)j["Category"];
                     if (!isReparse)
                         commander.addMaterial(material, count);
-                    return new JournalEntry(timestamp, @event, String.Format("Collected. {0} : {1} ({2})", category, mainForm.Database.getMaterialNameFromInternalName(material), count), j);
+                    //mainForm.Database.saveMaterialTypeToDatabase(material, category);
+                    return new JournalEntry(timestamp, @event, String.Format("Collected. {0} : {1} ({2})", category, mainForm.Database.getMaterialNameFromInternal(material), count), j);
                 case "MaterialDiscovered":
                     material = (string)j["Name"];
                     category = (string)j["Category"];
-                    return new JournalEntry(timestamp, @event, String.Format("Discovered new material: {0} : {1}", category, mainForm.Database.getMaterialNameFromInternalName(material)), j);
+                    //mainForm.Database.saveMaterialTypeToDatabase(material, category);
+                    return new JournalEntry(timestamp, @event, String.Format("Discovered new material: {0} : {1}", category, mainForm.Database.getMaterialNameFromInternal(material)), j);
                 case "MaterialDiscarded":
                     material = (string)j["Name"];
                     count = (int)j["Count"];
                     if (!isReparse)
                         commander.removeMaterial(material, count);
-                    //_materialCounts[material] -= count;
-                    return new JournalEntry(timestamp, @event, String.Format("Discarded. {0} : {1} ({2})", mainForm.Database.getTypeForMaterialByInternalName(material), mainForm.Database.getMaterialNameFromInternalName(material), count), j);
+                    string matOutString = String.Format("Discarded. {0} : {1} ({2})", mainForm.Database.getMaterialTypeFromInternalName(material), mainForm.Database.getMaterialNameFromInternal(material), count);
+                    return new JournalEntry(timestamp, @event, matOutString, j);
                 case "MissionCompleted":
-                    //Console.WriteLine(j.ToString());
                     bool donate = j["Reward"] == null;
                     long credits = donate ? (long)j["Donation"] : (long)j["Reward"];
                     if (!isReparse)
@@ -450,9 +462,9 @@ namespace EliteMonitor.Journal
                     }
                     catch { }
                     if (string.IsNullOrEmpty(ship))
-                        eText = string.Format("Bountry credit of {0:n0} awarded.", value);
+                        eText = string.Format("Bounty credit of {0:n0} awarded.", value);
                     else
-                        eText = string.Format("Bountry credit of {0:n0} awarded for destruction of {1} {2}.", value, againstFaction, mainForm.Database.getShipNameFromInternalName(ship));
+                        eText = string.Format("Bounty credit of {0:n0} awarded for destruction of {1} {2}.", value, againstFaction, mainForm.Database.getShipNameFromInternalName(ship));
                     return new JournalEntry(timestamp, @event, eText, j);
                 case "RedeemVoucher":
                     value = (int)j["Amount"];
@@ -638,7 +650,7 @@ namespace EliteMonitor.Journal
                         bool terraformable = false;
                         try { terraformable = j.GetValue("TerraformState").ToString().Equals("Terraformable"); }
                         catch { }
-                        if (Properties.Settings.Default.SoundsEnabled && !doNotPlaySounds)
+                        if (this.scanEntriesToIgnore == 0 && Properties.Settings.Default.SoundsEnabled && !doNotPlaySounds)
                         {
                             string soundFile = string.Empty;
                             switch (bodyClass)
@@ -712,16 +724,27 @@ namespace EliteMonitor.Journal
                         foreach (KeyValuePair<string, double> kvp in materials)
                             sb.AppendLineFormatted("{0}: {1:n2}%", kvp.Key.CapitaliseFirst(), kvp.Value);
                     }
-                    if (showNotifications && !isReparse && Properties.Settings.Default.NotificationsEnabled && Properties.Settings.Default.ScanNotifications)
+                    if (this.scanEntriesToIgnore == 0 && showNotifications && !isReparse && Properties.Settings.Default.NotificationsEnabled && Properties.Settings.Default.ScanNotifications)
                     {
                         Notification n = new Notification(bodyName, sb.ToString(), 20);
                         Utils.InvokeNotification(n);
                     }
+                    if (this.scanEntriesToIgnore > 0)
+                        this.scanEntriesToIgnore--;
                     return new JournalEntry(timestamp, @event, sb.ToString().Trim(), j);
+                case "NavBeaconScan":
+                    int bodies = j.GetValue("NumBodies").ToObject<int>();
+                    if (!isReparse)
+                        this.scanEntriesToIgnore = bodies;
+                    return new JournalEntry(timestamp, @event, $"Nav Beacon scan complete: {bodies} data entries downloaded.", j);
                 case "Friends":
                     string status = j.GetValue("Status").ToString();
-                    string friendString = string.Format("CMDR {0} has {1} {2}.", j.GetValue("Name").ToString(), status.Equals("Offline") ? "gone" : "come", status.Equals("Offline") ? "offline" : "online");
-                    if (showNotifications && !isReparse && Properties.Settings.Default.NotificationsEnabled && Properties.Settings.Default.FriendNotifications)
+                    string friendString = string.Empty;
+                    if (status.Equals("Added"))
+                        friendString = string.Format("Now friends with CMDR {0}", j.GetValue("Name").ToString());
+                    else
+                        friendString = string.Format("CMDR {0} has {1} {2}.", j.GetValue("Name").ToString(), status.Equals("Offline") ? "gone" : "come", status.Equals("Offline") ? "offline" : "online");
+                    if (!status.Equals("Added") && showNotifications && !isReparse && Properties.Settings.Default.NotificationsEnabled && Properties.Settings.Default.FriendNotifications)
                     {
                         Utils.InvokeNotification(new Notification(string.Format("Friend {0}", status), friendString));
                     }
@@ -742,6 +765,66 @@ namespace EliteMonitor.Journal
                     return new JournalEntry(timestamp, @event, j.GetValue("Message_Localised").ToString(), j);
                 case "DatalinkVoucher":
                     return new JournalEntry(timestamp, @event, string.Format("Awarded {0} intel package worth {1:n0} credits", j.GetValue("PayeeFaction").ToString(), j.GetValue("Reward").ToObject<long>()), j);
+                case "Materials": // Finally?!
+                    if (/*!isReparse && */commander != null)
+                    {
+                        Dictionary<string, int> _materials = new Dictionary<string, int>();
+
+                        // This is really inefficient, but the journal is shit, so we practically have to do it this way
+                        /*List<GenericStringIntKVP> raw = new List<GenericStringIntKVP>();
+                        List<GenericStringIntKVP> manufactured = new List<GenericStringIntKVP>();
+                        List<GenericStringIntKVP> encoded = new List<GenericStringIntKVP>();*/
+
+                        List<JournalMaterialsEventKVP> all = new List<JournalMaterialsEventKVP>();
+
+                        all.AddRange(JsonConvert.DeserializeObject<List<JournalMaterialsEventKVP>>(j.GetValue("Raw").ToString()));
+                        all.AddRange(JsonConvert.DeserializeObject<List<JournalMaterialsEventKVP>>(j.GetValue("Manufactured").ToString()));
+                        all.AddRange(JsonConvert.DeserializeObject<List<JournalMaterialsEventKVP>>(j.GetValue("Encoded").ToString()));
+
+                        foreach (JournalMaterialsEventKVP kvp in all)
+                        {
+                            //if (kvp.Name == null) continue;
+                            if (_materials.ContainsKey(kvp.Name)) { this.logger.Log("Duplicate material entry '{0}' - skipping", LogLevel.WARNING, kvp.Name); continue; }
+                            _materials.Add(kvp.Name, kvp.Count);
+                        }
+                        commander.SetMaterials(_materials);
+                        _materials.Clear();
+                    }
+                    return new JournalEntry(timestamp, @event, "Updated material counts", j);
+                /*
+                 * { "timestamp":"2017-11-06T17:43:46Z", "event":"EngineerCraft", "Engineer":"Lei Cheung", "Blueprint":"Sensor_Sensor_LightWeight", "Level":5, "Ingredients":[ { "Name":"conductiveceramics", "Count":1 }, { "Name":"protolightalloys", "Count":1 }, { "Name":"protoradiolicalloys", "Count":1 } ] }
+{ "timestamp":"2017-11-06T17:43:55Z", "event":"EngineerApply", "Engineer":"Lei Cheung", "Blueprint":"Sensor_Sensor_LightWeight", "Level":5 }
+*/
+                case "EngineerCraft":
+                    string engineer = j.GetValue("Engineer").ToString();
+                    string blueprint = j.GetValue("Blueprint").ToString();
+                    int level = j.GetValue("Level").ToObject<int>();
+                    if (!isReparse && commander != null)
+                    {
+                        List<JournalMaterialsEventKVP> materialCosts = new List<JournalMaterialsEventKVP>();
+                        materialCosts = JsonConvert.DeserializeObject<List<JournalMaterialsEventKVP>>(j.GetValue("Ingredients").ToString());
+                        commander.RemoveMaterials(materialCosts);
+                    }
+                    string engineerString = string.Format("Crafted Grade {0} {1} upgrade at {2}", level, blueprint, engineer);
+                    return new JournalEntry(timestamp, @event, engineerString, j);
+                case "EngineerApply":
+                    engineer = j.GetValue("Engineer").ToString();
+                    blueprint = j.GetValue("Blueprint").ToString();
+                    level = j.GetValue("Level").ToObject<int>();
+                    engineerString = string.Format("Applied Grade {0} {1} upgrade from {2}", level, blueprint, engineer);
+                    return new JournalEntry(timestamp, @event, engineerString, j);
+                case "EngineerProgress":
+                    engineer = j.GetValue("Engineer").ToString();
+                    try
+                    {
+                        level = j.GetValue("Rank").ToObject<int>();
+                        engineerString = string.Format("Granted Grade {0} access at {1}", level, engineer);
+                    }
+                    catch (NullReferenceException)
+                    {
+                        engineerString = string.Format("You have learned of the engineer {0}", engineer);
+                    }
+                    return new JournalEntry(timestamp, @event, engineerString, j);
                 default:
                     return new JournalEntry(timestamp, @event, j.ToString(), "UNKNOWN EVENT", j, false);
             }
@@ -757,15 +840,16 @@ namespace EliteMonitor.Journal
                 Directory.CreateDirectory(journalPath);
             /*string[] files = Directory.GetFiles(journalPath);
             files.OrderBy(p => new FileInfo(p).CreationTime);*/
-            /*foreach (string _f in files)
-            {
-                Console.WriteLine(_f);
-            }*/
-            DirectoryInfo di = new DirectoryInfo(journalPath);
+                    /*foreach (string _f in files)
+                    {
+                        Console.WriteLine(_f);
+                    }*/
+                    DirectoryInfo di = new DirectoryInfo(journalPath);
             FileInfo[] fileInfo = di.GetFiles().OrderBy(f => f.CreationTime).ToArray();
             if (fileInfo.Length == 0)
             {
                 mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = $"No journals to load yet!");
+                this.noCommandersOrJournals = true;
                 return;
             }
             mainForm.cacheController._journalLengthCache.Clear();
@@ -878,15 +962,18 @@ namespace EliteMonitor.Journal
                     this.preLoadCommanderData.Add(en);
                     continue;
                 }
-
-                foreach (Expedition e in commander.getActiveExpeditions())
-                    e.parseJournalEntry(je);
+                if (!(je.Event.Equals("Scan") && this.scanEntriesToIgnore > 0))
+                {
+                    foreach (Expedition e in commander.getActiveExpeditions())
+                        e.parseJournalEntry(je);
+                }
 
             }
             if (dontUpdateDisplays)
                 mainForm.eventList.InvokeIfRequired(() => mainForm.eventList.EndUpdate());
-            if (!fullParseInProgress && viewedCommander == null && this.commanders.Count > 0)
+            if (this.noCommandersOrJournals && !fullParseInProgress && viewedCommander == null && this.commanders.Count > 0)
             {
+                this.noCommandersOrJournals = false;
                 Commander com = this.commanders.Values.First();
                 if (com != null)
                     switchViewedCommander(com);
@@ -918,6 +1005,7 @@ namespace EliteMonitor.Journal
         {
             mainForm.buttonDiscoveredBodies.InvokeIfRequired(() => mainForm.buttonDiscoveredBodies.Enabled = false);
             mainForm.buttonExpeditions.InvokeIfRequired(() => mainForm.buttonExpeditions.Enabled = false);
+            mainForm.buttonSearch.InvokeIfRequired(() => mainForm.buttonSearch.Enabled = false);
             Stopwatch sw = new Stopwatch();
             sw.Start();
             mainForm.setAppStatusText(String.Format("Loading commander data for '{0}'", c.Name));
@@ -930,7 +1018,7 @@ namespace EliteMonitor.Journal
             if (this.viewedCommander != null)
             {
                 this.viewedCommander.isViewed = false;
-                this.viewedCommander.setSaveRequired();
+                this.viewedCommander.MarkDirty();
             }
             this.viewedCommander = c;
             List<JournalEntry> _entries = c.JournalEntries;
@@ -985,7 +1073,7 @@ namespace EliteMonitor.Journal
             });
             c.updateDialogDisplays(this.mainForm);
             if (!c.isViewed)
-                c.setSaveRequired();
+                c.MarkDirty();
             c.isViewed = true;
             foreach (Commander _c in this.commanders.Values)
             {
@@ -1005,6 +1093,7 @@ namespace EliteMonitor.Journal
             mainForm.setAppStatusText("Ready.");
             mainForm.buttonDiscoveredBodies.InvokeIfRequired(() => mainForm.buttonDiscoveredBodies.Enabled = true);
             mainForm.buttonExpeditions.InvokeIfRequired(() => mainForm.buttonExpeditions.Enabled = true);
+            mainForm.buttonSearch.InvokeIfRequired(() => mainForm.buttonSearch.Enabled = true);
         }
 
         public DataGridViewRow getListViewEntryForEntry(JournalEntry j)
@@ -1042,6 +1131,7 @@ namespace EliteMonitor.Journal
                 else if (j.Event.Equals("Friends"))
                     lvi.DefaultCellStyle.BackColor = Color.PeachPuff;
             }
+            lvi.Tag = j.ID;
             return lvi;
         }
 

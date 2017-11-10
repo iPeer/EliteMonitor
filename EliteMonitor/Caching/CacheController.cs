@@ -298,7 +298,7 @@ namespace EliteMonitor.Caching
                     }
                     this.logger.Log("Number of unknown journal events updated: {0}/{1}", updated, unknownEvents.Count);
                     if (updated > 0)
-                        c.setSaveRequired();
+                        c.MarkDirty();
                     if (!m.comboCommanderList.Items.Contains(c.Name))
                         m.comboCommanderList.InvokeIfRequired(() => m.comboCommanderList.Items.Add(c.Name));
                     if (c.isViewed)
@@ -311,6 +311,7 @@ namespace EliteMonitor.Caching
                 this.commanderCaches.Clear();
                 if (!File.Exists(this.commandersPath))
                 {
+                    MainForm.Instance.journalParser.noCommandersOrJournals = true;
                     this.logger.Log("No commander data exists (no journal files to parse?)", LogLevel.WARNING);
                     return false;
                 }

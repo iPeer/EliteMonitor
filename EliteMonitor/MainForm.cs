@@ -3,6 +3,7 @@ using EliteMonitor.Elite;
 using EliteMonitor.Exploration;
 using EliteMonitor.Extensions;
 using EliteMonitor.Journal;
+using EliteMonitor.Journal.Search;
 using EliteMonitor.Logging;
 using EliteMonitor.Notifications;
 using EliteMonitor.Utilities;
@@ -46,6 +47,7 @@ namespace EliteMonitor
         public NotificationManager notificationManager;
         public bool ExpeditionViewerOpen { get; private set; } = false;
         public bool DiscoveryListOpen { get; private set; } = false;
+        public bool SearchGUIOpen { get; private set; } = false;
 
         public MainForm()
         {
@@ -63,6 +65,8 @@ namespace EliteMonitor
             notificationsEnabledToolStripMenuItem.Checked = Properties.Settings.Default.NotificationsEnabled;
             friendsNotificationsToolStripMenuItem.Checked = Properties.Settings.Default.FriendNotifications;
             scanNotificationsToolStripMenuItem.Checked = Properties.Settings.Default.ScanNotifications;
+            dockingLocationNotificationsToolStripMenuItem.Checked = Properties.Settings.Default.DockingNotifications;
+            searchJournalJSONAsWellAsDataToolStripMenuItem.Checked = Properties.Settings.Default.JournalsSearchJson;
 
             ExpeditionButton.Click += startExpedition_Click;
 #if !DEBUG
@@ -371,6 +375,7 @@ namespace EliteMonitor
             Properties.Settings.Default.WindowState = (int)this.WindowState;
             Properties.Settings.Default.Save();
             cacheController.saveAllCaches();
+            //Database.saveMaterialTypeDatabaseToDisk();
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -865,12 +870,7 @@ namespace EliteMonitor
         {
             if (this.ExpeditionViewerOpen)
             {
-                if (ExpeditionViewer.Instance.WindowState == FormWindowState.Minimized)
-                {
-                    MessageBox.Show("An instance of the Expedition Viewer is already opened.");
-                    return;
-                }
-                ExpeditionViewer.Instance.BringToFront();
+                Utils.EnsureFormIsVisible(ExpeditionViewer.Instance);
                 return;
             }
             if (this.journalParser.viewedCommander.Expeditions == null || this.journalParser.viewedCommander.Expeditions.Count == 0) { MessageBox.Show("There are no expeditions attached to this commander. You'll need to make some first."); return; }
@@ -922,6 +922,8 @@ namespace EliteMonitor
                 if (this.eventList.Rows[this.eventList.Rows.GetLastRow(DataGridViewElementStates.None)].Displayed)
                     return;
                 this.eventList.FirstDisplayedScrollingRowIndex = currentTopRow + /*(int)Math.Floor((double)Math.Abs(e.Delta) / 120)*/Properties.Settings.Default.rowsToScroll;
+                /*if (this.eventList.FirstDisplayedScrollingRowIndex > 0 && !this.buttonTop.Visible)
+                    this.buttonTop.Visible = true;*/
             }
             else // Scrolled up
             {
@@ -929,6 +931,8 @@ namespace EliteMonitor
                 if (newIndex < 0)
                     return;
                 this.eventList.FirstDisplayedScrollingRowIndex = newIndex;
+                /*if (this.eventList.FirstDisplayedScrollingRowIndex == 0 && this.buttonTop.Visible)
+                    this.buttonTop.Visible = false;*/
             }
         }
 
@@ -1066,6 +1070,56 @@ namespace EliteMonitor
         {
             scanNotificationsToolStripMenuItem.Checked = !scanNotificationsToolStripMenuItem.Checked;
             Properties.Settings.Default.ScanNotifications = scanNotificationsToolStripMenuItem.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void dockingLocationNotificationsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            dockingLocationNotificationsToolStripMenuItem.Checked = !dockingLocationNotificationsToolStripMenuItem.Checked;
+            Properties.Settings.Default.DockingNotifications = dockingLocationNotificationsToolStripMenuItem.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void buttonTop_Click(object sender, EventArgs e)
+        {
+            this.eventList.FirstDisplayedScrollingRowIndex = 0;
+            this.buttonTop.Visible = false;
+        }
+
+        private void eventList_Scroll(object sender, ScrollEventArgs e)
+        {
+            if (e.ScrollOrientation == ScrollOrientation.VerticalScroll)
+            {
+                if (this.eventList.FirstDisplayedScrollingRowIndex > 0 && !this.buttonTop.Visible)
+                    this.buttonTop.Visible = true;
+                else if (this.eventList.FirstDisplayedScrollingRowIndex == 0 && this.buttonTop.Visible)
+                    this.buttonTop.Visible = false;
+            }
+        }
+
+        private void buttonSearch_Click(object sender, EventArgs e)
+        {
+            if (this.SearchGUIOpen)
+            {
+                Utils.EnsureFormIsVisible(SearchGUI.Instance);
+                return;
+            }
+            this.SearchGUIOpen = true;
+            SearchGUI s = new SearchGUI();
+            s.OnSearchGUIClosing += OnSearchGUIClosing;
+            s.Show();
+        }
+
+        private void OnSearchGUIClosing(object sender, FormClosingEventArgs e)
+        {
+            SearchGUI.Instance.OnSearchGUIClosing -= OnSearchGUIClosing;
+            this.SearchGUIOpen = false;
+        }
+
+        private void searchJournalJSONAsWellAsDataToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            searchJournalJSONAsWellAsDataToolStripMenuItem.Checked = !searchJournalJSONAsWellAsDataToolStripMenuItem.Checked;
+            Properties.Settings.Default.JournalsSearchJson = searchJournalJSONAsWellAsDataToolStripMenuItem.Checked;
             Properties.Settings.Default.Save();
         }
     }

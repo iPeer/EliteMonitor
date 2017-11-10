@@ -29,12 +29,17 @@ namespace EliteMonitor
         {
             WebClient w = new WebClient();
             w.DownloadStringCompleted += OnStringDownloadComplete;
+#if DEBUG
+            w.DownloadStringAsync(new Uri("https://raw.githubusercontent.com/iPeer/EliteMonitor/master/EliteMonitor/ChangeLog.txt"));
+#else
             w.DownloadStringAsync(new Uri("https://ipeer.auron.co.uk/EliteMonitor/changelog"));
+#endif
         }
 
         private void OnStringDownloadComplete(object sender, DownloadStringCompletedEventArgs e)
         {
             this.richTextBox1.Text = e.Result;
+            ((WebClient)sender).Dispose();
         }
 
         private void buttonYes_Click(object sender, EventArgs e)

@@ -118,7 +118,6 @@ namespace EliteMonitor.Elite
         public long Credits { get; set; }
         public CommanderShip ShipData { get; set; }
         public string Ship { get; set; }
-        [JsonIgnore] // We don't need to save this because it's kind of irrelevant
         public string PrivateGroup { get; set; } = string.Empty;
         public bool HasHomeSystem { get; set; } = false;
         public BasicSystem HomeSystem { get; set; } = null;
@@ -209,21 +208,21 @@ namespace EliteMonitor.Elite
         {
 
             this.saveDirectory = Path.Combine(MainForm.Instance.cacheController.commanderDataPath, this.Name);
-
+            //this.MarkDirty();
             return this;
         }
 
         public Commander SetShip(string nV, string sI, string sN)
         {
             this.ShipData = new CommanderShip(nV, sI, sN);
-            this.setSaveRequired();
+            //this.MarkDirty();
             return this;
         }
 
         public Commander SetShip(CommanderShip ship)
         {
             this.ShipData = ship;
-            this.setSaveRequired();
+            //this.MarkDirty();
             return this;
         }
 
@@ -232,6 +231,7 @@ namespace EliteMonitor.Elite
             this.ShipData = new CommanderShip(ship);
             this.Credits = credits;
             this.PrivateGroup = privateGroup;
+            //this.MarkDirty();
             return this;
         }
 
@@ -243,6 +243,7 @@ namespace EliteMonitor.Elite
             this.cqcRank = cqc;
             this.federationRank = fed;
             this.imperialRank = emp;
+            //this.MarkDirty();
             return this;
         }
 
@@ -254,6 +255,7 @@ namespace EliteMonitor.Elite
             this.cqcProgress = cqc;
             this.federationProgress = fed;
             this.imperialProgress = emp;
+            //this.MarkDirty();
             return this;
         }
 
@@ -264,7 +266,7 @@ namespace EliteMonitor.Elite
             if (!this.DiscoveredBodies.Any(b => b.BodyName.Equals(bodyName))) {
                 this.DiscoveredBodies.Add(new BodyDiscovery(bodyName, gameTimestamp));
             }
-            this.setSaveRequired();
+            this.MarkDirty();
             return this;
         }
 
@@ -313,7 +315,7 @@ namespace EliteMonitor.Elite
         {
             this.Credits -= credits;
             this.lastCreditsChange = -credits;
-            this.setSaveRequired();
+            this.MarkDirty();
             return this;
         }
 
@@ -321,7 +323,7 @@ namespace EliteMonitor.Elite
         {
             this.Credits += credits;
             this.lastCreditsChange = credits;
-            this.setSaveRequired();
+            this.MarkDirty();
             return this;
         }
 
@@ -340,7 +342,17 @@ namespace EliteMonitor.Elite
                 this.Materials.Add(material, 0);
             if (this.Materials[material] < 0)
                 this.Materials[material] = 0;
-            this.setSaveRequired();
+            this.MarkDirty();
+            return this;
+        }
+
+        public Commander RemoveMaterials(List<JournalMaterialsEventKVP> materials)
+        {
+            foreach (JournalMaterialsEventKVP kvp in materials)
+            {
+                this.Materials[kvp.Name] -= kvp.Count;
+            }
+            this.MarkDirty();
             return this;
         }
 
@@ -350,7 +362,7 @@ namespace EliteMonitor.Elite
                 this.Materials[material] += count;
             else
                 this.Materials.Add(material, count);
-            this.setSaveRequired();
+            this.MarkDirty();
             return this;
         }
 
@@ -417,7 +429,7 @@ namespace EliteMonitor.Elite
                     this.imperialProgress = (rank == 14 ? 100 : 0);
                 }
             }
-            this.setSaveRequired();
+            this.MarkDirty();
             return this;
         }
 
@@ -591,7 +603,7 @@ namespace EliteMonitor.Elite
                         });
                     }
                 }
-                this.setSaveRequired();
+                this.MarkDirty();
             }
 
             return this;
@@ -604,7 +616,7 @@ namespace EliteMonitor.Elite
                 this.Fleet[shipID].ShipData.ShipID = this.ShipData.ShipID = shipIdent;
                 this.Fleet[shipID].ShipData.ShipName = this.ShipData.ShipName = shipName;
                 //this.updateDialogDisplays();
-                this.setSaveRequired();
+                this.MarkDirty();
             }
         }
 
@@ -617,7 +629,7 @@ namespace EliteMonitor.Elite
                 this.Fleet[shipID] = sl;
             else
                 this.Fleet.Add(shipID, sl);
-            this.setSaveRequired();
+            this.MarkDirty();
         }
 
         /// <summary>
@@ -778,6 +790,11 @@ namespace EliteMonitor.Elite
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("Repair") || a.Event.Equals("DockSRV") || a.Event.Equals("LaunchSRV") || a.Event.Equals("DatalinkVoucher") || a.Event.Equals("DatalinkScan"));
                 updateJournalEntries(toUpdate, m, patchVer, this);
             }
+            if (this.cacheVersion < (patchVer = 1720))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("NavBeaconScan") || a.Event.Equals("Bounty") || a.Event.Equals("MaterialCollected") || a.Event.Equals("MaterialDiscovered") || a.Event.Equals("MaterialDiscarded") || a.Event.Equals("MarketSell") || a.Event.Equals("MarketBuy") || a.Event.Equals("Materials") || a.Event.Equals("EngineerProgress") || a.Event.Equals("EngineerCraft") || a.Event.Equals("EngineerApply"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
         }
 
         private void updateJournalEntries(List<JournalEntry> toUpdate, MainForm m, int patchVer, Commander c)
@@ -805,7 +822,7 @@ namespace EliteMonitor.Elite
                 j.Data = nje.Data;
             }
             if (cEntry > 0)
-                this.setSaveRequired();
+                this.MarkDirty();
             m.journalParser.logger.Log("{0} entries have been updated to version {1} for commander '{2}'", cEntry, patchVer, this.Name);
             toUpdate.Clear();
         }
@@ -822,11 +839,19 @@ namespace EliteMonitor.Elite
             this.HasHomeSystem = true;
             this.HomeSystem = system;
             this.updateDialogDisplays();
-            this.setSaveRequired();
+            this.MarkDirty();
             return this;
         }
 
-        public void setSaveRequired()
+        public Commander SetMaterials(Dictionary<string, int> materials)
+        {
+            this.MarkDirty();
+            this.Materials = new Dictionary<string, int>(materials);
+            return this;
+        }
+
+        public void setSaveRequired() => this.MarkDirty();
+        public void MarkDirty()
         {
             this.NeedsSaving = true;
         }

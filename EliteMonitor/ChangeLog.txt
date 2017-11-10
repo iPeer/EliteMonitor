@@ -13,6 +13,18 @@
 	* The grid which displays journal entries on the main window will no longer permanently have a blank row at the bottom.
 	* Elite Monitor will no longer display the distance to your home system if you're in your home system.
 	* Notifications now correctly obey their display times instead of being 25-30% less.
+	* Expeditions will now display notifications when they complete.
+	* Fixed an issue where accepting a friend request would show that commander as online, even if they weren't.
+	* Added support for the "NavBeaconScan" event.
+	* Elite Monitor will no longer play sounds or display notifications for body scans that are the result of scanning a Nav Beacon. They will also not count towards Expeditions.
+	* Fixed a typo in the text for the "Bounty" event.
+	* Fixed an issue where the status of the currently loaded Expedition in the Expedition Viewer would not update upon completion.
+	* Added a "back to top" button on the main event list.
+	* Journal search! Search through your journal entries to easily find the one(s) you want! Double- or right-click to jump to that entry in the main list!
+	* Added support for the "Materials", "EngineerCraft", "EngineerProgress" and "EngineerApply" events (finally).
+	* Elite Monitor's database now has real names for many of Elite's commodities, data and materials, though some are still not known. If you find these, let me know their real names!
+	* Removed the "Rescan first discoveries" button from the discovered bodies list as it was always disabled and had no purpose.
+	* Fixed some instances where changes were made to commanders, but they weren't correctly marked as dirty (requiring save).
 
 1.0.0.1614
 	* ChangeLog added, we're in 2017 now!

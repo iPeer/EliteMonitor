@@ -7,20 +7,14 @@ using System.Threading.Tasks;
 
 namespace EliteMonitor.Elite
 {
-    public enum Rarity
-    {
-        Unknown, // Unknown rarity for unknown materials
-        Standard,
-        VeryCommon,
-        Common,
-        Uncommon,
-        Rare,
-        VeryRare
-    }
     public class Material
     {
 
-        public string InternalName { get; set; }
+        public Material() { }
+        public string Name { get; set; }
+        public string Type { get; set; }
+
+        /*public string InternalName { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
         public Rarity Rarity { get; set; }
@@ -37,6 +31,6 @@ namespace EliteMonitor.Elite
 
         public Material()
         {
-        }
+        }*/
     }
 }

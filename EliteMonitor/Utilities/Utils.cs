@@ -12,6 +12,8 @@ using System.Windows.Forms;
 using EliteMonitor.Elite;
 using System.Media;
 using EliteMonitor.Notifications;
+using EliteMonitor.Journal.Search;
+using System.Runtime.InteropServices;
 
 namespace EliteMonitor.Utilities
 {
@@ -19,6 +21,11 @@ namespace EliteMonitor.Utilities
     {
 
         public const int LIST_VIEW_MAX_STRING_LENGTH = 259;
+
+        [DllImport("user32.dll")]
+        private static extern int ShowWindow(IntPtr hWnd, uint Msg);
+
+        private const uint SW_RESTORE = 0x09;
 
         public static string getAssemblyBuildTime()
         {
@@ -299,6 +306,21 @@ namespace EliteMonitor.Utilities
             {
                 MainForm.Instance.notificationManager.AddNotificationToQueue(n);
             });
+        }
+
+        internal static void RestoreFormWindow(Form form)
+        {
+
+            if (form.WindowState == FormWindowState.Minimized)
+            {
+                ShowWindow(form.Handle, SW_RESTORE);
+            }
+        }
+
+        internal static void EnsureFormIsVisible(Form form)
+        {
+            RestoreFormWindow(form);
+            form.BringToFront();
         }
     }
 }

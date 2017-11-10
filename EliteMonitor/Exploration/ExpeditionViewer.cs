@@ -240,7 +240,7 @@ namespace EliteMonitor.Exploration
                     Elite.Commander c = MainForm.Instance.journalParser.viewedCommander;
                     this.comboBoxExpeditionPicker.Items.Remove(this.LoadedExpedition.ExpeditionName);
                     c.Expeditions.Remove(this.LoadedExpedition.ExpeditionID);
-                    c.setSaveRequired();
+                    c.MarkDirty();
                     if (this.comboBoxExpeditionPicker.Items.Count > 0)
                         this.comboBoxExpeditionPicker.SelectedIndex = this.comboBoxExpeditionPicker.Items.Count - 1;
                     else

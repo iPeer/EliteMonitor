@@ -18,7 +18,6 @@ namespace EliteMonitor.Notifications
     {
 
         private Notification owningNotification;
-        private int timeOpen = 0;
         private int totalHeight;
         private int newHeight = 0;
         private Stopwatch timingWatch = new Stopwatch();

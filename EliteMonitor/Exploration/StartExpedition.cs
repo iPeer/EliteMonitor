@@ -51,7 +51,7 @@ namespace EliteMonitor
                 x.AutoCompleteSystemName = this.textBoxStartPoint.Text;
             else
                 x.AutoCompleteSystemName = this.linkLabelEndingSystem.Text;
-            MainForm.Instance.journalParser.viewedCommander.setSaveRequired();
+            MainForm.Instance.journalParser.viewedCommander.MarkDirty();
 
             this.Close();
             ScanJournalDialog sjd = new ScanJournalDialog();
