@@ -1,4 +1,19 @@
-﻿1.0.0.????
+﻿1.0.0.1802
+	* The Journal Search window was behaving a little strange when being resized, it has now been told to behave itself.
+	* The Journal Search window can no longer be made smaller than its default size.
+	* The Journal Search windows has been given a maximize button as an early Christmas present.
+	* Notification support has been added to the "EngineerProgress" event for grade clearence progress.
+	* Fixed an issue for the real names of ships to be display in lower-case on the main window.
+	* Materials previously designated as "Raw" have been changed to "Elements" to match their in-game designation.
+	* Fixed several issues relating to the RecieveText event.
+	* The Journal Search GUI's search text box is now focused by default when opening the window.
+	* Added support for the "CommunityGoal" event.
+	* Internal: EliteMonitor will no longer save the JSON for an entry twice for unknown events.
+	* Fixed "HullDamage" event not correctly parsing for fighters.
+	* Pressing CTRL+F on the main journal window will now open up the Journal Search GUI.
+	* The search query textbox in the Journal Search GUI now selects all text when it's clicked on after it has lost focus at least once.
+
+1.0.0.1752
 	* Fixed an issue where pressing "No" on the update prompt would do nothing.
 	* Fixed an issue where the ETA for "finalising commander data" would always be 00s.
 	* Minor memory optimisations when loading commander data.

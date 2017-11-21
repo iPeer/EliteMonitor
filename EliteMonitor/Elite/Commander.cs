@@ -66,8 +66,8 @@ namespace EliteMonitor.Elite
         public string getFormattedShipString()
         {
             if ((this.ShipID == null || this.ShipName == null) || this.ShipID.Equals("") && this.ShipName.Equals(""))
-                return EliteDatabase.Instance.getShipNameFromInternalName(this.ShipNonVanityName);
-            return string.Format("{0}{1}{2}", this.ShipID, this.ShipName.Equals(EliteDatabase.Instance.getShipNameFromInternalName(this.ShipNonVanityName)) ? "" : string.Format(": {0} (", this.ShipName), string.Format(this.ShipName.Equals(EliteDatabase.Instance.getShipNameFromInternalName(this.ShipNonVanityName)) ? "{0}" : "{0})", EliteDatabase.Instance.getShipNameFromInternalName(this.ShipNonVanityName)));
+                return this.ShipNonVanityName;
+            return string.Format("{0}{1}{2}", this.ShipID, this.ShipName.Equals(this.ShipNonVanityName) ? "" : string.Format(": {0} (", this.ShipName), string.Format(this.ShipName.Equals(this.ShipNonVanityName) ? "{0}" : "{0})", this.ShipNonVanityName));
         }
     }
 
@@ -775,6 +775,17 @@ namespace EliteMonitor.Elite
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("NavBeaconScan") || a.Event.Equals("Bounty") || a.Event.Equals("MaterialCollected") || a.Event.Equals("MaterialDiscovered") || a.Event.Equals("MaterialDiscarded") || a.Event.Equals("MarketSell") || a.Event.Equals("MarketBuy") || a.Event.Equals("Materials") || a.Event.Equals("EngineerProgress") || a.Event.Equals("EngineerCraft") || a.Event.Equals("EngineerApply"));
                 updateJournalEntries(toUpdate, m, patchVer, this);
             }
+            if (this.cacheVersion < (patchVer = 1783))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("ReceiveText") || a.Event.Equals("CommunityGoal"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
+
+            if (this.cacheVersion < (patchVer = 1796)) // This is a big one, remove all JSON data from the "Data" Property of all unknown journal entries (among other things)
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => !a.isKnown || a.Event.Equals("HullDamage") || a.Event.Equals("CommunityGoal"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
         }
 
         private void updateJournalEntries(List<JournalEntry> toUpdate, MainForm m, int patchVer, Commander c)
@@ -799,6 +810,8 @@ namespace EliteMonitor.Elite
                 }
                 Commander __;
                 JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true, forcedCommander: c, bypassRegisterCheck: true, showNotifications: false, doNotPlaySounds: true);
+                if (j.Data.Equals(j.Json))
+                    j.Data = string.Empty;
                 j.Data = nje.Data;
             }
             if (cEntry > 0)

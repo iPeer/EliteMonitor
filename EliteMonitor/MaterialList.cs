@@ -56,6 +56,7 @@ namespace EliteMonitor
                     case "Manufactured":
                         this.listViewManufactured.Items.Add(new ListViewItem(new string[] { realName, kvp.Value.ToString() }));
                         continue;
+                    case "Elements":
                     case "Element":
                     case "Raw":
                         this.listViewElements.Items.Add(new ListViewItem(new string[] { realName, kvp.Value.ToString() }));

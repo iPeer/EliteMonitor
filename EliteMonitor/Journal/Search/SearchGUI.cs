@@ -18,6 +18,7 @@ namespace EliteMonitor.Journal.Search
 
         public static SearchGUI Instance;
         public EventHandler<FormClosingEventArgs> OnSearchGUIClosing;
+        private bool searchHasFocus = false;
 
         public SearchGUI()
         {
@@ -113,6 +114,25 @@ namespace EliteMonitor.Journal.Search
                 this.searchResults.Rows[rowIndex].Selected = true;
                 contextMenuStrip1.Show(this.searchResults, e.Location);
             }
+        }
+
+        private void SearchGUI_Shown(object sender, EventArgs e)
+        {
+            this.textBoxSearch.Focus();
+        }
+
+        private void textBoxSearch_Click(object sender, EventArgs e)
+        {
+            if (!this.searchHasFocus)
+            {
+                this.searchHasFocus = true;
+                this.textBoxSearch.SelectAll();
+            }
+        }
+
+        private void textBoxSearch_Leave(object sender, EventArgs e)
+        {
+            this.searchHasFocus = false;
         }
     }
 }

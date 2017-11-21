@@ -15,6 +15,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <IsWebBootstrapper>true</IsWebBootstrapper>
+    <TargetFrameworkProfile />
     <PublishUrl>ftps://ipeer.auron.co.uk/EliteMonitor/dl/</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
@@ -111,6 +112,7 @@
       <HintPath>..\packages\System.Data.SQLite.Linq.1.0.104.0\lib\net451\System.Data.SQLite.Linq.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -174,6 +176,7 @@
     <Compile Include="HUDEditor.Designer.cs">
       <DependentUpon>HUDEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="Journal\JournalCommunityGoal.cs" />
     <Compile Include="Journal\JournalParser.cs" />
     <Compile Include="Journal\Search\SearchCriteria.cs" />
     <Compile Include="Journal\Search\SearchGUI.cs">
@@ -231,9 +234,15 @@
     <Compile Include="UpdateNotifier.Designer.cs">
       <DependentUpon>UpdateNotifier.cs</DependentUpon>
     </Compile>
+    <Compile Include="Updater\UpdaterGUI.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Updater\UpdaterGUI.Designer.cs">
+      <DependentUpon>UpdaterGUI.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utilities\DownloadableDataItem.cs" />
     <Compile Include="Utilities\FileDownloadHandler.cs" />
-    <Compile Include="Utilities\JournalMaterialsEventKVP.cs" />
+    <Compile Include="Journal\JournalMaterialsEventKVP.cs" />
     <Compile Include="Utilities\ISavable.cs" />
     <Compile Include="Utilities\ListViewItemComparer.cs" />
     <Compile Include="Utilities\Utils.cs" />
@@ -282,6 +291,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UpdateNotifier.resx">
       <DependentUpon>UpdateNotifier.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Updater\UpdaterGUI.resx">
+      <DependentUpon>UpdaterGUI.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="data\commodities.json" />
     <None Include="data\materials.json" />

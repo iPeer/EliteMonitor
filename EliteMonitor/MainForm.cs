@@ -6,6 +6,7 @@ using EliteMonitor.Journal;
 using EliteMonitor.Journal.Search;
 using EliteMonitor.Logging;
 using EliteMonitor.Notifications;
+using EliteMonitor.Updater;
 using EliteMonitor.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -108,10 +109,12 @@ namespace EliteMonitor
                 {
                     this.appVersionStatusLabel.Text = "UPDATE AVAILABLE!";
                     this.logger.Log("Version running is out of date, prompting user for update.");
-                    if (MessageBox.Show("An update is available for EliteMonitor, would you like to download it now?", "Update available", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    {
-                        Process.Start("https://ipeer.auron.co.uk/EliteMonitor/EliteMonitor.zip");
-                    }
+
+                    this.Invoke((MethodInvoker)delegate() {
+                        UpdateNotifier un = new UpdateNotifier();
+                        un.setVersion(v.ToString());
+                        un.Show();
+                    });
                 }
 
             });
@@ -321,6 +324,7 @@ namespace EliteMonitor
             Properties.Settings.Default.WindowState = (int)this.WindowState;
             Properties.Settings.Default.Save();
             cacheController.saveAllCaches();
+            this.eventList.Rows.Clear();
             //Database.saveMaterialTypeDatabaseToDisk();
         }
 
@@ -1086,6 +1090,31 @@ namespace EliteMonitor
         {
             this.MaterialsGUIOpen = false;
             MaterialList.Instance.OnMaterialsListClosing -= OnMaterialsListClosing;
+        }
+
+        private void testEXERenamingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                File.Move(Utils.getApplicationEXEFolderPath(true), string.Format("{0}.bak", Utils.getApplicationEXEFolderPath(true)));
+            }
+            catch (Exception _e) 
+            {
+                MessageBox.Show("Nope.\n\n" + _e.StackTrace.ToString());
+            }
+        }
+
+        private void testUpdateDownloadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            UpdaterGUI u = new UpdaterGUI();
+        }
+
+        private void MainForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (this.buttonSearch.Enabled && e.Control && e.KeyCode == Keys.F)
+            {
+                this.buttonSearch.PerformClick();
+            }
         }
     }
 }

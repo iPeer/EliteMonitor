@@ -161,11 +161,11 @@
   },
   "antimony": {
     "Name": "Antimony",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "arsenic": {
     "Name": "Arsenic",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "basicconductors": {
     "Name": "Basic Conductors",
@@ -177,11 +177,11 @@
   },
   "cadmium": {
     "Name": "Cadmium",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "carbon": {
     "Name": "Carbon",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "chemicaldistillery": {
     "Name": "Chemical Distillery",
@@ -201,7 +201,7 @@
   },
   "chromium": {
     "Name": "Chromium",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "compactcomposites": {
     "Name": "Compact Composites",
@@ -261,7 +261,7 @@
   },
   "germanium": {
     "Name": "Germanium",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "gridresistors": {
     "Name": "Grid Resistors",
@@ -305,11 +305,11 @@
   },
   "iron": {
     "Name": "Iron",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "manganese": {
     "Name": "Manganese",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "mechanicalcomponents": {
     "Name": "Mechanical Components",
@@ -325,7 +325,7 @@
   },
   "mercury": {
     "Name": "Mercury",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "militarygradealloys": {
     "Name": "Military Grade Alloys",
@@ -337,15 +337,15 @@
   },
   "molybdenum": {
     "Name": "Molybdenum",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "nickel": {
     "Name": "Nickel",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "niobium": {
     "Name": "Niobium",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "pharmaceuticalisolators": {
     "Name": "Pharmaceutical Isolators",
@@ -357,11 +357,11 @@
   },
   "phosphorus": {
     "Name": "Phosphorus",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "polonium": {
     "Name": "Polonium",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "polymercapacitors": {
     "Name": "Polymer Capacitors",
@@ -393,7 +393,7 @@
   },
   "ruthenium": {
     "Name": "Ruthenium",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "salvagedalloys": {
     "Name": "Salvaged Alloys",
@@ -401,7 +401,7 @@
   },
   "selenium": {
     "Name": "Selenium",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "shieldemitters": {
     "Name": "Shield Emitters",
@@ -413,15 +413,15 @@
   },
   "sulphur": {
     "Name": "Sulphur",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "technetium": {
     "Name": "Technetium",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "tellurium": {
     "Name": "Tellurium",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "temperedalloys": {
     "Name": "Tempered Alloys",
@@ -433,11 +433,11 @@
   },
   "tin": {
     "Name": "Tin",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "tungsten": {
     "Name": "Tungsten",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "unknownenergysource": {
     "Name": "Unknown Fragment",
@@ -445,7 +445,7 @@
   },
   "vanadium": {
     "Name": "Vanadium",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "wornshieldemitters": {
     "Name": "Worn Shield Emitters",
@@ -453,14 +453,14 @@
   },
   "yttrium": {
     "Name": "Yttrium",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "zinc": {
     "Name": "Zinc",
-    "Type": "Raw"
+    "Type": "Elements"
   },
   "zirconium": {
     "Name": "Zirconium",
-    "Type": "Raw"
+    "Type": "Elements"
   }
 }

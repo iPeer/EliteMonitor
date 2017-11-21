@@ -70,6 +70,8 @@
             this.forceOpenUpdateDialogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.displayActiveScreenResolutionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.displayTestNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testEXERenamingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testUpdateDownloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.enableSoundsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hideMusicEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -321,7 +323,9 @@
             this.displayDataGridViewColumnWidthsToolStripMenuItem,
             this.forceOpenUpdateDialogToolStripMenuItem,
             this.displayActiveScreenResolutionToolStripMenuItem,
-            this.displayTestNotificationsToolStripMenuItem});
+            this.displayTestNotificationsToolStripMenuItem,
+            this.testEXERenamingToolStripMenuItem,
+            this.testUpdateDownloadToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -457,6 +461,20 @@
             this.displayTestNotificationsToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
             this.displayTestNotificationsToolStripMenuItem.Text = "Display test notifications";
             this.displayTestNotificationsToolStripMenuItem.Click += new System.EventHandler(this.displayTestNotificationsToolStripMenuItem_Click);
+            // 
+            // testEXERenamingToolStripMenuItem
+            // 
+            this.testEXERenamingToolStripMenuItem.Name = "testEXERenamingToolStripMenuItem";
+            this.testEXERenamingToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.testEXERenamingToolStripMenuItem.Text = "Test EXE renaming";
+            this.testEXERenamingToolStripMenuItem.Click += new System.EventHandler(this.testEXERenamingToolStripMenuItem_Click);
+            // 
+            // testUpdateDownloadToolStripMenuItem
+            // 
+            this.testUpdateDownloadToolStripMenuItem.Name = "testUpdateDownloadToolStripMenuItem";
+            this.testUpdateDownloadToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.testUpdateDownloadToolStripMenuItem.Text = "Test Update Download";
+            this.testUpdateDownloadToolStripMenuItem.Click += new System.EventHandler(this.testUpdateDownloadToolStripMenuItem_Click);
             // 
             // optionsToolStripMenuItem
             // 
@@ -1067,11 +1085,13 @@
             this.Controls.Add(this.buttonSearch);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
             this.MinimumSize = new System.Drawing.Size(982, 702);
             this.Name = "MainForm";
             this.Text = "Elite Monitor";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
             this.MouseEnter += new System.EventHandler(this.MainForm_MouseEnter);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
@@ -1187,6 +1207,8 @@
         private System.Windows.Forms.ToolStripMenuItem searchToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem searchJournalJSONAsWellAsDataToolStripMenuItem;
         public System.Windows.Forms.Button buttonMaterials;
+        private System.Windows.Forms.ToolStripMenuItem testEXERenamingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testUpdateDownloadToolStripMenuItem;
     }
 }
 
