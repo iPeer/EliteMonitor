@@ -1,4 +1,20 @@
-﻿1.0.0.1802
+﻿1.0.0.1854
+	* Fixed an issue causing EliteMonitor to crash when parsing EngineerCraft events using a different (older) format than what they do now.
+
+1.0.0.1850
+	* Fixed an issue where updates to text on the GUI would be reverted and/or prevented under certain conditions.
+
+1.0.0.1839
+	* Fixed an issue where EM would crash if it came across fragmented JSON entries in the journal.
+	* Instead of crashing, the HUD editor will now try its best to load HUD colour data from the overrides file even if the XML there is invalid.
+	* Fixed an issue where T class and several giant stars where showing up as 0 credits in the expedition viewer.
+	* My current HUD configuration has been added to the HUD editor as a preset ("iPeer (new)").
+	* EliteMonitor will display how many refugees have been rescued from stations attacked by Thargoids when in relevant systems.
+
+1.0.0.1803
+	* Fixed an issue where all "HullDamage" events were being treated as fighters.
+
+1.0.0.1802
 	* The Journal Search window was behaving a little strange when being resized, it has now been told to behave itself.
 	* The Journal Search window can no longer be made smaller than its default size.
 	* The Journal Search windows has been given a maximize button as an early Christmas present.

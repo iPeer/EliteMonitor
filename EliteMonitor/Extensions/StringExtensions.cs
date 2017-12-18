@@ -93,5 +93,25 @@ namespace EliteMonitor.Extensions
             }
             return sb.ToString();
         }
+
+
+        public class SearchPointNotFoundException : Exception { }
+        public static string GetStringBetween(this string str, string start, string end)
+        {
+            int s = str.IndexOf(start);
+            int e = str.IndexOf(end);
+
+            if (s == -1 || e == -1)
+                throw new SearchPointNotFoundException();
+            else if (e > str.Length) // impossible, but better safe than sorry
+                throw new ArgumentOutOfRangeException();
+
+            s += start.Length;
+            string return_str = str.Substring(s, e - s);
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine(string.Format("{0} // {1} | {2} | {3}", s, e, return_str, str));
+#endif
+            return return_str;
+        }
     }
 }

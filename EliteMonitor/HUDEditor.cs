@@ -1,5 +1,6 @@
 ﻿using EliteMonitor.Elite;
 using EliteMonitor.Utilities;
+using EliteMonitor.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -91,6 +92,7 @@ namespace EliteMonitor
             this.savedHUDs.Add("Default", new HUDMatrix(100, 0, 0, 0, 100, 0, 0, 0, 100));
             this.savedHUDs.Add("Default (reversed)", new HUDMatrix(0, 0, 100, 0, 100, 0, 100, 0, 0));
             this.savedHUDs.Add("iPeer", new HUDMatrix(30, 30, 42, 40, 40, 40, 100, -10, 100));
+            this.savedHUDs.Add("iPeer (new)", new HUDMatrix(43, 47, 43, 8, 14, 100, 100, -3, -100));
             this.savedHUDs.Add("Kofeyh", new HUDMatrix(30, 30, 40, 20, 60, 10, 90, 15, 15));
 
             this.stockHUDCount = this.savedHUDs.Count;
@@ -99,39 +101,60 @@ namespace EliteMonitor
 
             if (File.Exists(EliteUtils.GRAPHICS_OVERRIDE_PATH))
             {
-                XDocument xml = XDocument.Load(EliteUtils.GRAPHICS_OVERRIDE_PATH); // XML is such a pain in the ass to work with.
+                string redMatrix = "0,0,0";
+                string greenMatrix = "0,0,0";
+                string blueMatrix = "0,0,0";
                 try
                 {
-                    string redMatrix = xml.Element("GraphicsConfig").Element("GUIColour").Element("Default").Element("MatrixRed").Value;
-                    string greenMatrix = xml.Element("GraphicsConfig").Element("GUIColour").Element("Default").Element("MatrixGreen").Value;
-                    string blueMatrix = xml.Element("GraphicsConfig").Element("GUIColour").Element("Default").Element("MatrixBlue").Value;
-
-                    int rr, rg, rb;
-                    int gr, gg, gb;
-                    int br, bg, bb;
-
-                    string[] data = redMatrix.Trim().Split(',');
-
-                    rr = (int)Math.Round(Convert.ToSingle(data[0].Trim()) * 100);
-                    rg = (int)Math.Round(Convert.ToSingle(data[1].Trim()) * 100);
-                    rb = (int)Math.Round(Convert.ToSingle(data[2].Trim()) * 100);
-
-                    data = greenMatrix.Trim().Split(',');
-
-                    gr = (int)Math.Round(Convert.ToSingle(data[0].Trim()) * 100);
-                    gg = (int)Math.Round(Convert.ToSingle(data[1].Trim()) * 100);
-                    gb = (int)Math.Round(Convert.ToSingle(data[2].Trim()) * 100);
-
-                    data = blueMatrix.Trim().Split(',');
-
-                    br = (int)Math.Round(Convert.ToSingle(data[0].Trim()) * 100);
-                    bg = (int)Math.Round(Convert.ToSingle(data[1].Trim()) * 100);
-                    bb = (int)Math.Round(Convert.ToSingle(data[2].Trim()) * 100);
-
-                    HUDMatrix hud = new HUDMatrix(rr, rg, rb, gr, gg, gb, br, bg, bb);
-                    this.savedHUDs.Add("Current", hud);
+                    XDocument xml = XDocument.Load(EliteUtils.GRAPHICS_OVERRIDE_PATH); // XML is such a pain in the ass to work with.
+                    redMatrix = xml.Element("GraphicsConfig").Element("GUIColour").Element("Default").Element("MatrixRed").Value;
+                    greenMatrix = xml.Element("GraphicsConfig").Element("GUIColour").Element("Default").Element("MatrixGreen").Value;
+                    blueMatrix = xml.Element("GraphicsConfig").Element("GUIColour").Element("Default").Element("MatrixBlue").Value;
                 }
-                catch {  }
+                catch
+                {
+                    string fileStuff = string.Empty;
+                    using (FileStream fs = new FileStream(EliteUtils.GRAPHICS_OVERRIDE_PATH, FileMode.Open, FileAccess.Read))
+                    {
+                        using (StreamReader sr = new StreamReader(fs))
+                        {
+                            fileStuff = sr.ReadToEnd();
+                        }
+                    }
+                    try { redMatrix = fileStuff.GetStringBetween("<MatrixRed>", "</MatrixRed>"); }
+                    catch { }
+                    try { greenMatrix = fileStuff.GetStringBetween("<MatrixGreen>", "</MatrixGreen>"); }
+                    catch { }
+                    try { blueMatrix = fileStuff.GetStringBetween("<MatrixBlue>", "</MatrixBlue>"); }
+                    catch { }
+                    MessageBox.Show("EliteMonitor could not load your current HUD config because there was an issue while parsing it. Make sure that the file is valid XML (ie. make sure all open tags are closed and that there are no stray brackets or double quotes) and try again.", "Xml Error");
+                }
+
+                int rr, rg, rb;
+                int gr, gg, gb;
+                int br, bg, bb;
+
+                string[] data = redMatrix.Trim().Split(',');
+
+                rr = (int)Math.Round(Convert.ToSingle(data[0].Trim()) * 100);
+                rg = (int)Math.Round(Convert.ToSingle(data[1].Trim()) * 100);
+                rb = (int)Math.Round(Convert.ToSingle(data[2].Trim()) * 100);
+
+                data = greenMatrix.Trim().Split(',');
+
+                gr = (int)Math.Round(Convert.ToSingle(data[0].Trim()) * 100);
+                gg = (int)Math.Round(Convert.ToSingle(data[1].Trim()) * 100);
+                gb = (int)Math.Round(Convert.ToSingle(data[2].Trim()) * 100);
+
+                data = blueMatrix.Trim().Split(',');
+
+                br = (int)Math.Round(Convert.ToSingle(data[0].Trim()) * 100);
+                bg = (int)Math.Round(Convert.ToSingle(data[1].Trim()) * 100);
+                bb = (int)Math.Round(Convert.ToSingle(data[2].Trim()) * 100);
+
+                HUDMatrix hud = new HUDMatrix(rr, rg, rb, gr, gg, gb, br, bg, bb);
+                this.savedHUDs.Add("Current", hud);
+
             }
 
             // Load any custom presets the user might have

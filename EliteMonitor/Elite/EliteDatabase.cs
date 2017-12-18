@@ -76,6 +76,7 @@ namespace EliteMonitor.Elite
             { "K_OrangeGiant", "Class K orange giant" },
 
         };
+        public string[] ThargoidStationLocations = { "HIP 16753", "Pleiades Sector IR-W d1-55", "Taygeta" };
         public static EliteDatabase Instance;
         public Logger logger;
         private MainForm mainForm;
@@ -423,7 +424,8 @@ namespace EliteMonitor.Elite
                         return 2890;
                     case "TTS": // T Tauri
                         return 2900;
-                    case "Y": // Brown dwarf, episode 2
+                    case "Y": // Brown dwarf, episode 2 & 3
+                    case "T":
                         return 2880;
                     case "O":
                         return 6140;
@@ -439,6 +441,12 @@ namespace EliteMonitor.Elite
                         return 2920;
                     case "M":
                         return 2900;
+                    case "A_BlueWhiteSuperGiant":
+                    case "F_WhiteSuperGiant":
+                    case "M_RedSuperGiant":
+                    case "M_RedGiant":
+                    case "K_OrangeGiant":
+                        return 3120;
                     default: // Some mystery class we've never seen before :O thargoids.jpg
                         return 0;
                 }

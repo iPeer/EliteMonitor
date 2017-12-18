@@ -22,9 +22,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.ListView;
 
 namespace EliteMonitor
 {
@@ -48,6 +46,9 @@ namespace EliteMonitor
         public bool DiscoveryListOpen { get; private set; } = false;
         public bool SearchGUIOpen { get; private set; } = false;
         public bool MaterialsGUIOpen { get; private set; } = false;
+
+        private bool tgEERunning = false;
+        private Thread tgEEThread;
 
         public MainForm()
         {
@@ -1114,6 +1115,91 @@ namespace EliteMonitor
             if (this.buttonSearch.Enabled && e.Control && e.KeyCode == Keys.F)
             {
                 this.buttonSearch.PerformClick();
+            }
+        }
+
+        internal void UpdateThargoidEasterEggIfRequired()
+        {
+            if (this.Database.ThargoidStationLocations.Contains(this.journalParser.viewedCommander.CurrentSystem))
+            {
+                if (tgEERunning == false)
+                {
+#if DEBUG
+                    this.logger.Log("TGEEThread is now running...", LogLevel.DEBUG);
+#endif
+                    this.tgEERunning = true;
+                    this.tgEEThread = new Thread(tgEEThreadCode);
+                    this.tgEEThread.IsBackground = true;
+                    this.tgEEThread.Start();
+                }
+            }
+            else
+            {
+#if DEBUG
+                this.logger.Log("TGEEThread has been marked for termination...", LogLevel.DEBUG);
+#endif
+                this.tgEERunning = false;
+            }
+        }
+
+        private void tgEEThreadCode()
+        {
+            int MAX_RANDOM_CHANGES_PER_CONTROL = 15;
+            string corruptionChars = "[{}]^*@#?%&$";
+            List<Control> glitchableControls = new List<Control>();
+            Dictionary<Control, string> defaultStrings = new Dictionary<Control, string>();
+            foreach (Control c in this.GetAllControls())
+            {
+                if (c is Label || c is Button)
+                {
+                    glitchableControls.Add(c);
+                    defaultStrings.Add(c, c.Text);
+                }
+            }
+#if DEBUG
+            this.logger.Log("{0} control(s)", LogLevel.DEBUG, glitchableControls.Count);
+#endif
+            while (this.tgEERunning)
+            {
+                if (ActiveForm == this)
+                {
+                    defaultStrings.Clear();
+                    foreach (Control c in this.GetAllControls())
+                    {
+                        if (c is Label || c is Button)
+                        {
+                            defaultStrings.Add(c, c.Text);
+                        }
+                    }
+                    for (int x = 0; x < MAX_RANDOM_CHANGES_PER_CONTROL; x++)
+                    {
+                        foreach (Control l in glitchableControls)
+                        {
+                            if (!l.Text.Equals(defaultStrings[l]))
+                                l.InvokeIfRequired(() => l.Text = defaultStrings[l]);
+                            if (string.IsNullOrWhiteSpace(l.Text))
+                                continue;
+                            char[] stringChrs = l.Text.ToCharArray();
+                            char repChr = repChr = corruptionChars.ToCharArray()[new Random().Next(0, corruptionChars.Length - 1)];
+                            int chr2Replace = -1;
+                            while (chr2Replace == -1 || Char.IsWhiteSpace(stringChrs[chr2Replace]))
+                            {
+                                chr2Replace = new Random().Next(0, stringChrs.Length - 1);
+                            }
+                            stringChrs[chr2Replace] = repChr;
+                            l.InvokeIfRequired(() => l.Text = new String(stringChrs).Replace("&", "&&"));
+                        }
+                        Thread.Sleep(100);
+                    }
+                    foreach (Control l in glitchableControls)
+                        l.InvokeIfRequired(() => l.Text = defaultStrings[l]);
+                }
+                Thread.Sleep(5000);
+            }
+            foreach (Control l in glitchableControls)
+            {
+                if (!(l is Label))
+                    l.InvokeIfRequired(() => l.Text = defaultStrings[l]);
             }
         }
     }

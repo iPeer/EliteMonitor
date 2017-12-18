@@ -290,7 +290,7 @@ namespace EliteMonitor.Caching
                                 updated++;
                                 j.isKnown = true;
                                 j.Data = je.Data;
-                                if (j.Notes.Equals("UNKNOWN EVENT") || j.Notes.Equals("KNOWN-ISH EVENT"))
+                                if (j.Notes != null && (j.Notes.Equals("UNKNOWN EVENT") || j.Notes.Equals("KNOWN-ISH EVENT")))
                                     j.Notes = null;
                             }
                         }

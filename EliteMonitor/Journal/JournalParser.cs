@@ -23,6 +23,7 @@ namespace EliteMonitor.Journal
 {
 
     public class NoRegisteredCommanderException : Exception { }
+    public class FragmentedJsonStringException : Exception { }
 
     public class JournalParser
     {
@@ -45,6 +46,7 @@ namespace EliteMonitor.Journal
         public string LastParsedJson = string.Empty;
         private int scanEntriesToIgnore = 0;
         public bool noCommandersOrJournals = false;
+        private string JsonToAppend = string.Empty;
 
         List<ParsableJournalEntry> preLoadCommanderData = new List<ParsableJournalEntry>(3);
 
@@ -89,6 +91,11 @@ namespace EliteMonitor.Journal
             */
             //mainForm.cacheController.addJournalEntryToCache(json);
             this.LastParsedJson = json;
+            // Fix EM crashing when it comes across fragmented JSON lines
+            if (!json.TrimEnd().EndsWith("}"))
+            {
+                throw new FragmentedJsonStringException();
+            }
             if (forcedCommander == null)
                 commander = activeCommander ?? viewedCommander; // Under normal operating procedures, activeCommander will NEVER be null. It can be null during testing due to "hot inserting" of events (because we don't parse the full log properly), so if it's null, we default the the currently viewed commander.
             else
@@ -102,7 +109,6 @@ namespace EliteMonitor.Journal
             {
                 throw e;
             }
-
             string @event = (string)j["event"];
             DateTime tsData = (DateTime)j["timestamp"];
             string timestamp = tsData.ToString("G");
@@ -265,6 +271,8 @@ namespace EliteMonitor.Journal
                         commander.isDocked = true;
                         commander.CurrentSystem = starSystem;
                         commander.CurrentLocation = stationName;
+                        if (this.viewedCommander != null)
+                            mainForm.UpdateThargoidEasterEggIfRequired();
                     }
                     string eventText = String.Format("Docked at {0}{1} in {2}", stationName, stationType == null || stationType.Equals(string.Empty) ? "" : $" ({stationType})", starSystem);
                     return new JournalEntry(timestamp, @event, eventText, j);
@@ -510,7 +518,7 @@ namespace EliteMonitor.Journal
                 case "HullDamage":
                     bool fighter = false;
                     string hullDmgString = string.Format("Took hull damage! Hull health: {0:n0}%", (float)j["Health"] * 100.00);
-                    try { fighter = j.GetValue("Fighter").ToObject<bool>(); hullDmgString = string.Format("Fighter took hull damage! Fighter's hull health: {0:n0}%", (float)j["Health"] * 100.00); }
+                    try { fighter = j.GetValue("Fighter").ToObject<bool>(); if (fighter) { hullDmgString = string.Format("Fighter took hull damage! Fighter's hull health: {0:n0}%", (float)j["Health"] * 100.00); } }
                     catch { }
                     return new JournalEntry(timestamp, @event, hullDmgString, j);
                 case "ShipyardSwap":
@@ -832,9 +840,27 @@ namespace EliteMonitor.Journal
                     int level = j.GetValue("Level").ToObject<int>();
                     if (!isReparse && commander != null)
                     {
-                        List<JournalMaterialsEventKVP> materialCosts = new List<JournalMaterialsEventKVP>();
-                        materialCosts = JsonConvert.DeserializeObject<List<JournalMaterialsEventKVP>>(j.GetValue("Ingredients").ToString());
-                        commander.RemoveMaterials(materialCosts);
+                        try
+                        {
+                            List<JournalMaterialsEventKVP> materialCosts = new List<JournalMaterialsEventKVP>();
+                            materialCosts = JsonConvert.DeserializeObject<List<JournalMaterialsEventKVP>>(j.GetValue("Ingredients").ToString());
+                            commander.RemoveMaterials(materialCosts);
+                        }
+                        catch
+                        {
+                            this.logger.Log("Unable to load engineer blueprint data via normal method, falling back to old method.", LogLevel.WARNING);
+                            Dictionary<string, int> materialCosts = new Dictionary<string, int>();
+                            materialCosts = JsonConvert.DeserializeObject<Dictionary<string, int>>(j.GetValue("Ingredients").ToString());
+                            List<JournalMaterialsEventKVP> converted = new List<JournalMaterialsEventKVP>();
+                            foreach (KeyValuePair<string, int> kvp in materialCosts)
+                            {
+                                JournalMaterialsEventKVP jme = new JournalMaterialsEventKVP();
+                                jme.Name = kvp.Key;
+                                jme.Count = kvp.Value;
+                                converted.Add(jme);
+                            }
+                            commander.RemoveMaterials(converted);
+                        }
                     }
                     if (mainForm.MaterialsGUIOpen)
                         MaterialList.Instance.DisplayMaterials();
@@ -880,6 +906,38 @@ namespace EliteMonitor.Journal
                         iCG++;
                     }
                     return new JournalEntry(timestamp, @event, sb.ToString().TrimEnd(), j);
+                // { "timestamp":"2017-12-15T20:46:45Z", "event":"MissionAccepted", "Faction":"Aegis Research", "Name":"Mission_DS_PassengerBulk", "LocalisedName":"17 Refugees looking to get off the starport", "DestinationSystem":"Taygeta", "DestinationStation":"Rescue Ship - Titan's Daughter", "Expiry":"2017-12-15T21:58:53Z", "Influence":"High", "Reputation":"Low", "Reward":125732, "PassengerCount":17, "PassengerVIPs":false, "PassengerWanted":false, "PassengerType":"Refugee", "MissionID":263713525 }
+                case "MissionAccepted":
+                    string missionName = string.Empty;
+                    try
+                    {
+                        missionName = j.GetValue("LocalisedName").ToString();
+                    }
+                    catch { }
+                    string factionName = j.GetValue("Faction").ToString();
+                    long missionReward = -1L;
+                    try
+                    {
+                        missionReward = j.GetValue("Reward").ToObject<long>();
+                    }
+                    catch { }
+                    string missionIntName = j.GetValue("Name").ToString();
+                    if (commander != null && (missionIntName.Equals("Mission_DS_PassengerBulk") || missionName.EndsWithIgnoreCase(" Refugees looking to get off the starport")))
+                    {
+                        int passengerCount = j.GetValue("PassengerCount").ToObject<int>();
+                        commander.RescuedThargoidRefugees += passengerCount;
+                    }
+                    string output = string.Empty;
+                    if (string.IsNullOrWhiteSpace(missionName) && missionReward == -1L)
+                    {
+                        output = "Mission accepted.";
+                    }
+                    else if (string.IsNullOrWhiteSpace(missionName) && missionReward > -1L)
+                    {
+                        output = string.Format("Accepted mission for faction {1} - Payout: {2:n0}", missionName, factionName, missionReward);
+                    }
+                    else { output = string.Format("Accepted mission '{0}' for faction {1} - Payout: {2:n0}", missionName, factionName, missionReward); }
+                    return new JournalEntry(timestamp, @event, output, j);
                 default:
                     return new JournalEntry(timestamp, @event, string.Empty, j, false);
             }
@@ -967,6 +1025,11 @@ namespace EliteMonitor.Journal
             foreach (ParsableJournalEntry en in entries)
             {
                 string s = en.JSON;
+                if (!string.IsNullOrWhiteSpace(this.JsonToAppend))
+                {
+                    s = this.JsonToAppend + s;
+                    this.JsonToAppend = string.Empty;
+                }
                 bool isBetaJournalEntry = en.IsBetaJournal;
                 double percent = ((double)cEntry++ / (double)entries.Count) * 100.00;
                 //Console.WriteLine(percent + " / " + lastPercent);
@@ -992,7 +1055,15 @@ namespace EliteMonitor.Journal
                 JournalEntry je;
                 try
                 {
-                    je = parseEvent(s, out commander, doNotPlaySounds: dontPlaySounds, isBeta: isBetaJournalEntry, showNotifications: showNotifications);
+                    try
+                    {
+                        je = parseEvent(s, out commander, doNotPlaySounds: dontPlaySounds, isBeta: isBetaJournalEntry, showNotifications: showNotifications);
+                    }
+                    catch (FragmentedJsonStringException)
+                    {
+                        this.JsonToAppend = s;
+                        continue;
+                    }
                     if (je.Event.Equals("Fileheader") || (je.Event.Equals("Music") && Properties.Settings.Default.HideMusicEvents))
                         continue;
                     if (je.Event.Equals("LoadGame") && this.isCommanderRegistered && this.preLoadCommanderData.Count > 0)
@@ -1152,6 +1223,7 @@ namespace EliteMonitor.Journal
             mainForm.buttonExpeditions.InvokeIfRequired(() => mainForm.buttonExpeditions.Enabled = true);
             mainForm.buttonSearch.InvokeIfRequired(() => mainForm.buttonSearch.Enabled = true);
             mainForm.buttonMaterials.InvokeIfRequired(() => mainForm.buttonMaterials.Enabled = true);
+            mainForm.UpdateThargoidEasterEggIfRequired();
         }
 
         public DataGridViewRow getListViewEntryForEntry(JournalEntry j)

@@ -103,6 +103,7 @@ namespace EliteMonitor.Elite
         [JsonIgnore]
         public Guid ActiveExpeditionGuid { get; set; }
         public long nextId = 0;
+
         [JsonIgnore]
         public bool isActive
         {
@@ -136,6 +137,7 @@ namespace EliteMonitor.Elite
         public bool isInMulticrew { get; set; } = false;
         [JsonIgnore]
         public string MultiCrewCommanderName { get; set; } = string.Empty;
+        public long RescuedThargoidRefugees { get; set; } = 0L;
 
         [JsonIgnore]
         public string combatRankName
@@ -350,7 +352,8 @@ namespace EliteMonitor.Elite
         {
             foreach (JournalMaterialsEventKVP kvp in materials)
             {
-                this.Materials[kvp.Name] -= kvp.Count;
+                if (this.Materials.ContainsKey(kvp.Name)) 
+                    this.Materials[kvp.Name] -= kvp.Count;
             }
             this.MarkDirty();
             return this;
@@ -464,7 +467,9 @@ namespace EliteMonitor.Elite
                     if (!string.IsNullOrEmpty(this.CurrentLocation))
                         cmdrLocString += this.CurrentLocation+" | ";
                     cmdrLocString += this.CurrentSystem;
-                    m.commanderLocationLabel.Text = cmdrLocString;
+                    if (m.Database.ThargoidStationLocations.Contains(this.CurrentSystem))
+                        cmdrLocString += string.Format(" [{0:n0} refugees saved]", this.RescuedThargoidRefugees);
+                    m.commanderLocationLabel.Text = cmdrLocString; 
                     if (this.HasHomeSystem && this.CurrentSystemCoordinates != null && !this.CurrentSystem.Equals(this.HomeSystem.Name))
                     {
                         m.commanderLocationLabel.Text += string.Format(" ({0} ly from {1})", Utils.CalculateLyDistance(to: this.CurrentSystemCoordinates, from: this.HomeSystem.Coordinates).ToString("0,0.00"), this.HomeSystem.Name);
@@ -781,9 +786,21 @@ namespace EliteMonitor.Elite
                 updateJournalEntries(toUpdate, m, patchVer, this);
             }
 
-            if (this.cacheVersion < (patchVer = 1796)) // This is a big one, remove all JSON data from the "Data" Property of all unknown journal entries (among other things)
+            if (this.cacheVersion < (patchVer = 1796))
             {
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => !a.isKnown || a.Event.Equals("HullDamage") || a.Event.Equals("CommunityGoal"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
+
+            if (this.cacheVersion < (patchVer = 1803))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("HullDamage"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
+
+            if (this.cacheVersion < (patchVer = 1833))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("MissionAccepted"));
                 updateJournalEntries(toUpdate, m, patchVer, this);
             }
         }
