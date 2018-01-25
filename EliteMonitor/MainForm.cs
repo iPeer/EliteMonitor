@@ -68,6 +68,7 @@ namespace EliteMonitor
             scanNotificationsToolStripMenuItem.Checked = Properties.Settings.Default.ScanNotifications;
             dockingLocationNotificationsToolStripMenuItem.Checked = Properties.Settings.Default.DockingNotifications;
             searchJournalJSONAsWellAsDataToolStripMenuItem.Checked = Properties.Settings.Default.JournalsSearchJson;
+            materialCountNotificationsToolStripMenuItem.Checked = Properties.Settings.Default.ShowMaterialCountNotifications;
 
             ExpeditionButton.Click += startExpedition_Click;
 #if !DEBUG
@@ -321,7 +322,7 @@ namespace EliteMonitor
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            this.Hide();
+            //this.Hide();
             Properties.Settings.Default.WindowState = (int)this.WindowState;
             Properties.Settings.Default.Save();
             cacheController.saveAllCaches();
@@ -1151,10 +1152,7 @@ namespace EliteMonitor
             foreach (Control c in this.GetAllControls())
             {
                 if (c is Label || c is Button)
-                {
                     glitchableControls.Add(c);
-                    defaultStrings.Add(c, c.Text);
-                }
             }
 #if DEBUG
             this.logger.Log("{0} control(s)", LogLevel.DEBUG, glitchableControls.Count);
@@ -1165,16 +1163,14 @@ namespace EliteMonitor
                 {
                     defaultStrings.Clear();
                     foreach (Control c in this.GetAllControls())
-                    {
                         if (c is Label || c is Button)
-                        {
                             defaultStrings.Add(c, c.Text);
-                        }
-                    }
+
                     for (int x = 0; x < MAX_RANDOM_CHANGES_PER_CONTROL; x++)
                     {
                         foreach (Control l in glitchableControls)
                         {
+                            if (new Random().Next(0, 4) == 0) { continue; }
                             if (!l.Text.Equals(defaultStrings[l]))
                                 l.InvokeIfRequired(() => l.Text = defaultStrings[l]);
                             if (string.IsNullOrWhiteSpace(l.Text))
@@ -1189,7 +1185,7 @@ namespace EliteMonitor
                             stringChrs[chr2Replace] = repChr;
                             l.InvokeIfRequired(() => l.Text = new String(stringChrs).Replace("&", "&&"));
                         }
-                        Thread.Sleep(100);
+                        Thread.Sleep(80);
                     }
                     foreach (Control l in glitchableControls)
                         l.InvokeIfRequired(() => l.Text = defaultStrings[l]);
@@ -1201,6 +1197,28 @@ namespace EliteMonitor
                 if (!(l is Label))
                     l.InvokeIfRequired(() => l.Text = defaultStrings[l]);
             }
+        }
+
+        private void forceVolatilesRedownloadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Database.loadDataFromVolatiles(true);
+        }
+
+        private void forceReloadOfVolatilesNODownloadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Database.loadDataFromVolatiles(false);
+        }
+
+        private void forceVolatilesUpdateCheckToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Database.loadDataFromVolatilesOrDisk();
+        }
+
+        private void materialCountNotificationsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            materialCountNotificationsToolStripMenuItem.Checked = !materialCountNotificationsToolStripMenuItem.Checked;
+            Properties.Settings.Default.ShowMaterialCountNotifications = materialCountNotificationsToolStripMenuItem.Checked;
+            Properties.Settings.Default.Save();
         }
     }
 }

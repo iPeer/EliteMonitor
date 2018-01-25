@@ -1,4 +1,20 @@
-﻿1.0.0.1854
+﻿?????
+	* Added an option to have notifications pop-up when collecting or discarding materials showing the current count of that material the player posseses.
+	* Volatiles: Volatiles are pices of information that Elite Monitor will download from a server (when neccessary; they'll only be downloaded when they change) every time it's started. It allows use to more easily keep things such as Ship names and commodity names up-to-date without having to push a fully-fledged update. This system completely replaces the old data files, though those files are still used as a backup.
+	* Sometimes Elite Monitor was converting ship names to lower case, this should be fixed now.
+	* Changes for Elite: Dangerous 3.0 compatibility
+		* Added support for the following journal events:
+			* Commander
+			* ShipTargeted
+			* EngineerLegacyConvert
+			* MaterialTrade
+	* Added support for the NpcCrewPaidWage event.
+
+1.0.0.1855
+	* Added yet more error handling to stop EM crashing if it comes across malformed/ivalid JSON in the journal file.
+	* Type 10 Defender (type9_military) has been added to the ship database.
+
+1.0.0.1854
 	* Fixed an issue causing EliteMonitor to crash when parsing EngineerCraft events using a different (older) format than what they do now.
 
 1.0.0.1850

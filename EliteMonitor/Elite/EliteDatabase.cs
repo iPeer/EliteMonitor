@@ -12,6 +12,8 @@ using System.ComponentModel;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
+using System.Net.Http;
+using EliteMonitor.Extensions;
 
 namespace EliteMonitor.Elite
 {
@@ -27,10 +29,12 @@ namespace EliteMonitor.Elite
         #else*/
         public const string EDSM_API_URL = "https://www.edsm.net/api-v1/";
         /*#endif*/
+        public const string VOLATILES_API_URL = "https://ipeer.auron.co.uk/EliteMonitor/volatiles.json";
 
         private WebClient EDSMWebClient = new WebClient();
         public event EventHandler<List<BasicSystem>> OnEDSMDataDownloadComplete;
         public event EventHandler<Int64[]> OnEDSMSystemParseProgress;
+        private JObject current_volatiles;
 
         //public List<Material> Materials;
         public Dictionary<string, Material> Materials;
@@ -93,13 +97,177 @@ namespace EliteMonitor.Elite
             this.Ships = new Dictionary<string, string>();
             this.Commodities = new Dictionary<string, string>();
 
+            loadDataFromVolatilesOrDisk();
+
+            /*loadMaterials();
+            loadShips();
+            loadCommodities();*/
+            /*loadMaterialTypes();*/
+        }
+
+        /*public bool loadDataFromVolatiles()
+        {
+            if (!volatilesAreValid())
+            {
+
+            }
+        }*/
+
+        public void loadDataFromDataCache()
+        {
             loadMaterials();
             loadShips();
             loadCommodities();
-            /*loadMaterialTypes();*/
-
-            runUpdatesIfNeeded();
         }
+
+        public void loadDataFromVolatiles(bool download = true)
+        {
+            if (download)
+            {
+                using (WebClient wc = new WebClient())
+                {
+                    try
+                    {
+                        mainForm.InvokeIfRequired(() => mainForm.volatilesLabel.Text = "Downloading updated volatiles...");
+                        this.logger.Log("Downloading volatiles from server...");
+                        this.logger.Log("Volatiles URL is {0}", VOLATILES_API_URL);
+                        string new_volatiles = wc.DownloadString(new Uri(VOLATILES_API_URL));
+                        JObject _volatiles = JObject.Parse(new_volatiles);
+                        string volatiles_etag = wc.ResponseHeaders.Get("ETag");
+                        volatiles_etag = volatiles_etag.Substring(1, volatiles_etag.Length - 2);
+                        this.logger.Log("Volatile remote etag is {0}", volatiles_etag);
+                        _volatiles.Add("version", volatiles_etag);
+                        string backup_path = Path.Combine(MainForm.Instance.cacheController.dataPath, "volatiles.json.bak");
+                        string volatiles_path = Path.Combine(MainForm.Instance.cacheController.dataPath, "volatiles.json");
+                        if (File.Exists(backup_path))
+                            File.Delete(backup_path); //FIXME: This will error since EM is using the file
+                        if (File.Exists(volatiles_path))
+                        {
+                            File.Copy(volatiles_path, backup_path);
+                            File.Delete(volatiles_path);
+                        }
+                        using (StreamWriter sw = new StreamWriter(volatiles_path))
+                        {
+                            sw.WriteLine(JsonConvert.SerializeObject(_volatiles, Formatting.Indented));
+                        }
+                        this.logger.Log("Volatiles have been saved to disk", volatiles_etag);
+                        this.current_volatiles = _volatiles;
+                        _volatiles = null;
+                    }
+                    catch (Exception e) {
+                        this.logger.Log("Unable to download volatiles from URL: ", LogLevel.ERR);
+                        this.logger.Log("{1}{2}{0}", LogLevel.ERR, e.StackTrace, e.ToString(), Environment.NewLine);
+                        loadDataFromVolatiles(false);
+                    }
+                }
+            }
+            if (!File.Exists(Path.Combine(MainForm.Instance.cacheController.dataPath, "volatiles.json"))) // Failsafe
+            {
+                loadDataFromDataCache();
+                mainForm.journalParser.viewedCommander?.updateDialogDisplays();
+                return;
+            }
+            if (!download)
+            {
+                using (StreamReader sr = new StreamReader(Path.Combine(MainForm.Instance.cacheController.dataPath, "volatiles.json")))
+                {
+                    this.current_volatiles = JObject.Parse(sr.ReadToEnd());
+                }
+            }
+            this.Commodities.Clear();
+            this.Commodities = JsonConvert.DeserializeObject<Dictionary<string, string>>(this.current_volatiles.GetValue("commodities").ToString());
+            this.Ships.Clear();
+            this.Ships = JsonConvert.DeserializeObject<Dictionary<string, string>>(this.current_volatiles.GetValue("ships").ToString());
+            this.Materials.Clear();
+            this.Materials = JsonConvert.DeserializeObject<Dictionary<string, Material>>(this.current_volatiles.GetValue("materials").ToString());
+            this.ThargoidStationLocations = JsonConvert.DeserializeObject<string[]>(this.current_volatiles.GetValue("attack_systems").ToString());
+#if DEBUG
+            Debug.WriteLine("---------- DISPLAYING LOADED DATA FROM VOLATILES ----------");
+            Debug.WriteLine("COMMODITIES:");
+            foreach (KeyValuePair<string, string> kvp in this.Commodities)
+            {
+                Debug.WriteLine(string.Format("\t{0}: {1}", kvp.Key, kvp.Value));
+            }
+            Debug.WriteLine("");
+
+            Debug.WriteLine("SHIPS:");
+            foreach (KeyValuePair<string, string> kvp in this.Ships)
+            {
+                Debug.WriteLine(string.Format("\t{0}: {1}", kvp.Key, kvp.Value));
+            }
+            Debug.WriteLine("");
+
+            Debug.WriteLine("MATERIALS:");
+            foreach (KeyValuePair<string, Material> kvp in this.Materials)
+            {
+                Debug.WriteLine(string.Format("\t{0}: {1}", kvp.Key, kvp.Value.Name));
+            }
+            Debug.WriteLine("");
+
+
+            Debug.WriteLine("THARGOID ATTACKS:");
+            foreach (string s in this.ThargoidStationLocations)
+            {
+                Debug.WriteLine(string.Format("\t{0}", s));
+            }
+            Debug.WriteLine("---------- ----------");
+
+#endif
+            mainForm.InvokeIfRequired(() => mainForm.volatilesLabel.Text = "");
+            mainForm.journalParser.viewedCommander?.updateDialogDisplays();
+        }
+
+        public void loadDataFromVolatilesOrDisk()
+        {
+            /*Thread volatile_thread = new Thread(new ThreadStart(() =>
+            {*/
+            string volatilesPath = Path.Combine(MainForm.Instance.cacheController.dataPath, "volatiles.json");
+            if (!File.Exists(volatilesPath))
+            {
+                loadDataFromVolatiles(true); return;
+            }
+            try
+            {
+                StreamReader sr = new StreamReader(volatilesPath); // Don't use USING here as it creates a lock on the file when we try to delete it
+                JObject volatiles = JObject.Parse(sr.ReadToEnd());
+                sr.Close();   // v
+                sr.Dispose(); // Clear lock on file in case we want to delete it.
+                string etag = volatiles.GetValue("version").ToString();
+                /*using (HttpClient c = new HttpClient())
+                {*/
+                mainForm.InvokeIfRequired(() => mainForm.volatilesLabel.Text = "Checking if volatiles need updating...");
+                //HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Head, VOLATILES_API_URL);
+                //this.logger.Log("Looking for volatiles at {0}", req.RequestUri);
+                HttpResponseMessage res = Task.Run(() => GetVolatilesETag()).Result;
+                string remote_etag = res.Headers.ETag.Tag;
+                remote_etag = remote_etag.Substring(1, remote_etag.Length - 2);
+                this.logger.Log("Remove volatiles returned with etag of {0}", remote_etag);
+                this.logger.Log("local = {0}, remote = {1}", etag, remote_etag);
+                if (!etag.Equals(remote_etag)) { mainForm.InvokeIfRequired(() => mainForm.volatilesLabel.Text = "Preparing to download updated volatiles..."); loadDataFromVolatiles(true); }
+                else { this.logger.Log("Volatiles are up to date."); mainForm.InvokeIfRequired(() => mainForm.volatilesLabel.Text = "Volatiles are up to date."); loadDataFromVolatiles(false); }
+                /*}*/
+            }
+            catch { loadDataFromDataCache(); }
+            /*}));
+            volatile_thread.IsBackground = true;
+            volatile_thread.Priority = ThreadPriority.BelowNormal;
+            volatile_thread.Start();*/
+        }
+
+        public async Task<HttpResponseMessage> GetVolatilesETag()
+        {
+            using (HttpClient c = new HttpClient())
+            {
+                HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Head, VOLATILES_API_URL);
+                this.logger.Log("Looking for volatiles at {0}", req.RequestUri);
+                return await c.SendAsync(req);
+            }
+        }
+
+        /*private void loadDataFromVolatilesOrDisk()
+        {
+            if (loadVolatiles())
+        }*/
 
         // TODO
 
@@ -248,9 +416,9 @@ namespace EliteMonitor.Elite
 
         public string getShipNameFromInternalName(string internalName)
         {
-            internalName = internalName.ToLower();
-            if (this.Ships.ContainsKey(internalName))
-                return this.Ships[internalName];
+            //internalName = internalName.ToLower();
+            if (this.Ships.ContainsKey(internalName.ToLower()))
+                return this.Ships[internalName.ToLower()];
             else return internalName;
         }
 

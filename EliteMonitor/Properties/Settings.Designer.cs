@@ -190,5 +190,17 @@ namespace EliteMonitor.Properties {
                 this["JournalsSearchJson"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowMaterialCountNotifications {
+            get {
+                return ((bool)(this["ShowMaterialCountNotifications"]));
+            }
+            set {
+                this["ShowMaterialCountNotifications"] = value;
+            }
+        }
     }
 }

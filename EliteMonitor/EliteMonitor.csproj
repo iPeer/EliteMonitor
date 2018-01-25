@@ -184,6 +184,7 @@
     </Compile>
     <Compile Include="Journal\JournalCommunityGoal.cs" />
     <Compile Include="Journal\JournalParser.cs" />
+    <Compile Include="Journal\MaterialTradeData.cs" />
     <Compile Include="Journal\Search\SearchCriteria.cs" />
     <Compile Include="Journal\Search\SearchGUI.cs">
       <SubType>Form</SubType>

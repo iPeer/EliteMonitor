@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.IO.Compression;
 using System.Windows.Forms;
 using EliteMonitor.Exploration;
+using EliteMonitor.Journal;
 
 namespace EliteMonitor.Elite
 {
@@ -457,7 +458,7 @@ namespace EliteMonitor.Elite
                 if (string.IsNullOrEmpty(this.CurrentLocation) && string.IsNullOrEmpty(this.CurrentSystem))
                     format = "{0} {1} | {2}";*/
 
-                m.commanderLabel.Text = string.Format("{0}{1} | {2}", this.Name, (this.isInMulticrew ? string.Format(" ({0})", this.MultiCrewCommanderName) : (string.IsNullOrEmpty(this.PrivateGroup) ? "" : string.Format(" ({0})", this.PrivateGroup))), (this.ShipData != null ? this.ShipData.getFormattedShipString() : this.Ship));
+                m.commanderLabel.Text = string.Format("{0}{1} | {2}", this.Name, (this.isInMulticrew ? string.Format(" ({0})", this.MultiCrewCommanderName) : (string.IsNullOrEmpty(this.PrivateGroup) ? "" : string.Format(" ({0})", this.PrivateGroup))), (this.ShipData != null ? this.ShipData.getFormattedShipString() : m.Database.getShipNameFromInternalName(this.Ship)));
                 if (!(string.IsNullOrEmpty(this.CurrentLocation) && string.IsNullOrEmpty(this.CurrentSystem)))
                 {
                     //m.commanderLocationLabel.Text = string.Format("{0}{1}{2}", this.isDocked || this.isLanded ? this.isDocked ? "Docked at " : "Landed on " : "", String.Format("{0} | ", this.CurrentLocation), this.CurrentSystem);
@@ -803,6 +804,19 @@ namespace EliteMonitor.Elite
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("MissionAccepted"));
                 updateJournalEntries(toUpdate, m, patchVer, this);
             }
+
+            if (this.cacheVersion < (patchVer = 1855))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => /*a.Event.Equals("ShipyardNew") || a.Event.Equals("ShipyardBuy") || */a.Event.Equals("ShipyardSwap"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
+
+            if (this.cacheVersion < (patchVer = 1881)) // Fix non-vanity ship names using internal name
+            {
+                string fixed_shipname = MainForm.Instance.Database.getShipNameFromInternalName(this.ShipData.ShipNonVanityName);
+                if (this.ShipData.ShipName.Equals(this.ShipData.ShipNonVanityName)) this.ShipData.ShipName = fixed_shipname;
+                this.ShipData.ShipNonVanityName = fixed_shipname;
+            }
         }
 
         private void updateJournalEntries(List<JournalEntry> toUpdate, MainForm m, int patchVer, Commander c)
@@ -826,10 +840,14 @@ namespace EliteMonitor.Elite
                     m.InvokeIfRequired(() => m.appStatus.Text = String.Format("Updating Journal entries... ({0:n0}%) [ETA: {1}]", percent, Utils.formatTimeFromSeconds(timeLeft)));
                 }
                 Commander __;
-                JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true, forcedCommander: c, bypassRegisterCheck: true, showNotifications: false, doNotPlaySounds: true);
-                if (j.Data.Equals(j.Json))
-                    j.Data = string.Empty;
-                j.Data = nje.Data;
+                try
+                {
+                    JournalEntry nje = m.journalParser.parseEvent(j.Json, out __, true, forcedCommander: c, bypassRegisterCheck: true, showNotifications: false, doNotPlaySounds: true);
+                    if (j.Data.Equals(j.Json))
+                        j.Data = string.Empty;
+                    j.Data = nje.Data;
+                }
+                catch (InvalidJSONException) { continue; }
             }
             if (cEntry > 0)
                 this.MarkDirty();

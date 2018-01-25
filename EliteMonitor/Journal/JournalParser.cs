@@ -24,6 +24,7 @@ namespace EliteMonitor.Journal
 
     public class NoRegisteredCommanderException : Exception { }
     public class FragmentedJsonStringException : Exception { }
+    public class InvalidJSONException : Exception { }
 
     public class JournalParser
     {
@@ -105,6 +106,13 @@ namespace EliteMonitor.Journal
             {
                 j = JObject.Parse(json);
             }
+            catch (JsonReaderException _e)
+            {
+                this.logger.Log("Supplied JSON is not valid JSON!", LogLevel.WARNING);
+                this.logger.Log("Supplied JSON: '{0}'", LogLevel.ERROR, json);
+                this.logger.Log("{0}", LogLevel.ERROR, _e.ToString());
+                throw new InvalidJSONException();
+            }
             catch (Exception e)
             {
                 throw e;
@@ -127,6 +135,13 @@ namespace EliteMonitor.Journal
                     this.betaJournal = j.GetValue("gameversion").ToString().Contains("Beta");
                     this.isCommanderRegistered = !j.GetValue("part").ToString().Equals("1");
                     return new JournalEntry(timestamp, @event, "", j);
+                case "Commander":
+                    string commanderName = j.GetValue("Name").ToString();
+                    if (isBeta || this.betaJournal)
+                        commanderName += " [BETA]";
+                    Commander _commander = registerCommander(commanderName);
+                    this.isCommanderRegistered = true;
+                    return new JournalEntry(timestamp, @event, string.Format("Welcome back, CMDR {0}.", commanderName), j);
                 case "LoadGame":
                     bool isGroup = false;
                     try
@@ -152,19 +167,23 @@ namespace EliteMonitor.Journal
                         this.logger.Log("{0}", LogLevel.ERR, j.ToString());
                     }
                     long commanderCredits = (long)j["Credits"];
-                    string commanderName = (string)j["Commander"];
+                    commanderName = (string)j["Commander"];
                     if (isBeta || this.betaJournal)
                         commanderName += " [BETA]";
                     string shipName = (string)j["ShipName"];
                     string shipID = (string)j["ShipIdent"];
                     string commanderString = $"{commanderName}" + (isGroup ? $" ({pGroup})" : "");
-                    Commander _commander = registerCommander(commanderName);
-                    _commander.setBasicInfo(commanderShip, commanderCredits, isGroup ? pGroup : "");
-                    _commander.SetShip(commanderShip, shipID, shipName);
-                    commander = activeCommander = _commander;
+
+                    if (!this.isCommanderRegistered)
+                    {
+                        _commander = registerCommander(commanderName);
+                        commander = activeCommander = _commander;
+                        this.isCommanderRegistered = true;
+                    }
+                    commander.setBasicInfo(commanderShip, commanderCredits, isGroup ? pGroup : "");
+                    commander.SetShip(commanderShip, shipID, shipName);
                     string commanderShipFormatted = commander.ShipData.getFormattedShipString();
-                    _commander.isInMulticrew = false;
-                    this.isCommanderRegistered = true;
+                    commander.isInMulticrew = false;
                     return new JournalEntry(timestamp, @event, $"Commander {commanderString} | {commanderShipFormatted} | Credit balance: {String.Format("{0:n0}", commanderCredits)}", j);
                 case "Rank":
 
@@ -355,6 +374,11 @@ namespace EliteMonitor.Journal
                         commander.addMaterial(material, count);
                     if (mainForm.MaterialsGUIOpen)
                         MaterialList.Instance.DisplayMaterials();
+                    if (!isReparse && showNotifications && Properties.Settings.Default.ShowMaterialCountNotifications)
+                    {
+                        Notification n = new Notification("Material Count Update", string.Format("{0}: {1:n0}", mainForm.Database.getMaterialNameFromInternal(material), commander.Materials[material]));
+                        Utils.InvokeNotification(n);
+                    }
                     //mainForm.Database.saveMaterialTypeToDatabase(material, category);
                     return new JournalEntry(timestamp, @event, String.Format("Collected. {0} : {1} ({2})", category, mainForm.Database.getMaterialNameFromInternal(material), count), j);
                 case "MaterialDiscovered":
@@ -371,6 +395,11 @@ namespace EliteMonitor.Journal
                         commander.removeMaterial(material, count);
                     if (mainForm.MaterialsGUIOpen)
                         MaterialList.Instance.DisplayMaterials();
+                    if (!isReparse && showNotifications && Properties.Settings.Default.ShowMaterialCountNotifications)
+                    {
+                        Notification n = new Notification("Material Count Update", string.Format("{0}: {1:n0}", mainForm.Database.getMaterialNameFromInternal(material), commander.Materials[material]));
+                        Utils.InvokeNotification(n);
+                    }
                     string matOutString = String.Format("Discarded. {0} : {1} ({2})", mainForm.Database.getMaterialTypeFromInternalName(material), mainForm.Database.getMaterialNameFromInternal(material), count);
                     return new JournalEntry(timestamp, @event, matOutString, j);
                 case "MissionCompleted":
@@ -938,6 +967,54 @@ namespace EliteMonitor.Journal
                     }
                     else { output = string.Format("Accepted mission '{0}' for faction {1} - Payout: {2:n0}", missionName, factionName, missionReward); }
                     return new JournalEntry(timestamp, @event, output, j);
+                case "ShipTargeted":
+                    bool locked = j.GetValue("TargetLocked").ToObject<bool>();
+                    if (!locked)
+                        return new JournalEntry(timestamp, @event, "Targeted new ship.", j);
+                    int scanStage = j.GetValue("ScanStage").ToObject<int>();
+                    shipName = mainForm.Database.getShipNameFromInternalName(j.GetValue("Ship").ToString());
+                    StringBuilder td = new StringBuilder();
+                    td.AppendLineFormatted("Target: {0}", shipName);
+                    if (scanStage >= 1)
+                    {
+                        string pilotName = j.GetValue("PilotName").ToString();
+                        string pilotRank = j.GetValue("PilotRank").ToString();
+                        td.AppendLineFormatted("Pilot: {0} ({1})", pilotName, pilotRank);
+                    }
+                    if (scanStage >= 2)
+                    {
+                        int shieldHealth = j.GetValue("ShieldHealth").ToObject<int>();
+                        int hullHealth = j.GetValue("HullHealth").ToObject<int>();
+                        td.AppendLineFormatted("Shields: {0}%", shieldHealth);
+                        td.AppendLineFormatted("Hull: {0}%", hullHealth);
+                    }
+                    if (scanStage >= 3)
+                    {
+                        string wantedStatus = j.GetValue("LegalStatus").ToString().ToUpper();
+                        Int64 bounty = j.GetValue("Bounty").ToObject<Int64>();
+                        string owningFaction = j.GetValue("Faction").ToString();
+                        td.AppendLine(owningFaction);
+                        if (wantedStatus.Equals("WANTED"))
+                            td.AppendLineFormatted("{0} ({1:n0})", wantedStatus, bounty);
+                        else
+                            td.AppendLine(wantedStatus);
+                    }
+                    return new JournalEntry(timestamp, @event, td.ToString(), j);
+                case "EngineerLegacyConvert":
+                    bool preview = j.GetValue("IsPreview").ToObject<bool>();
+                    blueprint = j.GetValue("Blueprint").ToString();
+                    if (preview)
+                        return new JournalEntry(timestamp, @event, string.Format("Previewing 3.0 engineering upgrade for blueprint {0}", blueprint), j);
+                    return new JournalEntry(timestamp, @event, String.Format("Applied 3.0 version of blueprint {0}", blueprint), j);
+                case "MaterialTrade":
+                    string traderType = j.GetValue("TraderType").ToString();
+                    MaterialTradeData paid = j.GetValue("Paid").ToObject<MaterialTradeData>();
+                    MaterialTradeData received = j.GetValue("Received").ToObject<MaterialTradeData>();
+                    string tradeString = string.Format("Traded in {0:n0} {1} for {2:n0} {3}", paid.Quantity, paid.Material_Localised, received.Quantity, received.Material_Localised);
+                    return new JournalEntry(timestamp, @event, tradeString, j);
+                case "NpcCrewPaidWage":
+                    credits = j.GetValue("Amount").ToObject<Int64>();
+                    return new JournalEntry(timestamp, @event, string.Format("Paid crew wages of {0:n0}", credits), j);
                 default:
                     return new JournalEntry(timestamp, @event, string.Empty, j, false);
             }
@@ -1059,6 +1136,7 @@ namespace EliteMonitor.Journal
                     {
                         je = parseEvent(s, out commander, doNotPlaySounds: dontPlaySounds, isBeta: isBetaJournalEntry, showNotifications: showNotifications);
                     }
+                    catch (InvalidJSONException) { continue; }
                     catch (FragmentedJsonStringException)
                     {
                         this.JsonToAppend = s;
@@ -1300,7 +1378,7 @@ namespace EliteMonitor.Journal
             FileInfo last = null;
             try
             {
-                last = di.GetFiles().OrderBy(f => f.CreationTime).ToArray().Last();
+                last = di.GetFiles("Journal*").OrderBy(f => f.CreationTime).ToArray().Last();
                 this.currentTailFile = last.FullName;
                 tailFile(this.currentTailFile);
             }
@@ -1324,7 +1402,6 @@ namespace EliteMonitor.Journal
             this.tailerRunning = true;
 
             FileInfo last = new FileInfo(filePath);
-
             this.logger.Log("Tailer running on {0}...", last.Name);
             mainForm.InvokeIfRequired(() => mainForm.appStatus.Text = $"Tailing '{last.Name}'...");
 

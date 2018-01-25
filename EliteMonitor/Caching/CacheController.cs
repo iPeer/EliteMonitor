@@ -103,7 +103,7 @@ namespace EliteMonitor.Caching
                 string journalPath = EliteUtils.JOURNAL_PATH;
                 journalPath = Environment.ExpandEnvironmentVariables(journalPath);
                 DirectoryInfo di = new DirectoryInfo(journalPath);
-                FileInfo[] fileInfo = di.GetFiles().OrderBy(f => f.CreationTime).ToArray();
+                FileInfo[] fileInfo = di.GetFiles("Journal*").OrderBy(f => f.CreationTime).ToArray(); // Elite 3.0: Don't check Shipyard.json, ModuleInfo.json, Outfitting.json, Market.json or Status.json
                 int failed = 0;
                 List<FileInfo> failedFiles = new List<FileInfo>();
                 foreach (FileInfo fi in fileInfo)
@@ -271,7 +271,7 @@ namespace EliteMonitor.Caching
                 foreach (DirectoryInfo d in di.GetDirectories())
                 {
                     string currentDirectory = d.Name;
-                    m.InvokeIfRequired(() => m.appStatus.Text = "Loading commander data for CMDR "+currentDirectory);
+                    m.InvokeIfRequired(() => m.appStatus.Text = "Loading commander data for CMDR " + currentDirectory);
                     Commander c = JsonConvert.DeserializeObject<Commander>(Utils.loadGZip(Path.Combine(d.FullName, "journal.emj")));
                     c.OnLoad();
                     m.journalParser.commanders.Add(c.Name, c);
@@ -284,15 +284,19 @@ namespace EliteMonitor.Caching
                         try
                         {
                             Commander __ = c;
-                            JournalEntry je = m.journalParser.parseEvent(j.Json, out __, true, bypassRegisterCheck: true);
-                            if (je.isKnown)
+                            try
                             {
-                                updated++;
-                                j.isKnown = true;
-                                j.Data = je.Data;
-                                if (j.Notes != null && (j.Notes.Equals("UNKNOWN EVENT") || j.Notes.Equals("KNOWN-ISH EVENT")))
-                                    j.Notes = null;
+                                JournalEntry je = m.journalParser.parseEvent(j.Json, out __, true, bypassRegisterCheck: true);
+                                if (je.isKnown)
+                                {
+                                    updated++;
+                                    j.isKnown = true;
+                                    j.Data = je.Data;
+                                    if (j.Notes != null && (j.Notes.Equals("UNKNOWN EVENT") || j.Notes.Equals("KNOWN-ISH EVENT")))
+                                        j.Notes = null;
+                                }
                             }
+                            catch (InvalidJSONException) { continue; }
                         }
                         catch (NoRegisteredCommanderException) { }
                     }
@@ -368,23 +372,27 @@ namespace EliteMonitor.Caching
                     foreach (JournalEntry je in needsUpdating)
                     {
                         Commander __ = c;
-                        JournalEntry nje = mainForm.journalParser.parseEvent(je.Json, out __, true, bypassRegisterCheck: true);
-                        if (nje.isKnown)
+                        try
                         {
-                            updated++;
-                            if (je.Notes.Equals("UNKNOWN EVENT"))
-                                je.Notes = null;
-                            je.Data = nje.Data;
-                            je.isKnown = true;
-                            /*List<JournalEntry> tmp = c.JournalEntries;
-                            tmp.Reverse();
-                            int listIndex = tmp.IndexOf(je);
-                            mainForm.eventList.InvokeIfRequired(() =>
+                            JournalEntry nje = mainForm.journalParser.parseEvent(je.Json, out __, true, bypassRegisterCheck: true);
+                            if (nje.isKnown)
                             {
-                                ListViewItem lvi = mainForm.eventList.Items[listIndex];
-                                lvi.SubItems[2].Text = je.Data;
-                            });*/
+                                updated++;
+                                if (je.Notes.Equals("UNKNOWN EVENT"))
+                                    je.Notes = null;
+                                je.Data = nje.Data;
+                                je.isKnown = true;
+                                /*List<JournalEntry> tmp = c.JournalEntries;
+                                tmp.Reverse();
+                                int listIndex = tmp.IndexOf(je);
+                                mainForm.eventList.InvokeIfRequired(() =>
+                                {
+                                    ListViewItem lvi = mainForm.eventList.Items[listIndex];
+                                    lvi.SubItems[2].Text = je.Data;
+                                });*/
+                            }
                         }
+                        catch (InvalidJSONException) { continue; }
                     }
                     this.logger.Log("{0}/{1} entries have been updated.", updated, needsUpdating.Count);
                     this.logger.Log("{0}: {1}", LogLevel.DEBUG, c.Name, c.isViewed);

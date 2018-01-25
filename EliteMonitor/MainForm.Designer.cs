@@ -33,6 +33,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.appStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.volatilesLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTailingFailed = new System.Windows.Forms.ToolStripStatusLabel();
             this.eliteRunningStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.appVersionStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -72,6 +73,9 @@
             this.displayTestNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testEXERenamingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testUpdateDownloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.forceVolatilesRedownloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.forceReloadOfVolatilesNODownloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.forceVolatilesUpdateCheckToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.enableSoundsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hideMusicEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -126,6 +130,7 @@
             this.buttonTop = new System.Windows.Forms.Button();
             this.buttonSearch = new System.Windows.Forms.Button();
             this.buttonMaterials = new System.Windows.Forms.Button();
+            this.materialCountNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
@@ -143,6 +148,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.appStatus,
+            this.volatilesLabel,
             this.toolStripTailingFailed,
             this.eliteRunningStatus,
             this.appVersionStatusLabel});
@@ -160,6 +166,11 @@
             this.appStatus.Spring = true;
             this.appStatus.Text = "Starting up...";
             this.appStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // volatilesLabel
+            // 
+            this.volatilesLabel.Name = "volatilesLabel";
+            this.volatilesLabel.Size = new System.Drawing.Size(0, 17);
             // 
             // toolStripTailingFailed
             // 
@@ -325,7 +336,10 @@
             this.displayActiveScreenResolutionToolStripMenuItem,
             this.displayTestNotificationsToolStripMenuItem,
             this.testEXERenamingToolStripMenuItem,
-            this.testUpdateDownloadToolStripMenuItem});
+            this.testUpdateDownloadToolStripMenuItem,
+            this.forceVolatilesRedownloadToolStripMenuItem,
+            this.forceReloadOfVolatilesNODownloadToolStripMenuItem,
+            this.forceVolatilesUpdateCheckToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -333,35 +347,35 @@
             // testBodiesDatabaseReadToolStripMenuItem
             // 
             this.testBodiesDatabaseReadToolStripMenuItem.Name = "testBodiesDatabaseReadToolStripMenuItem";
-            this.testBodiesDatabaseReadToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.testBodiesDatabaseReadToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.testBodiesDatabaseReadToolStripMenuItem.Text = "Test Bodies Database Read";
             this.testBodiesDatabaseReadToolStripMenuItem.Click += new System.EventHandler(this.testBodiesDatabaseReadToolStripMenuItem_Click);
             // 
             // showDistanceFromSolToNetoToolStripMenuItem
             // 
             this.showDistanceFromSolToNetoToolStripMenuItem.Name = "showDistanceFromSolToNetoToolStripMenuItem";
-            this.showDistanceFromSolToNetoToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.showDistanceFromSolToNetoToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.showDistanceFromSolToNetoToolStripMenuItem.Text = "Show distance from Sol to Neto";
             this.showDistanceFromSolToNetoToolStripMenuItem.Click += new System.EventHandler(this.showDistanceFromSolToNetoToolStripMenuItem_Click);
             // 
             // displayCommanderCountDataToolStripMenuItem
             // 
             this.displayCommanderCountDataToolStripMenuItem.Name = "displayCommanderCountDataToolStripMenuItem";
-            this.displayCommanderCountDataToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.displayCommanderCountDataToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.displayCommanderCountDataToolStripMenuItem.Text = "Display commander count data";
             this.displayCommanderCountDataToolStripMenuItem.Click += new System.EventHandler(this.displayCommanderCountDataToolStripMenuItem_Click);
             // 
             // listViewedCommanderFirstDiscoveriesToolStripMenuItem
             // 
             this.listViewedCommanderFirstDiscoveriesToolStripMenuItem.Name = "listViewedCommanderFirstDiscoveriesToolStripMenuItem";
-            this.listViewedCommanderFirstDiscoveriesToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.listViewedCommanderFirstDiscoveriesToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.listViewedCommanderFirstDiscoveriesToolStripMenuItem.Text = "List viewed commander first discoveries";
             this.listViewedCommanderFirstDiscoveriesToolStripMenuItem.Click += new System.EventHandler(this.listViewedCommanderFirstDiscoveriesToolStripMenuItem_Click);
             // 
             // addTestRowsToDataViewToolStripMenuItem
             // 
             this.addTestRowsToDataViewToolStripMenuItem.Name = "addTestRowsToDataViewToolStripMenuItem";
-            this.addTestRowsToDataViewToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.addTestRowsToDataViewToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.addTestRowsToDataViewToolStripMenuItem.Text = "Add test rows to data view";
             this.addTestRowsToDataViewToolStripMenuItem.Click += new System.EventHandler(this.addTestRowsToDataViewToolStripMenuItem_Click);
             // 
@@ -375,7 +389,7 @@
             this.hMCToolStripMenuItem,
             this.tHMCToolStripMenuItem});
             this.sOUNDSToolStripMenuItem.Name = "sOUNDSToolStripMenuItem";
-            this.sOUNDSToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.sOUNDSToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.sOUNDSToolStripMenuItem.Text = "SOUNDS";
             // 
             // waterWorldToolStripMenuItem
@@ -423,58 +437,79 @@
             // systemSearchTestToolStripMenuItem
             // 
             this.systemSearchTestToolStripMenuItem.Name = "systemSearchTestToolStripMenuItem";
-            this.systemSearchTestToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.systemSearchTestToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.systemSearchTestToolStripMenuItem.Text = "System Search Test";
             this.systemSearchTestToolStripMenuItem.Click += new System.EventHandler(this.systemSearchTestToolStripMenuItem_Click);
             // 
             // addTimestampWidthTestRowToolStripMenuItem
             // 
             this.addTimestampWidthTestRowToolStripMenuItem.Name = "addTimestampWidthTestRowToolStripMenuItem";
-            this.addTimestampWidthTestRowToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.addTimestampWidthTestRowToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.addTimestampWidthTestRowToolStripMenuItem.Text = "Add timestamp width test row";
             this.addTimestampWidthTestRowToolStripMenuItem.Click += new System.EventHandler(this.addTimestampWidthTestRowToolStripMenuItem_Click);
             // 
             // displayDataGridViewColumnWidthsToolStripMenuItem
             // 
             this.displayDataGridViewColumnWidthsToolStripMenuItem.Name = "displayDataGridViewColumnWidthsToolStripMenuItem";
-            this.displayDataGridViewColumnWidthsToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.displayDataGridViewColumnWidthsToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.displayDataGridViewColumnWidthsToolStripMenuItem.Text = "Display DataGridView column widths";
             this.displayDataGridViewColumnWidthsToolStripMenuItem.Click += new System.EventHandler(this.displayDataGridViewColumnWidthsToolStripMenuItem_Click);
             // 
             // forceOpenUpdateDialogToolStripMenuItem
             // 
             this.forceOpenUpdateDialogToolStripMenuItem.Name = "forceOpenUpdateDialogToolStripMenuItem";
-            this.forceOpenUpdateDialogToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.forceOpenUpdateDialogToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.forceOpenUpdateDialogToolStripMenuItem.Text = "Force open update dialog";
             this.forceOpenUpdateDialogToolStripMenuItem.Click += new System.EventHandler(this.forceOpenUpdateDialogToolStripMenuItem_Click);
             // 
             // displayActiveScreenResolutionToolStripMenuItem
             // 
             this.displayActiveScreenResolutionToolStripMenuItem.Name = "displayActiveScreenResolutionToolStripMenuItem";
-            this.displayActiveScreenResolutionToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.displayActiveScreenResolutionToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.displayActiveScreenResolutionToolStripMenuItem.Text = "Display active screen resolution";
             this.displayActiveScreenResolutionToolStripMenuItem.Click += new System.EventHandler(this.displayActiveScreenResolutionToolStripMenuItem_Click);
             // 
             // displayTestNotificationsToolStripMenuItem
             // 
             this.displayTestNotificationsToolStripMenuItem.Name = "displayTestNotificationsToolStripMenuItem";
-            this.displayTestNotificationsToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.displayTestNotificationsToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.displayTestNotificationsToolStripMenuItem.Text = "Display test notifications";
             this.displayTestNotificationsToolStripMenuItem.Click += new System.EventHandler(this.displayTestNotificationsToolStripMenuItem_Click);
             // 
             // testEXERenamingToolStripMenuItem
             // 
             this.testEXERenamingToolStripMenuItem.Name = "testEXERenamingToolStripMenuItem";
-            this.testEXERenamingToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.testEXERenamingToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.testEXERenamingToolStripMenuItem.Text = "Test EXE renaming";
             this.testEXERenamingToolStripMenuItem.Click += new System.EventHandler(this.testEXERenamingToolStripMenuItem_Click);
             // 
             // testUpdateDownloadToolStripMenuItem
             // 
             this.testUpdateDownloadToolStripMenuItem.Name = "testUpdateDownloadToolStripMenuItem";
-            this.testUpdateDownloadToolStripMenuItem.Size = new System.Drawing.Size(284, 22);
+            this.testUpdateDownloadToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.testUpdateDownloadToolStripMenuItem.Text = "Test Update Download";
             this.testUpdateDownloadToolStripMenuItem.Click += new System.EventHandler(this.testUpdateDownloadToolStripMenuItem_Click);
+            // 
+            // forceVolatilesRedownloadToolStripMenuItem
+            // 
+            this.forceVolatilesRedownloadToolStripMenuItem.Name = "forceVolatilesRedownloadToolStripMenuItem";
+            this.forceVolatilesRedownloadToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
+            this.forceVolatilesRedownloadToolStripMenuItem.Text = "Force reload of volatiles (REDOWNLOAD)";
+            this.forceVolatilesRedownloadToolStripMenuItem.Click += new System.EventHandler(this.forceVolatilesRedownloadToolStripMenuItem_Click);
+            // 
+            // forceReloadOfVolatilesNODownloadToolStripMenuItem
+            // 
+            this.forceReloadOfVolatilesNODownloadToolStripMenuItem.Name = "forceReloadOfVolatilesNODownloadToolStripMenuItem";
+            this.forceReloadOfVolatilesNODownloadToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
+            this.forceReloadOfVolatilesNODownloadToolStripMenuItem.Text = "Force reload of volatiles (NO download)";
+            this.forceReloadOfVolatilesNODownloadToolStripMenuItem.Click += new System.EventHandler(this.forceReloadOfVolatilesNODownloadToolStripMenuItem_Click);
+            // 
+            // forceVolatilesUpdateCheckToolStripMenuItem
+            // 
+            this.forceVolatilesUpdateCheckToolStripMenuItem.Name = "forceVolatilesUpdateCheckToolStripMenuItem";
+            this.forceVolatilesUpdateCheckToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
+            this.forceVolatilesUpdateCheckToolStripMenuItem.Text = "Force full-procedure volatiles update check";
+            this.forceVolatilesUpdateCheckToolStripMenuItem.Click += new System.EventHandler(this.forceVolatilesUpdateCheckToolStripMenuItem_Click);
             // 
             // optionsToolStripMenuItem
             // 
@@ -511,7 +546,8 @@
             this.notificationsEnabledToolStripMenuItem,
             this.friendsNotificationsToolStripMenuItem,
             this.scanNotificationsToolStripMenuItem,
-            this.dockingLocationNotificationsToolStripMenuItem});
+            this.dockingLocationNotificationsToolStripMenuItem,
+            this.materialCountNotificationsToolStripMenuItem});
             this.notificationsToolStripMenuItem.Name = "notificationsToolStripMenuItem";
             this.notificationsToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.notificationsToolStripMenuItem.Text = "Notifications";
@@ -1066,6 +1102,13 @@
             this.buttonMaterials.UseVisualStyleBackColor = true;
             this.buttonMaterials.Click += new System.EventHandler(this.buttonMaterials_Click);
             // 
+            // materialCountNotificationsToolStripMenuItem
+            // 
+            this.materialCountNotificationsToolStripMenuItem.Name = "materialCountNotificationsToolStripMenuItem";
+            this.materialCountNotificationsToolStripMenuItem.Size = new System.Drawing.Size(238, 22);
+            this.materialCountNotificationsToolStripMenuItem.Text = "Material Count Notifications";
+            this.materialCountNotificationsToolStripMenuItem.Click += new System.EventHandler(this.materialCountNotificationsToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -1209,6 +1252,11 @@
         public System.Windows.Forms.Button buttonMaterials;
         private System.Windows.Forms.ToolStripMenuItem testEXERenamingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem testUpdateDownloadToolStripMenuItem;
+        public System.Windows.Forms.ToolStripStatusLabel volatilesLabel;
+        private System.Windows.Forms.ToolStripMenuItem forceVolatilesRedownloadToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem forceReloadOfVolatilesNODownloadToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem forceVolatilesUpdateCheckToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem materialCountNotificationsToolStripMenuItem;
     }
 }
 
