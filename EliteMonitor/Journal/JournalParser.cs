@@ -865,7 +865,12 @@ namespace EliteMonitor.Journal
 */
                 case "EngineerCraft":
                     string engineer = j.GetValue("Engineer").ToString();
-                    string blueprint = j.GetValue("Blueprint").ToString();
+                    string blueprint = string.Empty;
+                    JToken @out;
+                    if (j.TryGetValue("Blueprint", out @out))
+                        blueprint = @out.ToString();
+                    else
+                        blueprint = j.GetValue("BlueprintName").ToString();
                     int level = j.GetValue("Level").ToObject<int>();
                     if (!isReparse && commander != null)
                     {
@@ -974,30 +979,40 @@ namespace EliteMonitor.Journal
                     int scanStage = j.GetValue("ScanStage").ToObject<int>();
                     shipName = mainForm.Database.getShipNameFromInternalName(j.GetValue("Ship").ToString());
                     StringBuilder td = new StringBuilder();
-                    td.AppendLineFormatted("Target: {0}", shipName);
+                    td.AppendFormat("{0}", shipName);
                     if (scanStage >= 1)
                     {
-                        string pilotName = j.GetValue("PilotName").ToString();
-                        string pilotRank = j.GetValue("PilotRank").ToString();
-                        td.AppendLineFormatted("Pilot: {0} ({1})", pilotName, pilotRank);
+                        string pilotName = string.Empty;
+                        if (j.TryGetValue("PilotName_Localised", out @out))
+                            pilotName = @out.ToString();
+                        else
+                            pilotName = j.GetValue("PilotName").ToString();
+                        string pilotRank = string.Empty; // Dear Frontier, if you're going to put something in your API documentation, AT LEAST MAKE SURE IT ACTUALLY SHOWS UP ALL THE DAMN TIME.
+                        if (j.TryGetValue("PilotRank", out @out))
+                            pilotRank = @out.ToString();
+                        if (string.IsNullOrWhiteSpace(pilotRank))
+                            td.AppendFormat("\n{0}", pilotName);
+                        else
+                            td.AppendFormat("\n{0}\n{1}", pilotName, pilotRank);
                     }
                     if (scanStage >= 2)
                     {
                         int shieldHealth = j.GetValue("ShieldHealth").ToObject<int>();
                         int hullHealth = j.GetValue("HullHealth").ToObject<int>();
-                        td.AppendLineFormatted("Shields: {0}%", shieldHealth);
-                        td.AppendLineFormatted("Hull: {0}%", hullHealth);
+                        td.AppendFormat("\nShields: {0}%\nHull: {1}%", shieldHealth, hullHealth);
                     }
                     if (scanStage >= 3)
                     {
-                        string wantedStatus = j.GetValue("LegalStatus").ToString().ToUpper();
-                        Int64 bounty = j.GetValue("Bounty").ToObject<Int64>();
-                        string owningFaction = j.GetValue("Faction").ToString();
-                        td.AppendLine(owningFaction);
-                        if (wantedStatus.Equals("WANTED"))
-                            td.AppendLineFormatted("{0} ({1:n0})", wantedStatus, bounty);
+                        bool wanted = j.GetValue("LegalStatus").ToString().EqualsIgnoreCase("wanted");
+                        Int64 bounty = 0;
+                        if (wanted)
+                            bounty = j.GetValue("Bounty").ToObject<Int64>();
+                        if (wanted)
+                            td.AppendFormat("\n{0} ({1:n0})", wanted ? "WANTED" : "CLEAN", bounty);
                         else
-                            td.AppendLine(wantedStatus);
+                            td.AppendFormat("\n{0}", wanted ? "WANTED" : "CLEAN");
+                        string owningFaction = j.GetValue("Faction").ToString();
+                        td.AppendFormat("\n{0}", owningFaction);
                     }
                     return new JournalEntry(timestamp, @event, td.ToString(), j);
                 case "EngineerLegacyConvert":
@@ -1010,11 +1025,21 @@ namespace EliteMonitor.Journal
                     string traderType = j.GetValue("TraderType").ToString();
                     MaterialTradeData paid = j.GetValue("Paid").ToObject<MaterialTradeData>();
                     MaterialTradeData received = j.GetValue("Received").ToObject<MaterialTradeData>();
+                    if (!isReparse && commander != null)
+                    {
+                        commander.addMaterial(received.Material, received.Quantity);
+                        commander.removeMaterial(paid.Material, paid.Quantity);
+                    }
                     string tradeString = string.Format("Traded in {0:n0} {1} for {2:n0} {3}", paid.Quantity, paid.Material_Localised, received.Quantity, received.Material_Localised);
                     return new JournalEntry(timestamp, @event, tradeString, j);
                 case "NpcCrewPaidWage":
                     credits = j.GetValue("Amount").ToObject<Int64>();
-                    return new JournalEntry(timestamp, @event, string.Format("Paid crew wages of {0:n0}", credits), j);
+                    return new JournalEntry(timestamp, @event, string.Format("Paid crew wages of {0:n0} credits", credits), j);
+                case "Shutdown":
+                    if (commander == null)
+                        return new JournalEntry(timestamp, @event, "Game closed.", j);
+                    else
+                        return new JournalEntry(timestamp, @event, string.Format("Farewell, Commander {0}", commander.Name), j);
                 default:
                     return new JournalEntry(timestamp, @event, string.Empty, j, false);
             }

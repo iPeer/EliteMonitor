@@ -817,6 +817,12 @@ namespace EliteMonitor.Elite
                 if (this.ShipData.ShipName.Equals(this.ShipData.ShipNonVanityName)) this.ShipData.ShipName = fixed_shipname;
                 this.ShipData.ShipNonVanityName = fixed_shipname;
             }
+
+            if (this.cacheVersion < (patchVer = 1916))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("ShipTargeted"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
         }
 
         private void updateJournalEntries(List<JournalEntry> toUpdate, MainForm m, int patchVer, Commander c)
