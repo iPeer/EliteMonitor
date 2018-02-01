@@ -108,7 +108,7 @@ namespace EliteMonitor.Journal
             }
             catch (JsonReaderException _e)
             {
-                this.logger.Log("Supplied JSON is not valid JSON!", LogLevel.WARNING);
+                this.logger.Log("Supplied JSON is not valid JSON!", LogLevel.ERROR);
                 this.logger.Log("Supplied JSON: '{0}'", LogLevel.ERROR, json);
                 this.logger.Log("{0}", LogLevel.ERROR, _e.ToString());
                 throw new InvalidJSONException();
@@ -1040,6 +1040,38 @@ namespace EliteMonitor.Journal
                         return new JournalEntry(timestamp, @event, "Game closed.", j);
                     else
                         return new JournalEntry(timestamp, @event, string.Format("Farewell, Commander {0}", commander.Name), j);
+                case "Powerplay":
+                    /*
+                      "timestamp": "2018-01-30T17:32:26Z",
+                      "event": "Powerplay",
+                      "Power": "Aisling Duval",
+                      "Rank": 0,
+                      "Merits": 0,
+                      "Votes": 0,
+                      "TimePledged": 1517333472
+                    */
+                    string power = j.GetValue("Power").ToString();
+                    rank = j.GetValue("Rank").ToObject<int>();
+                    long merits = j.GetValue("Merits").ToObject<long>();
+                    if (commander != null)
+                        commander.SetPowerPlayData(true, power, rank, merits);
+                    return new JournalEntry(timestamp, @event, string.Format("Pledged to {0} | Rank {1} ({2:n0} merits)", power, rank, merits), j);
+                case "PowerplayJoin":
+                    power = j.GetValue("Power").ToString();
+                    if (commander != null)
+                        commander.SetBasicPowerPlayData(true, power);
+                    return new JournalEntry(timestamp, @event, string.Format("Pledged allegiance to {0}", power), j);
+                case "PowerplayLeave":
+                    power = j.GetValue("Power").ToString();
+                    if (commander != null)
+                        commander.SetNotPledgedInPowerPlay();
+                    return new JournalEntry(timestamp, @event, string.Format("No longer pledged to {0}", power), j);
+                case "PowerplayDefect":
+                    power = j.GetValue("FromPower").ToString();
+                    string power2 = j.GetValue("ToPower").ToString();
+                    if (commander != null)
+                        commander.SetNotPledgedInPowerPlay();
+                    return new JournalEntry(timestamp, @event, string.Format("Defected from {0} to {1}", power, power2), j);
                 default:
                     return new JournalEntry(timestamp, @event, string.Empty, j, false);
             }

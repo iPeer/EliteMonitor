@@ -60,7 +60,7 @@ namespace EliteMonitor.Logging
             if (!File.Exists(this.LogPath))
                 return;
 
-            List<string> numberedFiles = Directory.GetFiles(Path.GetDirectoryName(this.LogPath)).Where(a => Regex.IsMatch(a, @"log\.[0-9]+")).ToList();
+            /*List<string> numberedFiles = Directory.GetFiles(Path.GetDirectoryName(this.LogPath)).Where(a => Regex.IsMatch(a, @"log\.[0-9]+")).ToList();
             if (numberedFiles.Count > 0)
                 foreach (string s in numberedFiles)
                     File.Delete(s);
@@ -70,7 +70,18 @@ namespace EliteMonitor.Logging
             }
 
             File.Copy(this.LogPath, String.Format("{0}.last", this.LogPath));
-            File.WriteAllText(this.LogPath, string.Empty);
+            File.WriteAllText(this.LogPath, string.Empty);*/
+            if (File.Exists(String.Format("{0}.last", this.LogPath)))
+                File.Move(String.Format("{0}.last", this.LogPath), String.Format("{0}.1", this.LogPath));
+            if (File.Exists(String.Format("{0}.5", this.LogPath)))
+                File.Delete(String.Format("{0}.5", this.LogPath));
+            for (int x = 4; x > 0; x--)
+            {
+                if (File.Exists(String.Format("{0}.{1}", this.LogPath, x)))
+                    File.Move(String.Format("{0}.{1}", this.LogPath, x), String.Format("{0}.{1}", this.LogPath, x + 1));
+            }
+            File.Copy(this.LogPath, String.Format("{0}.1", this.LogPath));
+            File.WriteAllText(this.LogPath, String.Empty);
 
         }
 

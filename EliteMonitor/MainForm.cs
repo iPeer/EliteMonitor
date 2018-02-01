@@ -152,7 +152,7 @@ namespace EliteMonitor
                 catch (Exception e)
                 {
                     journalParser.stopTailing();
-                    MessageBox.Show("Unfortunately, an error occurred while attempting to load data from the journal files. Please try loading it again by restarting EliteMonitor.\nIf this issue persists, please report it as a bug so it can be fixed!", "Journal parsing error", MessageBoxButtons.OK);
+                    MessageBox.Show(string.Format("Unfortunately, an error occurred while attempting to load data from the journal files. Please try loading it again by restarting EliteMonitor.\nIf this issue persists, please report it as a bug so it can be fixed!\n\nHere is some information you can quickly relay to try and get some help:\n{0}\n{1}", e.Message, e.StackTrace.Split('\n').First()), "Journal parsing error", MessageBoxButtons.OK);
                     this.InvokeIfRequired(() => this.eventList.EndUpdate()); // Force end update otherwise the list becomes blank after load failure of new data
                     this.logger.Log("{0}", e.ToString(), LogLevel.ERROR);
                     this.logger.Log("JSON causing the error: {0}", journalParser.LastParsedJson, LogLevel.ERROR);
@@ -181,7 +181,7 @@ namespace EliteMonitor
                     catch (Exception e)
                     {
                         journalParser.stopTailing();
-                        MessageBox.Show("Unfortunately, an error occurred while attempting to load new data from the journal files. Old, existing data will still be available to view, but new data will not be added until the issue is resolved.\nIf this issue persists, please report it as a bug so it can be fixed!", "Journal parsing error", MessageBoxButtons.OK);
+                        MessageBox.Show(string.Format("Unfortunately, an error occurred while attempting to load new data from the journal files. Old, existing data will still be available to view, but new data will not be added until the issue is resolved.\nIf this issue persists, please report it as a bug so it can be fixed!\n\nHere is some information you can quickly relay to try and get some help:\n{0}\n{1}", e.Message, e.StackTrace.Split('\n').First()), "Journal parsing error", MessageBoxButtons.OK);
                         this.InvokeIfRequired(() => this.eventList.EndUpdate()); // Force end update otherwise the list becomes blank after load failure of new data
                         this.logger.Log("{0}", e.ToString(), LogLevel.ERROR);
                         this.logger.Log("JSON causing the error: {0}", journalParser.LastParsedJson, LogLevel.ERROR);

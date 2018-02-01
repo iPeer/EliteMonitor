@@ -8,7 +8,18 @@
 			* ShipTargeted
 			* EngineerLegacyConvert
 			* MaterialTrade
-	* Added support for the NpcCrewPaidWage event.
+			* Shutdown
+			* Powerplay
+		* Updated the following events to be compatible with Elite 3.0:
+			* EngineerCraft
+	* Added support for the following events:
+		* NpcCrewPaidWage
+		* PowerplayJoin
+		* PowerplayLeave
+		* PowerplayDefect
+	* (Under the hood) All log lines relating to invalid JSON are now consistent in their log level (all are now classed as an error instead of a mix between warning and error)
+	* Fatal error messages now display a snippet of the stack trace fro mthe error that caused them so they can be potentially diagnosed from screenshots instead of requiring entire log directories (though you should still be ready to supply these if the picture isn't enough!).
+	* Elite Monitor now hangs on the the last 5 most recent log files to help with bug reports.
 
 1.0.0.1855
 	* Added yet more error handling to stop EM crashing if it comes across malformed/ivalid JSON in the journal file.

@@ -138,6 +138,10 @@ namespace EliteMonitor.Elite
         public bool isInMulticrew { get; set; } = false;
         [JsonIgnore]
         public string MultiCrewCommanderName { get; set; } = string.Empty;
+        public int PowerPlayRank { get; set; } = 0;
+        public long PowerPlayMerits { get; set; } = 0L;
+        public string PowerPlayPower { get; set; } = string.Empty;
+        public bool IsPledgedInPowerPlay { get; set; } = false;
         public long RescuedThargoidRefugees { get; set; } = 0L;
 
         [JsonIgnore]
@@ -212,6 +216,31 @@ namespace EliteMonitor.Elite
 
             this.saveDirectory = Path.Combine(MainForm.Instance.cacheController.commanderDataPath, this.Name);
             //this.MarkDirty();
+            return this;
+        }
+
+        public Commander SetNotPledgedInPowerPlay()
+        {
+            this.IsPledgedInPowerPlay = false;
+            this.MarkDirty();
+            return this;
+        }
+
+        public Commander SetPowerPlayData(bool pledged, string power, int rank, long merits)
+        {
+            this.IsPledgedInPowerPlay = pledged;
+            this.PowerPlayPower = power;
+            this.PowerPlayMerits = merits;
+            this.PowerPlayRank = rank;
+            this.MarkDirty();
+            return this;
+        }
+
+        public Commander SetBasicPowerPlayData(bool pledged, string power)
+        {
+            this.IsPledgedInPowerPlay = pledged;
+            this.PowerPlayPower = power;
+            this.MarkDirty();
             return this;
         }
 
@@ -459,6 +488,8 @@ namespace EliteMonitor.Elite
                     format = "{0} {1} | {2}";*/
 
                 m.commanderLabel.Text = string.Format("{0}{1} | {2}", this.Name, (this.isInMulticrew ? string.Format(" ({0})", this.MultiCrewCommanderName) : (string.IsNullOrEmpty(this.PrivateGroup) ? "" : string.Format(" ({0})", this.PrivateGroup))), (this.ShipData != null ? this.ShipData.getFormattedShipString() : m.Database.getShipNameFromInternalName(this.Ship)));
+                if (this.IsPledgedInPowerPlay)
+                    m.commanderLabel.Text += string.Format(" | {0} (Rank {1}, {2:n0} merits)", this.PowerPlayPower, this.PowerPlayRank, this.PowerPlayMerits);
                 if (!(string.IsNullOrEmpty(this.CurrentLocation) && string.IsNullOrEmpty(this.CurrentSystem)))
                 {
                     //m.commanderLocationLabel.Text = string.Format("{0}{1}{2}", this.isDocked || this.isLanded ? this.isDocked ? "Docked at " : "Landed on " : "", String.Format("{0} | ", this.CurrentLocation), this.CurrentSystem);
@@ -821,6 +852,12 @@ namespace EliteMonitor.Elite
             if (this.cacheVersion < (patchVer = 1916))
             {
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("ShipTargeted"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
+
+            if (this.cacheVersion < (patchVer = 1924))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("Powerplay") || a.Event.Equals("PowerplayJoin") || a.Event.Equals("PowerplayLeave") || a.Event.Equals("PowerplayDefect"));
                 updateJournalEntries(toUpdate, m, patchVer, this);
             }
         }
