@@ -1,4 +1,5 @@
 ﻿using EliteMonitor.Elite;
+using EliteMonitor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,6 +17,8 @@ namespace EliteMonitor
         public RankEditor()
         {
             InitializeComponent();
+            if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);
         }
 
         private void RankEditor_Load(object sender, EventArgs e)

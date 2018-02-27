@@ -76,6 +76,7 @@
             this.forceVolatilesRedownloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.forceReloadOfVolatilesNODownloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.forceVolatilesUpdateCheckToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.testColourInversionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.enableSoundsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hideMusicEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -84,8 +85,10 @@
             this.friendsNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scanNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dockingLocationNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.materialCountNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.searchJournalJSONAsWellAsDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.nightModeEXPERIMENTALToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.commanderBox = new System.Windows.Forms.GroupBox();
             this.commanderLocationLabel = new System.Windows.Forms.Label();
             this.labelCreditsChange = new System.Windows.Forms.Label();
@@ -130,7 +133,7 @@
             this.buttonTop = new System.Windows.Forms.Button();
             this.buttonSearch = new System.Windows.Forms.Button();
             this.buttonMaterials = new System.Windows.Forms.Button();
-            this.materialCountNotificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.nIGHTMODEToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
@@ -204,7 +207,8 @@
             this.eliteToolStripMenuItem,
             this.eDMCToolStripMenuItem,
             this.dEBUGToolStripMenuItem,
-            this.optionsToolStripMenuItem});
+            this.optionsToolStripMenuItem,
+            this.nIGHTMODEToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(966, 24);
@@ -339,7 +343,8 @@
             this.testUpdateDownloadToolStripMenuItem,
             this.forceVolatilesRedownloadToolStripMenuItem,
             this.forceReloadOfVolatilesNODownloadToolStripMenuItem,
-            this.forceVolatilesUpdateCheckToolStripMenuItem});
+            this.forceVolatilesUpdateCheckToolStripMenuItem,
+            this.testColourInversionToolStripMenuItem});
             this.dEBUGToolStripMenuItem.Name = "dEBUGToolStripMenuItem";
             this.dEBUGToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.dEBUGToolStripMenuItem.Text = "DEBUG";
@@ -511,13 +516,21 @@
             this.forceVolatilesUpdateCheckToolStripMenuItem.Text = "Force full-procedure volatiles update check";
             this.forceVolatilesUpdateCheckToolStripMenuItem.Click += new System.EventHandler(this.forceVolatilesUpdateCheckToolStripMenuItem_Click);
             // 
+            // testColourInversionToolStripMenuItem
+            // 
+            this.testColourInversionToolStripMenuItem.Name = "testColourInversionToolStripMenuItem";
+            this.testColourInversionToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
+            this.testColourInversionToolStripMenuItem.Text = "Test dark mode switch";
+            this.testColourInversionToolStripMenuItem.Click += new System.EventHandler(this.testColourInversionToolStripMenuItem_Click);
+            // 
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.enableSoundsToolStripMenuItem,
             this.hideMusicEventsToolStripMenuItem,
             this.notificationsToolStripMenuItem,
-            this.searchToolStripMenuItem});
+            this.searchToolStripMenuItem,
+            this.nightModeEXPERIMENTALToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsToolStripMenuItem.Text = "Options";
@@ -527,7 +540,7 @@
             this.enableSoundsToolStripMenuItem.Checked = true;
             this.enableSoundsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.enableSoundsToolStripMenuItem.Name = "enableSoundsToolStripMenuItem";
-            this.enableSoundsToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.enableSoundsToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
             this.enableSoundsToolStripMenuItem.Text = "Enable planetary scan sounds";
             this.enableSoundsToolStripMenuItem.Click += new System.EventHandler(this.enableSoundsToolStripMenuItem_Click);
             // 
@@ -536,7 +549,7 @@
             this.hideMusicEventsToolStripMenuItem.Checked = true;
             this.hideMusicEventsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.hideMusicEventsToolStripMenuItem.Name = "hideMusicEventsToolStripMenuItem";
-            this.hideMusicEventsToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.hideMusicEventsToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
             this.hideMusicEventsToolStripMenuItem.Text = "Hide \"Music\" events";
             this.hideMusicEventsToolStripMenuItem.Click += new System.EventHandler(this.hideMusicEventsToolStripMenuItem_Click);
             // 
@@ -549,7 +562,7 @@
             this.dockingLocationNotificationsToolStripMenuItem,
             this.materialCountNotificationsToolStripMenuItem});
             this.notificationsToolStripMenuItem.Name = "notificationsToolStripMenuItem";
-            this.notificationsToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.notificationsToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
             this.notificationsToolStripMenuItem.Text = "Notifications";
             // 
             // notificationsEnabledToolStripMenuItem
@@ -580,12 +593,19 @@
             this.dockingLocationNotificationsToolStripMenuItem.Text = "Docking Location Notifications";
             this.dockingLocationNotificationsToolStripMenuItem.Click += new System.EventHandler(this.dockingLocationNotificationsToolStripMenuItem_Click);
             // 
+            // materialCountNotificationsToolStripMenuItem
+            // 
+            this.materialCountNotificationsToolStripMenuItem.Name = "materialCountNotificationsToolStripMenuItem";
+            this.materialCountNotificationsToolStripMenuItem.Size = new System.Drawing.Size(238, 22);
+            this.materialCountNotificationsToolStripMenuItem.Text = "Material Count Notifications";
+            this.materialCountNotificationsToolStripMenuItem.Click += new System.EventHandler(this.materialCountNotificationsToolStripMenuItem_Click);
+            // 
             // searchToolStripMenuItem
             // 
             this.searchToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.searchJournalJSONAsWellAsDataToolStripMenuItem});
             this.searchToolStripMenuItem.Name = "searchToolStripMenuItem";
-            this.searchToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.searchToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
             this.searchToolStripMenuItem.Text = "Search";
             // 
             // searchJournalJSONAsWellAsDataToolStripMenuItem
@@ -594,6 +614,13 @@
             this.searchJournalJSONAsWellAsDataToolStripMenuItem.Size = new System.Drawing.Size(289, 22);
             this.searchJournalJSONAsWellAsDataToolStripMenuItem.Text = "Search Journal entry JSON as well as data";
             this.searchJournalJSONAsWellAsDataToolStripMenuItem.Click += new System.EventHandler(this.searchJournalJSONAsWellAsDataToolStripMenuItem_Click);
+            // 
+            // nightModeEXPERIMENTALToolStripMenuItem
+            // 
+            this.nightModeEXPERIMENTALToolStripMenuItem.Name = "nightModeEXPERIMENTALToolStripMenuItem";
+            this.nightModeEXPERIMENTALToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.nightModeEXPERIMENTALToolStripMenuItem.Text = "Night Mode (EXPERIMENTAL)";
+            this.nightModeEXPERIMENTALToolStripMenuItem.Click += new System.EventHandler(this.testColourInversionToolStripMenuItem_Click);
             // 
             // commanderBox
             // 
@@ -625,7 +652,7 @@
             this.commanderBox.Controls.Add(this.combatRankImage);
             this.commanderBox.Location = new System.Drawing.Point(12, 27);
             this.commanderBox.Name = "commanderBox";
-            this.commanderBox.Size = new System.Drawing.Size(942, 217);
+            this.commanderBox.Size = new System.Drawing.Size(936, 217);
             this.commanderBox.TabIndex = 2;
             this.commanderBox.TabStop = false;
             this.commanderBox.Text = "Commander";
@@ -648,7 +675,7 @@
             this.labelCreditsChange.AutoSize = true;
             this.labelCreditsChange.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCreditsChange.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
-            this.labelCreditsChange.Location = new System.Drawing.Point(589, 29);
+            this.labelCreditsChange.Location = new System.Drawing.Point(583, 29);
             this.labelCreditsChange.MaximumSize = new System.Drawing.Size(350, 13);
             this.labelCreditsChange.MinimumSize = new System.Drawing.Size(350, 13);
             this.labelCreditsChange.Name = "labelCreditsChange";
@@ -659,7 +686,7 @@
             // empireRankProgress
             // 
             this.empireRankProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.empireRankProgress.Location = new System.Drawing.Point(656, 186);
+            this.empireRankProgress.Location = new System.Drawing.Point(650, 186);
             this.empireRankProgress.Name = "empireRankProgress";
             this.empireRankProgress.Size = new System.Drawing.Size(137, 23);
             this.empireRankProgress.TabIndex = 20;
@@ -669,7 +696,7 @@
             this.empireRankName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.empireRankName.AutoSize = true;
             this.empireRankName.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.empireRankName.Location = new System.Drawing.Point(656, 170);
+            this.empireRankName.Location = new System.Drawing.Point(650, 170);
             this.empireRankName.MaximumSize = new System.Drawing.Size(137, 13);
             this.empireRankName.MinimumSize = new System.Drawing.Size(137, 13);
             this.empireRankName.Name = "empireRankName";
@@ -684,7 +711,7 @@
             this.empireRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.empireRankImage.Image = global::EliteMonitor.Properties.Resources.empire;
             this.empireRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.empireRankImage.Location = new System.Drawing.Point(656, 47);
+            this.empireRankImage.Location = new System.Drawing.Point(650, 47);
             this.empireRankImage.MaximumSize = new System.Drawing.Size(137, 120);
             this.empireRankImage.MinimumSize = new System.Drawing.Size(137, 120);
             this.empireRankImage.Name = "empireRankImage";
@@ -696,7 +723,7 @@
             // fedRankProgress
             // 
             this.fedRankProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.fedRankProgress.Location = new System.Drawing.Point(513, 186);
+            this.fedRankProgress.Location = new System.Drawing.Point(507, 186);
             this.fedRankProgress.MarqueeAnimationSpeed = 0;
             this.fedRankProgress.Name = "fedRankProgress";
             this.fedRankProgress.Size = new System.Drawing.Size(137, 23);
@@ -707,7 +734,7 @@
             this.fedRankName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.fedRankName.AutoSize = true;
             this.fedRankName.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.fedRankName.Location = new System.Drawing.Point(513, 170);
+            this.fedRankName.Location = new System.Drawing.Point(507, 170);
             this.fedRankName.MaximumSize = new System.Drawing.Size(137, 13);
             this.fedRankName.MinimumSize = new System.Drawing.Size(137, 13);
             this.fedRankName.Name = "fedRankName";
@@ -723,7 +750,7 @@
             this.federationRankImage.BackColor = System.Drawing.SystemColors.Control;
             this.federationRankImage.Image = global::EliteMonitor.Properties.Resources.federation;
             this.federationRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.federationRankImage.Location = new System.Drawing.Point(513, 47);
+            this.federationRankImage.Location = new System.Drawing.Point(507, 47);
             this.federationRankImage.MaximumSize = new System.Drawing.Size(137, 120);
             this.federationRankImage.MinimumSize = new System.Drawing.Size(137, 120);
             this.federationRankImage.Name = "federationRankImage";
@@ -735,7 +762,7 @@
             // cqcRankProgress
             // 
             this.cqcRankProgress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cqcRankProgress.Location = new System.Drawing.Point(799, 186);
+            this.cqcRankProgress.Location = new System.Drawing.Point(793, 186);
             this.cqcRankProgress.Name = "cqcRankProgress";
             this.cqcRankProgress.Size = new System.Drawing.Size(137, 23);
             this.cqcRankProgress.TabIndex = 14;
@@ -745,7 +772,7 @@
             this.cqcRankName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cqcRankName.AutoSize = true;
             this.cqcRankName.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cqcRankName.Location = new System.Drawing.Point(799, 170);
+            this.cqcRankName.Location = new System.Drawing.Point(793, 170);
             this.cqcRankName.MaximumSize = new System.Drawing.Size(137, 13);
             this.cqcRankName.MinimumSize = new System.Drawing.Size(137, 13);
             this.cqcRankName.Name = "cqcRankName";
@@ -760,7 +787,7 @@
             this.cqcRankImage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cqcRankImage.Image = global::EliteMonitor.Properties.Resources.rank_1_cqc;
             this.cqcRankImage.InitialImage = global::EliteMonitor.Properties.Resources.rank_1_combat;
-            this.cqcRankImage.Location = new System.Drawing.Point(799, 47);
+            this.cqcRankImage.Location = new System.Drawing.Point(793, 47);
             this.cqcRankImage.MaximumSize = new System.Drawing.Size(137, 120);
             this.cqcRankImage.MinimumSize = new System.Drawing.Size(137, 120);
             this.cqcRankImage.Name = "cqcRankImage";
@@ -865,7 +892,7 @@
             this.creditsLabel.AutoSize = true;
             this.creditsLabel.Dock = System.Windows.Forms.DockStyle.Right;
             this.creditsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.creditsLabel.Location = new System.Drawing.Point(589, 16);
+            this.creditsLabel.Location = new System.Drawing.Point(583, 16);
             this.creditsLabel.MaximumSize = new System.Drawing.Size(350, 13);
             this.creditsLabel.MinimumSize = new System.Drawing.Size(350, 13);
             this.creditsLabel.Name = "creditsLabel";
@@ -969,6 +996,7 @@
             // 
             // comboCommanderList
             // 
+            this.comboCommanderList.BackColor = System.Drawing.SystemColors.Window;
             this.comboCommanderList.DisplayMember = "None";
             this.comboCommanderList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboCommanderList.FormattingEnabled = true;
@@ -1102,12 +1130,14 @@
             this.buttonMaterials.UseVisualStyleBackColor = true;
             this.buttonMaterials.Click += new System.EventHandler(this.buttonMaterials_Click);
             // 
-            // materialCountNotificationsToolStripMenuItem
+            // nIGHTMODEToolStripMenuItem
             // 
-            this.materialCountNotificationsToolStripMenuItem.Name = "materialCountNotificationsToolStripMenuItem";
-            this.materialCountNotificationsToolStripMenuItem.Size = new System.Drawing.Size(238, 22);
-            this.materialCountNotificationsToolStripMenuItem.Text = "Material Count Notifications";
-            this.materialCountNotificationsToolStripMenuItem.Click += new System.EventHandler(this.materialCountNotificationsToolStripMenuItem_Click);
+            this.nIGHTMODEToolStripMenuItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.nIGHTMODEToolStripMenuItem.Name = "nIGHTMODEToolStripMenuItem";
+            this.nIGHTMODEToolStripMenuItem.Size = new System.Drawing.Size(49, 20);
+            this.nIGHTMODEToolStripMenuItem.Text = "☀️ /🌙";
+            this.nIGHTMODEToolStripMenuItem.ToolTipText = "Enable/Disable Night Mode";
+            this.nIGHTMODEToolStripMenuItem.Click += new System.EventHandler(this.nIGHTMODEToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -1257,6 +1287,9 @@
         private System.Windows.Forms.ToolStripMenuItem forceReloadOfVolatilesNODownloadToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem forceVolatilesUpdateCheckToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem materialCountNotificationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem testColourInversionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem nightModeEXPERIMENTALToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem nIGHTMODEToolStripMenuItem;
     }
 }
 

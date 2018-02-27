@@ -127,6 +127,21 @@
   <data name="federation" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\federation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="grade_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\grade-1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="grade_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\grade-2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="grade_3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\grade-3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="grade_4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\grade-4.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="grade_5" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\grade-5.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="hud_commodities" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\359320_20170224211525_1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>

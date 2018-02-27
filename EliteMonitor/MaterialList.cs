@@ -1,4 +1,5 @@
 ﻿using EliteMonitor.Elite;
+using EliteMonitor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,6 +23,8 @@ namespace EliteMonitor
         public MaterialList()
         {
             InitializeComponent();
+            /*if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);*/
             Instance = this;
             this.listViews = new ListView[] { this.listViewData, this.listViewElements, this.listViewManufactured, this.listViewUnknown };
             foreach (ListView v in this.listViews)
@@ -48,21 +51,32 @@ namespace EliteMonitor
                     continue;
                 }
                 string materialType = EliteDatabase.Instance.getMaterialTypeFromInternalName(kvp.Key);
+                Int32 materialGrade = EliteDatabase.Instance.getMaterialGradeFromInternalName(kvp.Key);
+                ImageList images = new ImageList();
+                images.Images.Add(EliteDatabase.Instance.MATERIAL_GRADE_IMAGES[0]);
+                images.Images.Add(EliteDatabase.Instance.MATERIAL_GRADE_IMAGES[1]);
+                images.Images.Add(EliteDatabase.Instance.MATERIAL_GRADE_IMAGES[2]);
+                images.Images.Add(EliteDatabase.Instance.MATERIAL_GRADE_IMAGES[3]);
+                images.Images.Add(EliteDatabase.Instance.MATERIAL_GRADE_IMAGES[4]);
+                this.listViewData.SmallImageList = this.listViewElements.SmallImageList = this.listViewManufactured.SmallImageList = images;
+                EliteDatabase.Instance.logger.Log("Setting Material icon index to {0:n0}", Logging.LogLevel.DEBUG, materialGrade - 1);
+                ListViewItem lvi = new ListViewItem(new string[] { realName, kvp.Value.ToString() });
+                lvi.ImageIndex = materialGrade - 1;
                 switch (materialType)
                 {
                     case "Encoded":
-                        this.listViewData.Items.Add(new ListViewItem(new string[] { realName, kvp.Value.ToString() }));
+                        this.listViewData.Items.Add(lvi);
                         continue;
                     case "Manufactured":
-                        this.listViewManufactured.Items.Add(new ListViewItem(new string[] { realName, kvp.Value.ToString() }));
+                        this.listViewManufactured.Items.Add(lvi);
                         continue;
                     case "Elements":
                     case "Element":
                     case "Raw":
-                        this.listViewElements.Items.Add(new ListViewItem(new string[] { realName, kvp.Value.ToString() }));
+                        this.listViewElements.Items.Add(lvi);
                         continue;
                     default: // (Gotta) Catch ('em) all
-                        this.listViewUnknown.Items.Add(new ListViewItem(new string[] { kvp.Key, kvp.Value.ToString() }));
+                        this.listViewUnknown.Items.Add(lvi);
                         continue;
                 }
             }

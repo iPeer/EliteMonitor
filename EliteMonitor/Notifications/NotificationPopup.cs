@@ -30,6 +30,8 @@ namespace EliteMonitor.Notifications
         public NotificationPopup(Notification n, int totalHeight)
         {
             InitializeComponent();
+            if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);
             this.owningNotification = n;
             this.owningNotification.PopupInstance = this;
             this.totalHeight = totalHeight;

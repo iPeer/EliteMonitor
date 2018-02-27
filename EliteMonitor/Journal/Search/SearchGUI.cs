@@ -23,6 +23,8 @@ namespace EliteMonitor.Journal.Search
         public SearchGUI()
         {
             InitializeComponent();
+            if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);
             foreach (DataGridViewColumn column in this.searchResults.Columns)
             {
                 column.SortMode = DataGridViewColumnSortMode.NotSortable;
@@ -67,6 +69,7 @@ namespace EliteMonitor.Journal.Search
             items.Reverse();
             this.searchResults.Rows.Clear();
             this.searchResults.Rows.AddRange(items.ToArray());
+            this.Text = string.Format("Journal Search - {0:n0} results", matches.Count);
             this.searchResults.EndUpdate();
             items.Clear();
             matches.Clear();

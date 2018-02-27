@@ -1,4 +1,5 @@
 ﻿using EliteMonitor.Elite;
+using EliteMonitor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,6 +18,8 @@ namespace EliteMonitor
         public DiscoveredBodyList()
         {
             InitializeComponent();
+            if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);
 
             List<BodyDiscovery> bodies = new List<BodyDiscovery>();
             bodies = new List<BodyDiscovery>(MainForm.Instance.journalParser.viewedCommander.DiscoveredBodies);

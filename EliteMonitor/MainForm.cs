@@ -54,6 +54,8 @@ namespace EliteMonitor
         {
             this.logger = new Logger("Main");
             InitializeComponent();
+            if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);
             this.eventList.DoubleBuffered(true);
             this.eventList.MouseWheel += eventList_MouseWheel;
             this.eventList.Columns[1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -69,6 +71,7 @@ namespace EliteMonitor
             dockingLocationNotificationsToolStripMenuItem.Checked = Properties.Settings.Default.DockingNotifications;
             searchJournalJSONAsWellAsDataToolStripMenuItem.Checked = Properties.Settings.Default.JournalsSearchJson;
             materialCountNotificationsToolStripMenuItem.Checked = Properties.Settings.Default.ShowMaterialCountNotifications;
+            nightModeEXPERIMENTALToolStripMenuItem.Checked = Properties.Settings.Default.darkModeEnabled;
 
             ExpeditionButton.Click += startExpedition_Click;
 #if !DEBUG
@@ -1219,6 +1222,18 @@ namespace EliteMonitor
             materialCountNotificationsToolStripMenuItem.Checked = !materialCountNotificationsToolStripMenuItem.Checked;
             Properties.Settings.Default.ShowMaterialCountNotifications = materialCountNotificationsToolStripMenuItem.Checked;
             Properties.Settings.Default.Save();
+        }
+
+        private void testColourInversionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            nightModeEXPERIMENTALToolStripMenuItem.Checked = !Properties.Settings.Default.darkModeEnabled;
+            foreach (Form f in Application.OpenForms)
+                Utils.toggleNightModeForForm(f, true);
+        }
+
+        private void nIGHTMODEToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            testColourInversionToolStripMenuItem_Click(sender, e);
         }
     }
 }

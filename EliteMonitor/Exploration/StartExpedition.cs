@@ -1,5 +1,6 @@
 ﻿using EliteMonitor.Elite;
 using EliteMonitor.Exploration;
+using EliteMonitor.Utilities;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,8 @@ namespace EliteMonitor
         public StartExpedition()
         {
             InitializeComponent();
+            if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);
         }
 
         public void SetUpData()

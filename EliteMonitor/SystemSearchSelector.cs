@@ -30,6 +30,8 @@ namespace EliteMonitor
         public SystemSearchSelector()
         {
             InitializeComponent();
+            if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);
         }
 
         public void SetCustomTitle(string title)
@@ -174,6 +176,11 @@ namespace EliteMonitor
             this.searchThread = null;
             GC.Collect(GC.MaxGeneration);
             GC.WaitForPendingFinalizers();
+        }
+
+        private void listView1_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            Utils.DrawColumnHeader(sender, e);
         }
     }
 }

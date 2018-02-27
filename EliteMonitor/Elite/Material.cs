@@ -13,6 +13,7 @@ namespace EliteMonitor.Elite
         public Material() { }
         public string Name { get; set; }
         public string Type { get; set; }
+        public Int32 Grade { get; set; }
 
         /*public string InternalName { get; set; }
         public string Name { get; set; }

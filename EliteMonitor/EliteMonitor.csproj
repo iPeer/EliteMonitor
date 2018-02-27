@@ -70,7 +70,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
@@ -173,6 +173,7 @@
     <Compile Include="Extensions\FormExtensions.cs" />
     <Compile Include="Extensions\JsonExtensions.cs" />
     <Compile Include="Extensions\ListViewExtensions.cs" />
+    <Compile Include="Extensions\MenuStripExtensions.cs" />
     <Compile Include="Extensions\StringBuilderExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
@@ -214,6 +215,7 @@
     <Compile Include="Notifications\NotificationPopup.Designer.cs">
       <DependentUpon>NotificationPopup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Overrides\MenuStripItemRendererOverride.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RankEditor.cs">
@@ -328,6 +330,11 @@
     <Content Include="ChangeLog.txt" />
     <Content Include="elitemonitoricon.ico" />
     <Content Include="elitemonitoricon_Sek_icon.ico" />
+    <None Include="Resources\grade-5.png" />
+    <None Include="Resources\grade-4.png" />
+    <None Include="Resources\grade-3.png" />
+    <None Include="Resources\grade-2.png" />
+    <None Include="Resources\grade-1.png" />
     <None Include="Resources\elitemonitoricon_Sek_icon.ico" />
     <None Include="Resources\Icon1.ico" />
     <None Include="Resources\359320_20170224220206_1.png" />

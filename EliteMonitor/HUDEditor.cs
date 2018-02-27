@@ -67,6 +67,8 @@ namespace EliteMonitor
         {
             InitializeComponent();
             loadSavedHUDs();
+            if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);
 #if !DEBUG
             this.debugLabel.Visible = false;
 #endif

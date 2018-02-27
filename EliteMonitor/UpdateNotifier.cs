@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EliteMonitor.Utilities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -17,6 +18,8 @@ namespace EliteMonitor
         public UpdateNotifier()
         {
             InitializeComponent();
+            if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);
             GrabChangelog();
         }
 

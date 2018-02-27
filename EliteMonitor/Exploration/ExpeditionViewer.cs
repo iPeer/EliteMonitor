@@ -34,6 +34,8 @@ namespace EliteMonitor.Exploration
         public ExpeditionViewer()
         {
             InitializeComponent();
+            if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);
             Instance = this;
             loadExpeditions();
         }

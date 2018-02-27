@@ -1,6 +1,6 @@
-﻿?????
+﻿1.0.0.1997
 	* Added an option to have notifications pop-up when collecting or discarding materials showing the current count of that material the player posseses.
-	* Volatiles: Volatiles are pices of information that Elite Monitor will download from a server (when neccessary; they'll only be downloaded when they change) every time it's started. It allows use to more easily keep things such as Ship names and commodity names up-to-date without having to push a fully-fledged update. This system completely replaces the old data files, though those files are still used as a backup.
+	* Volatiles: Volatiles are pieces of information that Elite Monitor will download from a server (when neccessary; they'll only be downloaded when they change) every time it's started. It allows us to more easily keep things such as Ship names and commodity names up-to-date without having to push a fully-fledged update. This system completely replaces the old data files, though those files are still used as a backup.
 	* Sometimes Elite Monitor was converting ship names to lower case, this should be fixed now.
 	* Changes for Elite: Dangerous 3.0 compatibility
 		* Added support for the following journal events:
@@ -18,8 +18,12 @@
 		* PowerplayLeave
 		* PowerplayDefect
 	* (Under the hood) All log lines relating to invalid JSON are now consistent in their log level (all are now classed as an error instead of a mix between warning and error)
-	* Fatal error messages now display a snippet of the stack trace fro mthe error that caused them so they can be potentially diagnosed from screenshots instead of requiring entire log directories (though you should still be ready to supply these if the picture isn't enough!).
+	* Fatal error messages now display a snippet of the stack trace from the error that caused them so they can be potentially diagnosed from screenshots instead of requiring entire log directories (though you should still be ready to supply these if the picture isn't enough!).
 	* Elite Monitor now hangs on the the last 5 most recent log files to help with bug reports.
+	* The Material inventory list now displays material grades.
+	* The Journal Search GUI now displays the number of results.
+	* An experimental version of a Night Mode "skin" for Elite Monitor has been added under the options menu item.
+		* Note: Due to limitations in the WinForms framework, not all elements and/or windows are able to have a night mode viariant.
 
 1.0.0.1855
 	* Added yet more error handling to stop EM crashing if it comes across malformed/ivalid JSON in the journal file.

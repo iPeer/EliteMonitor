@@ -14,6 +14,8 @@ using System.Media;
 using EliteMonitor.Notifications;
 using EliteMonitor.Journal.Search;
 using System.Runtime.InteropServices;
+using System.Drawing;
+using EliteMonitor.Overrides;
 
 namespace EliteMonitor.Utilities
 {
@@ -212,6 +214,13 @@ namespace EliteMonitor.Utilities
 
         }
 
+        internal static void DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(77, 77, 77)), e.Bounds);
+            e.Graphics.DrawRectangle(new Pen((Properties.Settings.Default.darkModeEnabled ? Brushes.White : Brushes.Black), 2), e.Bounds.X + 1, e.Bounds.Y + 1, e.Bounds.Width - 2, e.Bounds.Height - 2);
+            e.Graphics.DrawString(e.Header.Text, e.Font, (Properties.Settings.Default.darkModeEnabled ? Brushes.White : Brushes.Black), e.Bounds);
+        }
+
         //http://stackoverflow.com/a/5427121
         public static string Prompt(string text, string caption)
         {
@@ -321,6 +330,111 @@ namespace EliteMonitor.Utilities
         {
             RestoreFormWindow(form);
             form.BringToFront();
+        }
+
+        internal static void toggleNightModeForForm(Form form, bool flipSetting = false)
+        {
+            bool darkMode = Properties.Settings.Default.darkModeEnabled;
+            if (flipSetting)
+                darkMode = Properties.Settings.Default.darkModeEnabled = !Properties.Settings.Default.darkModeEnabled;
+            if (darkMode)
+            {
+                Color backgroundColour = Color.FromArgb(55, 55, 55);
+                Color backgroundColourDGV = Color.FromArgb(77, 77, 77);
+                form.ForeColor = Color.FromArgb(form.ForeColor.R, form.ForeColor.G, form.ForeColor.B);
+                form.BackColor = backgroundColour;
+                foreach (Control c in form.GetAllControls())
+                {
+
+                    if (c is DataGridView)
+                    {
+                        ((DataGridView)c).ColumnHeadersDefaultCellStyle.BackColor = backgroundColour;
+                        ((DataGridView)c).ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+                        ((DataGridView)c).EnableHeadersVisualStyles = false;
+                        foreach (DataGridViewColumn dc in ((DataGridView)c).Columns)
+                        {
+                            dc.DefaultCellStyle.ForeColor = Color.White;
+                            dc.DefaultCellStyle.BackColor = backgroundColourDGV;
+                        }
+                        foreach (DataGridViewRow row in ((DataGridView)c).Rows)
+                        {
+                            if (row.DefaultCellStyle.BackColor != Color.Empty)
+                            {
+                                row.DefaultCellStyle.ForeColor = Color.Black;
+                            }
+                        }
+                        continue;
+                    }
+                    else if (c is MenuStrip)
+                    {
+                        /*foreach (ToolStripMenuItem m in ((MenuStrip)c).Items)
+                        {
+                            foreach (ToolStripMenuItem n in m.DropDownItems)
+                            {
+                                n.BackColor = backgroundColour;
+                                n.ForeColor = Color.White;
+                            }
+                        }*/
+                        ((MenuStrip)c).Renderer = new MenuStripItemRendererOverride();
+                        foreach (ToolStripMenuItem m in ((MenuStrip)c).GetAllSubItemsInMenuStrip())
+                        {
+                            m.BackColor = backgroundColour;
+                            m.ForeColor = Color.White;
+                        }
+                    }
+                    else if (c is Button)
+                        ((Button)c).FlatStyle = FlatStyle.Flat;
+
+                    c.ForeColor = Color.White;
+                    c.BackColor = backgroundColour;
+                }
+            }
+            else
+            {
+                form.ForeColor = new Color();
+                form.BackColor = new Color();
+
+                foreach (Control c in form.GetAllControls())
+                {
+                    if (c is DataGridView)
+                    {
+                        ((DataGridView)c).ColumnHeadersDefaultCellStyle.BackColor = new Color();
+                        ((DataGridView)c).ColumnHeadersDefaultCellStyle.ForeColor = new Color();
+                        ((DataGridView)c).EnableHeadersVisualStyles = true;
+                        foreach (DataGridViewColumn dc in ((DataGridView)c).Columns)
+                        {
+                            dc.DefaultCellStyle.ForeColor = new Color();
+                            dc.DefaultCellStyle.BackColor = new Color();
+                        }
+                        foreach (DataGridViewRow row in ((DataGridView)c).Rows)
+                        {
+                            if (row.DefaultCellStyle.BackColor != Color.FromArgb(77, 77, 77))
+                            {
+                                row.DefaultCellStyle.ForeColor = new Color();
+                            }
+                        }
+                        continue;
+                    }
+                    else if (c is MenuStrip)
+                    {
+                        ((MenuStrip)c).Renderer = new ToolStripProfessionalRenderer();
+                        foreach (ToolStripMenuItem m in ((MenuStrip)c).Items)
+                        {
+                            foreach (ToolStripMenuItem n in m.DropDownItems)
+                            {
+                                n.BackColor = new Color();
+                                n.ForeColor = new Color();
+                            }
+                        }
+                    }
+                    if (c is Button)
+                        ((Button)c).FlatStyle = FlatStyle.Standard;
+                    c.ForeColor = new Color();
+                        c.BackColor = new Color();
+                }
+            }
+            form.Refresh();
+            Properties.Settings.Default.Save();
         }
     }
 }

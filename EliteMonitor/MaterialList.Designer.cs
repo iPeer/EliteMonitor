@@ -75,7 +75,6 @@
             this.tabPageData.Controls.Add(this.listViewData);
             this.tabPageData.Location = new System.Drawing.Point(4, 22);
             this.tabPageData.Name = "tabPageData";
-            this.tabPageData.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageData.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.tabPageData.Size = new System.Drawing.Size(530, 213);
             this.tabPageData.TabIndex = 0;
@@ -90,10 +89,10 @@
             this.listViewData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listViewData.FullRowSelect = true;
             this.listViewData.GridLines = true;
-            this.listViewData.Location = new System.Drawing.Point(3, 3);
+            this.listViewData.Location = new System.Drawing.Point(0, 0);
             this.listViewData.MultiSelect = false;
             this.listViewData.Name = "listViewData";
-            this.listViewData.Size = new System.Drawing.Size(524, 207);
+            this.listViewData.Size = new System.Drawing.Size(530, 213);
             this.listViewData.TabIndex = 0;
             this.listViewData.UseCompatibleStateImageBehavior = false;
             this.listViewData.View = System.Windows.Forms.View.Details;
@@ -111,7 +110,6 @@
             this.tabPageElements.Controls.Add(this.listViewElements);
             this.tabPageElements.Location = new System.Drawing.Point(4, 22);
             this.tabPageElements.Name = "tabPageElements";
-            this.tabPageElements.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageElements.Size = new System.Drawing.Size(530, 213);
             this.tabPageElements.TabIndex = 1;
             this.tabPageElements.Text = "Elements";
@@ -125,11 +123,11 @@
             this.listViewElements.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listViewElements.FullRowSelect = true;
             this.listViewElements.GridLines = true;
-            this.listViewElements.Location = new System.Drawing.Point(3, 3);
+            this.listViewElements.Location = new System.Drawing.Point(0, 0);
             this.listViewElements.MultiSelect = false;
             this.listViewElements.Name = "listViewElements";
-            this.listViewElements.Size = new System.Drawing.Size(524, 207);
-            this.listViewElements.TabIndex = 1;
+            this.listViewElements.Size = new System.Drawing.Size(530, 213);
+            this.listViewElements.TabIndex = 2;
             this.listViewElements.UseCompatibleStateImageBehavior = false;
             this.listViewElements.View = System.Windows.Forms.View.Details;
             // 
@@ -163,7 +161,7 @@
             this.listViewManufactured.MultiSelect = false;
             this.listViewManufactured.Name = "listViewManufactured";
             this.listViewManufactured.Size = new System.Drawing.Size(530, 213);
-            this.listViewManufactured.TabIndex = 1;
+            this.listViewManufactured.TabIndex = 2;
             this.listViewManufactured.UseCompatibleStateImageBehavior = false;
             this.listViewManufactured.View = System.Windows.Forms.View.Details;
             // 
@@ -264,18 +262,18 @@
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.TabPage tabPageElements;
-        private System.Windows.Forms.ListView listViewElements;
-        private System.Windows.Forms.ColumnHeader columnHeader3;
-        private System.Windows.Forms.ColumnHeader columnHeader4;
         private System.Windows.Forms.TabPage tabPageManufactured;
-        private System.Windows.Forms.ListView listViewManufactured;
-        private System.Windows.Forms.ColumnHeader columnHeader5;
-        private System.Windows.Forms.ColumnHeader columnHeader6;
         private System.Windows.Forms.TabPage tabPageUnknown;
         private System.Windows.Forms.ListView listViewUnknown;
         private System.Windows.Forms.ColumnHeader columnHeader7;
         private System.Windows.Forms.ColumnHeader columnHeader8;
         private System.Windows.Forms.Button buttonClose;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ListView listViewManufactured;
+        private System.Windows.Forms.ColumnHeader columnHeader5;
+        private System.Windows.Forms.ColumnHeader columnHeader6;
+        private System.Windows.Forms.ListView listViewElements;
+        private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.ColumnHeader columnHeader4;
     }
 }

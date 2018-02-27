@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Net.Http;
 using EliteMonitor.Extensions;
+using System.Drawing;
 
 namespace EliteMonitor.Elite
 {
@@ -30,6 +31,8 @@ namespace EliteMonitor.Elite
         public const string EDSM_API_URL = "https://www.edsm.net/api-v1/";
         /*#endif*/
         public const string VOLATILES_API_URL = "https://ipeer.auron.co.uk/EliteMonitor/volatiles.json";
+
+        public readonly Bitmap[] MATERIAL_GRADE_IMAGES = new Bitmap[] { Properties.Resources.grade_1, Properties.Resources.grade_2, Properties.Resources.grade_3, Properties.Resources.grade_4, Properties.Resources.grade_5 };
 
         private WebClient EDSMWebClient = new WebClient();
         public event EventHandler<List<BasicSystem>> OnEDSMDataDownloadComplete;
@@ -350,6 +353,11 @@ namespace EliteMonitor.Elite
             type = this.MaterialTypes[material];
             return true;
         }*/
+
+        public Int32 getMaterialGradeFromInternalName(string @internal)
+        {
+            return this.Materials[@internal].Grade;
+        }
 
         public string getMaterialNameFromInternal(string @internal)
         {

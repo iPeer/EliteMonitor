@@ -1396,6 +1396,8 @@ namespace EliteMonitor.Journal
                 else if (j.Event.Equals("Friends"))
                     lvi.DefaultCellStyle.BackColor = Color.PeachPuff;
             }
+            if (Properties.Settings.Default.darkModeEnabled && lvi.DefaultCellStyle.BackColor != Color.Empty)
+                lvi.DefaultCellStyle.ForeColor = Color.FromArgb(0, 0, 0);
             lvi.Tag = j.ID;
             return lvi;
         }

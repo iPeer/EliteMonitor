@@ -2,6 +2,7 @@
 using EliteMonitor.Extensions;
 using EliteMonitor.Journal;
 using EliteMonitor.Logging;
+using EliteMonitor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,6 +20,8 @@ namespace EliteMonitor.Exploration
         public ScanJournalDialog()
         {
             InitializeComponent();
+            if (Properties.Settings.Default.darkModeEnabled)
+                Utils.toggleNightModeForForm(this);
         }
 
         public void startScan(JournalEntry startPoint, Expedition expedition, Commander commander)

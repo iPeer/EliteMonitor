@@ -202,5 +202,17 @@ namespace EliteMonitor.Properties {
                 this["ShowMaterialCountNotifications"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool darkModeEnabled {
+            get {
+                return ((bool)(this["darkModeEnabled"]));
+            }
+            set {
+                this["darkModeEnabled"] = value;
+            }
+        }
     }
 }
