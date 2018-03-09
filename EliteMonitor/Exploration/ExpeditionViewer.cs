@@ -160,9 +160,15 @@ namespace EliteMonitor.Exploration
                 this.listViewExpeditionStats.Items.Add(new ListViewItem(new string[] { "Total Jumps", string.Format("{0:n0}", this.LoadedExpedition.JumpCount) }));
                 this.listViewExpeditionStats.Items.Add(new ListViewItem(new string[] { "Total Jump Distance", this.LoadedExpedition.TotalDistance.ToString("0,0.00") }));
                 this.listViewExpeditionStats.Items.Add(new ListViewItem(new string[] { "Average Jump Distance", this.LoadedExpedition.AverageJumpDistance.ToString("0,0.00") }));
-                this.listViewExpeditionStats.Items.Add(new ListViewItem());
                 this.listViewExpeditionStats.Items.Add(new ListViewItem(new string[] { "Fuel Used (t)", this.LoadedExpedition.FuelUsed.ToString("0,0.00") }));
                 this.listViewExpeditionStats.Items.Add(new ListViewItem());
+                if (this.LoadedExpedition.BodiesHonkedAt > 0 || !this.LoadedExpedition.IsCompleted)
+                {
+                    ListViewItem lvi = new ListViewItem(new string[] { "Seen Body Count", string.Format("{0:n0}", this.LoadedExpedition.BodiesHonkedAt) });
+                    if (this.LoadedExpedition.WillHaveInconsistentBodyCountStat)
+                        lvi.ToolTipText = "Because this expedition was started before this stat was tracked, this number may be incorrect.";
+                    this.listViewExpeditionStats.Items.Add(lvi);
+                }
                 this.listViewExpeditionStats.Items.Add(new ListViewItem(new string[] { "Scanned Body Count", string.Format("{0:n0}", this.LoadedExpedition.BodyScanCount) }));
                 Int64 totalJournalEntries = (this.LoadedExpedition.LastJournalEntryId > 0 ? this.LoadedExpedition.LastJournalEntryId - this.LoadedExpedition.ExpeditionStartingJournalEntryId : this.LoadedExpedition.TotalJournalEntries);
                 this.listViewExpeditionStats.Items.Add(new ListViewItem(new string[] { "Total Journal Entry Count", string.Format("{0:n0}", totalJournalEntries) }));

@@ -50,6 +50,9 @@ namespace EliteMonitor.Exploration
         public string AutoCompleteSystemName { get; set; }
         public string StartingSystemName { get; set; }
 
+        public long BodiesHonkedAt { get; set; } = 0L;
+        public bool WillHaveInconsistentBodyCountStat { get; set; }
+
         public bool IsCompleted { get; set; } = false;
 
         [JsonIgnore]
@@ -67,7 +70,7 @@ namespace EliteMonitor.Exploration
             this.TotalJournalEntries++;
             string eventName = json.GetValue("event").ToString();
             this.LastJournalEntryId = entry.ID;
-            if (!(new string[] { "FSDJump", "Scan" }).Contains(eventName)) { return false; }
+            if (!EliteDatabase.VALID_EXPLORATION_ENTRY_NAMES.Contains(eventName)) { return false; }
             string timestamp = json.GetValue("timestamp").ToString();
             switch (eventName)
             {
@@ -117,6 +120,10 @@ namespace EliteMonitor.Exploration
                         ExpeditionViewer.Instance.updateScans();
                         ExpeditionViewer.Instance.updateData();
                     }
+                    return false;
+                case "DiscoveryScan":
+                    long bodyCount = json.GetValue("Bodies").ToObject<long>();
+                    this.BodiesHonkedAt += bodyCount;
                     return false;
             }
             return true;
@@ -188,6 +195,10 @@ namespace EliteMonitor.Exploration
             {
                 this.StartingSystemName = this.AutoCompleteSystemName;
                 MainForm.Instance.journalParser.viewedCommander.NeedsSaving = true;
+            }
+            if (this.Version < 6)
+            {
+                this.WillHaveInconsistentBodyCountStat = !this.IsCompleted;
             }
 
             this.Version = ExpeditionVersion;

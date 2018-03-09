@@ -97,7 +97,6 @@
             this.listViewExpeditionStats.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2});
-            this.listViewExpeditionStats.Enabled = false;
             this.listViewExpeditionStats.FullRowSelect = true;
             this.listViewExpeditionStats.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listViewExpeditionStats.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
@@ -300,7 +299,7 @@
             this.buttonCompleted.Name = "buttonCompleted";
             this.buttonCompleted.Size = new System.Drawing.Size(92, 23);
             this.buttonCompleted.TabIndex = 1;
-            this.buttonCompleted.Text = "Mark completed";
+            this.buttonCompleted.Text = "Mark complete";
             this.buttonCompleted.UseVisualStyleBackColor = true;
             this.buttonCompleted.Click += new System.EventHandler(this.buttonCompleted_Click);
             // 

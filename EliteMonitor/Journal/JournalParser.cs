@@ -250,7 +250,8 @@ namespace EliteMonitor.Journal
                         sender = (string)j["From_Localised"];
                     else if (sender.StartsWith("&"))
                         sender = sender.Substring(1);
-
+                    if (channel.Equals("local") && !sender.StartsWith("CMDR "))
+                        sender = "CMDR " + sender;
                     if (channel.Equals("npc"))
                     {
                         try
@@ -273,17 +274,20 @@ namespace EliteMonitor.Journal
                     return new JournalEntry(timestamp, @event, $"Requested docking at {(string)j["StationName"]}", j);
                 case "DockingGranted":
                     int landingPad = j.GetValue("LandingPad").ToObject<int>();
-                    if (showNotifications && Properties.Settings.Default.NotificationsEnabled && Properties.Settings.Default.DockingNotifications)
+                    //   "StationType": "Coriolis"
+                    JToken stationType;
+                    bool hasStationType = j.TryGetValue("StationType", out stationType);
+                    if (showNotifications && Properties.Settings.Default.NotificationsEnabled && Properties.Settings.Default.DockingNotifications && hasStationType && (new string[] { "Coriolis", "Orbis", "Ocellus" }).Contains(stationType.ToString()))
                     {
                         string padTime = MainForm.Instance.Database.getLandingPadPosition(landingPad);
                         string padDist = MainForm.Instance.Database.getLandingPadDistance(landingPad);
-                        Notification n = new Notification("Docking granted", $"** STATIONS ONLY **\nGreens on the right, pad {landingPad} located at {padTime} {padDist}", 15);
+                        Notification n = new Notification("Docking granted", $"Greens on the right, pad {landingPad} located at {padTime} {padDist}", 15);
                         Utils.InvokeNotification(n);
                     }
                     return new JournalEntry(timestamp, @event, $"Docking granted on pad {landingPad} at {(string)j["StationName"]}", j);
                 case "Docked":
                     string stationName = (string)j["StationName"];
-                    string stationType = (string)j["StationType"];
+                    stationType = (string)j["StationType"];
                     string starSystem = (string)j["StarSystem"];
                     if (!isReparse)
                     {
@@ -330,6 +334,11 @@ namespace EliteMonitor.Journal
 
                         commander.CurrentSystemCoordinates = sc;
                         commander.isLanded = commander.isDocked = false;
+                        JToken addr;
+                        if (j.TryGetValue("SystemAddress", out addr))
+                        {
+                            commander.LastSystemAddress = addr.ToObject<long>();
+                        }
                     }
                     string Append = string.Empty;
                     if (this.lastJumpStartTime > DateTime.MinValue)
@@ -766,7 +775,7 @@ namespace EliteMonitor.Journal
                         }
                         sb.AppendLineFormatted("Terraformable: {0}", terraformable ? "yes" : "no");
                         sb.AppendLineFormatted("Earth masses: {0:n3}", j.GetValue("MassEM").ToObject<double>());
-                        sb.AppendLineFormatted("Gravity: {0:n2} g", j.GetValue("SurfaceGravity").ToObject<double>());
+                        sb.AppendLineFormatted("Gravity: {0:n2} g", (j.GetValue("SurfaceGravity").ToObject<double>() / 10d));
                     }
                     if (orbitalPeriod > 0)
                         sb.AppendLineFormatted("Orbital period: {0}{1}", Utils.formatTimeFromGalacticSeconds(Math.Abs(orbitalPeriod)), orbitCriteria.Count > 0 ? string.Format(" ({0})", string.Join(", ", orbitCriteria.ToArray())) : "");
@@ -882,7 +891,7 @@ namespace EliteMonitor.Journal
                         }
                         catch
                         {
-                            this.logger.Log("Unable to load engineer blueprint data via normal method, falling back to old method.", LogLevel.WARNING);
+                            //this.logger.Log("Unable to load engineer blueprint data via normal method, falling back to old method.", LogLevel.WARNING);
                             Dictionary<string, int> materialCosts = new Dictionary<string, int>();
                             materialCosts = JsonConvert.DeserializeObject<Dictionary<string, int>>(j.GetValue("Ingredients").ToString());
                             List<JournalMaterialsEventKVP> converted = new List<JournalMaterialsEventKVP>();
@@ -975,7 +984,7 @@ namespace EliteMonitor.Journal
                 case "ShipTargeted":
                     bool locked = j.GetValue("TargetLocked").ToObject<bool>();
                     if (!locked)
-                        return new JournalEntry(timestamp, @event, "Targeted new ship.", j);
+                        return new JournalEntry(timestamp, @event, "Targeting reset.", j);
                     int scanStage = j.GetValue("ScanStage").ToObject<int>();
                     shipName = mainForm.Database.getShipNameFromInternalName(j.GetValue("Ship").ToString());
                     StringBuilder td = new StringBuilder();
@@ -1006,13 +1015,29 @@ namespace EliteMonitor.Journal
                         bool wanted = j.GetValue("LegalStatus").ToString().EqualsIgnoreCase("wanted");
                         Int64 bounty = 0;
                         if (wanted)
-                            bounty = j.GetValue("Bounty").ToObject<Int64>();
-                        if (wanted)
-                            td.AppendFormat("\n{0} ({1:n0})", wanted ? "WANTED" : "CLEAN", bounty);
+                        {
+                            // Try-catch here because sometimes the Journal forgets to add it or something (???).
+                            try
+                            {
+                                bounty = j.GetValue("Bounty").ToObject<Int64>();
+                            }
+                            catch
+                            {
+                                this.logger.Log("Ship is wanted but no bounty ammount is present, setting bounty as 0", LogLevel.ERR);
+                            }
+                            if (bounty == 0)
+                                td.AppendFormat("\n{0}", wanted ? "WANTED" : "CLEAN");
+                            else
+                                td.AppendFormat("\n{0} ({1:n0})", wanted ? "WANTED" : "CLEAN", bounty);
+                        }
                         else
                             td.AppendFormat("\n{0}", wanted ? "WANTED" : "CLEAN");
-                        string owningFaction = j.GetValue("Faction").ToString();
-                        td.AppendFormat("\n{0}", owningFaction);
+                        JToken _owningFaction;
+                        if (j.TryGetValue("Faction", out _owningFaction))
+                        {
+
+                            td.AppendFormat("\n{0}", _owningFaction.ToString());
+                        }
                     }
                     return new JournalEntry(timestamp, @event, td.ToString(), j);
                 case "EngineerLegacyConvert":
@@ -1072,6 +1097,26 @@ namespace EliteMonitor.Journal
                     if (commander != null)
                         commander.SetNotPledgedInPowerPlay();
                     return new JournalEntry(timestamp, @event, string.Format("Defected from {0} to {1}", power, power2), j);
+                case "DiscoveryScan":
+                    long systemAddress = j.GetValue("SystemAddress").ToObject<long>();
+                    count = j.GetValue("Bodies").ToObject<Int32>();
+                    if (commander != null && systemAddress == commander.LastSystemAddress)
+                        return new JournalEntry(timestamp, @event, string.Format("{0}: {1:n0} new astronomical object(s) found.", commander.CurrentSystem, count), j);
+                    return new JournalEntry(timestamp, @event, string.Format("{0:n0} new astronomical object(s) found.", count), j);
+                case "Reputation":
+                    // Coder's note: This has to be like this because evidently Frontier think omiting an entry because it is 0 is okay.
+                    double _fed, emp, alliance, indep;
+                    _fed = emp = alliance = indep = 0.0d;
+                    if (j.TryGetValue("Federation", out @out))
+                        _fed = Math.Truncate(@out.ToObject<double>());
+                    if (j.TryGetValue("Empire", out @out))
+                        emp = Math.Truncate(@out.ToObject<double>());
+                    if (j.TryGetValue("Alliance", out @out))
+                        alliance = Math.Truncate(@out.ToObject<double>());
+                    if (j.TryGetValue("Independent", out @out))
+                        indep = Math.Truncate(@out.ToObject<double>());
+
+                    return new JournalEntry(timestamp, @event, string.Format("Reputations | Federation: {0}, Empire: {1}, Alliance: {2}, Independent: {3}", _fed, emp, alliance, indep), j);
                 default:
                     return new JournalEntry(timestamp, @event, string.Empty, j, false);
             }

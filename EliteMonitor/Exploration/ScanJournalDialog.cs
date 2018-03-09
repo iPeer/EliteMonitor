@@ -34,8 +34,7 @@ namespace EliteMonitor.Exploration
             {
                 /*commander.HasActiveExpedition = true;
                 commander.ActiveExpeditionGuid = expedition.ExpeditionID;*/
-                string[] validEvents = new string[] { "FSDJump", "Scan" };
-                List<JournalEntry> entries = commander.JournalEntries.FindAll(a => a.ID >= startId && validEvents.Contains(a.Event));
+                List<JournalEntry> entries = commander.JournalEntries.FindAll(a => a.ID >= startId && EliteDatabase.VALID_EXPLORATION_ENTRY_NAMES.Contains(a.Event));
                 this.progressBar1.InvokeIfRequired(() => this.progressBar1.Style = ProgressBarStyle.Continuous);
                 this.progressBar1.InvokeIfRequired(() => this.progressBar1.Maximum = entries.Count);
                 this.progressBar1.InvokeIfRequired(() => this.progressBar1.Step = 1);

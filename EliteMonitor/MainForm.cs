@@ -1227,8 +1227,10 @@ namespace EliteMonitor
         private void testColourInversionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             nightModeEXPERIMENTALToolStripMenuItem.Checked = !Properties.Settings.Default.darkModeEnabled;
+            Properties.Settings.Default.darkModeEnabled = !Properties.Settings.Default.darkModeEnabled;
             foreach (Form f in Application.OpenForms)
-                Utils.toggleNightModeForForm(f, true);
+                Utils.toggleNightModeForForm(f, Properties.Settings.Default.darkModeEnabled);
+            Properties.Settings.Default.Save();
         }
 
         private void nIGHTMODEToolStripMenuItem_Click(object sender, EventArgs e)

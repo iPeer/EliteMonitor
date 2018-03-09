@@ -89,6 +89,7 @@
             this.searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.searchJournalJSONAsWellAsDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.nightModeEXPERIMENTALToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.nIGHTMODEToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.commanderBox = new System.Windows.Forms.GroupBox();
             this.commanderLocationLabel = new System.Windows.Forms.Label();
             this.labelCreditsChange = new System.Windows.Forms.Label();
@@ -133,7 +134,6 @@
             this.buttonTop = new System.Windows.Forms.Button();
             this.buttonSearch = new System.Windows.Forms.Button();
             this.buttonMaterials = new System.Windows.Forms.Button();
-            this.nIGHTMODEToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.commanderBox.SuspendLayout();
@@ -622,6 +622,15 @@
             this.nightModeEXPERIMENTALToolStripMenuItem.Text = "Night Mode (EXPERIMENTAL)";
             this.nightModeEXPERIMENTALToolStripMenuItem.Click += new System.EventHandler(this.testColourInversionToolStripMenuItem_Click);
             // 
+            // nIGHTMODEToolStripMenuItem
+            // 
+            this.nIGHTMODEToolStripMenuItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.nIGHTMODEToolStripMenuItem.Name = "nIGHTMODEToolStripMenuItem";
+            this.nIGHTMODEToolStripMenuItem.Size = new System.Drawing.Size(49, 20);
+            this.nIGHTMODEToolStripMenuItem.Text = "☀️ /🌙";
+            this.nIGHTMODEToolStripMenuItem.ToolTipText = "Enable/Disable Night Mode";
+            this.nIGHTMODEToolStripMenuItem.Click += new System.EventHandler(this.nIGHTMODEToolStripMenuItem_Click);
+            // 
             // commanderBox
             // 
             this.commanderBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -1098,6 +1107,7 @@
             // 
             // buttonTop
             // 
+            this.buttonTop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonTop.Location = new System.Drawing.Point(947, 277);
             this.buttonTop.Name = "buttonTop";
             this.buttonTop.Size = new System.Drawing.Size(19, 16);
@@ -1129,15 +1139,6 @@
             this.buttonMaterials.Text = "Material Inventory";
             this.buttonMaterials.UseVisualStyleBackColor = true;
             this.buttonMaterials.Click += new System.EventHandler(this.buttonMaterials_Click);
-            // 
-            // nIGHTMODEToolStripMenuItem
-            // 
-            this.nIGHTMODEToolStripMenuItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.nIGHTMODEToolStripMenuItem.Name = "nIGHTMODEToolStripMenuItem";
-            this.nIGHTMODEToolStripMenuItem.Size = new System.Drawing.Size(49, 20);
-            this.nIGHTMODEToolStripMenuItem.Text = "☀️ /🌙";
-            this.nIGHTMODEToolStripMenuItem.ToolTipText = "Enable/Disable Night Mode";
-            this.nIGHTMODEToolStripMenuItem.Click += new System.EventHandler(this.nIGHTMODEToolStripMenuItem_Click);
             // 
             // MainForm
             // 

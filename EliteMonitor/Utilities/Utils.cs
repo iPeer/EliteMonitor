@@ -332,12 +332,13 @@ namespace EliteMonitor.Utilities
             form.BringToFront();
         }
 
-        internal static void toggleNightModeForForm(Form form, bool flipSetting = false)
+        internal static void toggleNightModeForForm(Form form) => toggleNightModeForForm(form, Properties.Settings.Default.darkModeEnabled);
+        internal static void toggleNightModeForForm(Form form, bool enabled)
         {
             bool darkMode = Properties.Settings.Default.darkModeEnabled;
-            if (flipSetting)
-                darkMode = Properties.Settings.Default.darkModeEnabled = !Properties.Settings.Default.darkModeEnabled;
-            if (darkMode)
+            /*if (flipSetting)
+                darkMode = Properties.Settings.Default.darkModeEnabled = !Properties.Settings.Default.darkModeEnabled;*/
+            if (enabled)
             {
                 Color backgroundColour = Color.FromArgb(55, 55, 55);
                 Color backgroundColourDGV = Color.FromArgb(77, 77, 77);
@@ -434,7 +435,7 @@ namespace EliteMonitor.Utilities
                 }
             }
             form.Refresh();
-            Properties.Settings.Default.Save();
+            /*Properties.Settings.Default.Save();*/
         }
     }
 }

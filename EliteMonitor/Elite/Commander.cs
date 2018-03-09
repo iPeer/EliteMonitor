@@ -143,6 +143,12 @@ namespace EliteMonitor.Elite
         public string PowerPlayPower { get; set; } = string.Empty;
         public bool IsPledgedInPowerPlay { get; set; } = false;
         public long RescuedThargoidRefugees { get; set; } = 0L;
+        public long LastSystemAddress { get; set; } = 0L;
+
+        public int FederationRep { get; set; } = 0;
+        public int EmpireRep { get; set; } = 0;
+        public int AllianceRep { get; set; } = 0;
+        public int IndependentRep { get; set; } = 0;
 
         [JsonIgnore]
         public string combatRankName
@@ -223,6 +229,18 @@ namespace EliteMonitor.Elite
         {
             this.IsPledgedInPowerPlay = false;
             this.MarkDirty();
+            return this;
+        }
+
+        public Commander SetMajorPowerReputation(double fed, double emp, double alliance, double independent) => SetMajorPowerReputation((int)fed, (int)emp, (int)alliance, (int)independent);
+        public Commander SetMajorPowerReputation(int fed, int emp, int alliance, int independent)
+        {
+            this.FederationRep = fed;
+            this.EmpireRep = emp;
+            this.AllianceRep = alliance;
+            this.IndependentRep = independent;
+            this.MarkDirty();
+            this.updateDialogDisplays();
             return this;
         }
 
@@ -858,6 +876,12 @@ namespace EliteMonitor.Elite
             if (this.cacheVersion < (patchVer = 1924))
             {
                 List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("Powerplay") || a.Event.Equals("PowerplayJoin") || a.Event.Equals("PowerplayLeave") || a.Event.Equals("PowerplayDefect"));
+                updateJournalEntries(toUpdate, m, patchVer, this);
+            }
+
+            if (this.cacheVersion < (patchVer = 2018))
+            {
+                List<JournalEntry> toUpdate = this.JournalEntries.FindAll(a => a.Event.Equals("Reputation") | a.Event.Equals("DiscoveryScan") | a.Event.Equals("ShipTargeted") || a.Event.Equals("ReceiveText"));
                 updateJournalEntries(toUpdate, m, patchVer, this);
             }
         }

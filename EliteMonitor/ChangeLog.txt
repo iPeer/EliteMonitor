@@ -1,4 +1,26 @@
-﻿1.0.0.1997
+﻿1.0.0.2026
+	* Removed a superflous warning message that was massively spamming up log files on first run.
+	* Fixed tailer crashes for the following criteria:
+		* Wanted ships having a missing "Bounty" value.
+		* Reputation event having missing values for one or more major powers.
+	* Fixed a typo in the messages for the DiscoveryScan event.
+	* Fixed the "Scan" journal entry not accounting for the surface gravity being 10 times higher in the journal than in-game.
+
+1.0.0.2018
+	* Fixed an issue where the night mode setting was not being updated (and by extention, being enabled or disabled) correctly.
+	* The ShipTargeted event now correctly recognises when targeting is reset (no ship is targeted).
+	* Expeditions will now keep track of the total number of bodies "seen" by honking systems.
+	* Fixed the "stats" section of the Expedition Viewer being unreadable when night mode was enabled.
+	* Fixed messages from commanders in Elite 3.0 not having the "CMDR" prefix.
+	* Added support for the following Journal events:
+		* DiscoveryScan
+		* Reputation
+
+1.0.0.2003
+	* Fixed a crash relating to the ShipTargeted event.
+	* Fixed the "back to top" button for the main window being misplaced when the main GUI was resized larger than default.
+
+1.0.0.1997
 	* Added an option to have notifications pop-up when collecting or discarding materials showing the current count of that material the player posseses.
 	* Volatiles: Volatiles are pieces of information that Elite Monitor will download from a server (when neccessary; they'll only be downloaded when they change) every time it's started. It allows us to more easily keep things such as Ship names and commodity names up-to-date without having to push a fully-fledged update. This system completely replaces the old data files, though those files are still used as a backup.
 	* Sometimes Elite Monitor was converting ship names to lower case, this should be fixed now.

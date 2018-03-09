@@ -32,6 +32,8 @@ namespace EliteMonitor.Elite
         /*#endif*/
         public const string VOLATILES_API_URL = "https://ipeer.auron.co.uk/EliteMonitor/volatiles.json";
 
+        public static readonly string[] VALID_EXPLORATION_ENTRY_NAMES = new string[] { "FSDJump", "Scan", "DiscoveryScan" };
+
         public readonly Bitmap[] MATERIAL_GRADE_IMAGES = new Bitmap[] { Properties.Resources.grade_1, Properties.Resources.grade_2, Properties.Resources.grade_3, Properties.Resources.grade_4, Properties.Resources.grade_5 };
 
         private WebClient EDSMWebClient = new WebClient();
